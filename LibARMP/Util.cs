@@ -87,5 +87,28 @@ namespace LibARMP
             Array.Reverse(charArray);
             return new string(charArray);
         }
+
+
+        /// <summary>
+        /// Reads an array of type T.
+        /// </summary>
+        /// <param name="reader">The DataStream Reader.</param>
+        /// <param name="ptrArray">The pointer to the array.</param>
+        /// <param name="amount">The amount of values in the array.</param>
+        /// <returns>A list.</returns>
+        public static dynamic IterateArray<T> (DataReader reader, int ptrArray, int amount)
+        {
+            List<T> returnList = new List<T>();
+            reader.Stream.Seek(ptrArray);
+
+            for (int i=0; i<amount; i++)
+            {
+                T val = reader.Read<T>();
+                returnList.Add(val);
+            } 
+
+            return returnList;
+        }
+
     }
 }

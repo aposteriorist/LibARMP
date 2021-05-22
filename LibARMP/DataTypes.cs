@@ -1,44 +1,53 @@
-﻿
+﻿using System;
+using System.Collections.Generic;
 
 namespace LibARMP
 {
-    class DataTypesEnum
+    public class DataTypes
     {
-
-        public enum TypesV1
+        /// <summary>
+        /// Types for version 1.
+        /// </summary>
+        public static IDictionary<sbyte, Type> TypesV1 = new Dictionary<sbyte, Type>
         {
-            Invalid = -1,
-            Uint8 = 2,
-            Uint16 = 1,
-            Uint32 = 0,
-            Uint64 = 8,
-            Int8 = 5,
-            Int16 = 4,
-            Int32 = 3,
-            Int64 = 10,
-            Float32 = 7,
-            Boolean = 6,
-            String = 0,
-            Table = 9
-        }
+            { -1, null }, // Invalid
+            { 2, typeof(byte) }, // uint8
+            { 1, typeof(UInt16) }, // uint16
+            { 0, typeof(UInt32) }, // uint32
+            { 8, typeof(UInt64) }, // uint64
+            { 5, typeof(sbyte) }, // int8
+            { 4, typeof(Int16) }, // int16
+            { 3, typeof(Int32) }, // int32
+            { 10, typeof(Int64) }, // int64
+            { 7, typeof(float) }, // float32
+            { 6, typeof(bool) }, // boolean
+            //{ 0, typeof(string) }, // string
+            { 9, typeof(ArmpTable) } // Table
+        };
 
 
-        public enum TypesV1Aux
+        /// <summary>
+        /// Types for version 1 (auxiliary table).
+        /// </summary>
+        public static IDictionary<sbyte, Type> TypesV1Aux = new Dictionary<sbyte, Type>
         {
-            Invalid = -1,
-            Uint8 = 0,
-            Uint16 = 1,
-            Uint32 = 2,
-            Uint64 = 3,
-            Int8 = 4,
-            Int16 = 5,
-            Int32 = 6,
-            Int64 = 7,
-            Float32 = 9,
-            Boolean = 11,
-            String = 12,
-            Table = 13
-        }
+            { -1, null }, // Invalid
+            { 0, typeof(byte) }, // uint8
+            { 1, typeof(UInt16) }, // uint16
+            { 2, typeof(UInt32) }, // uint32
+            { 3, typeof(UInt64) }, // uint64
+            { 4, typeof(sbyte) }, // int8
+            { 5, typeof(Int16) }, // int16
+            { 6, typeof(Int32) }, // int32
+            { 7, typeof(Int64) }, // int64
+            { 9, typeof(float) }, // float32
+            { 11, typeof(bool) }, // boolean
+            { 12, typeof(string) }, // string
+            { 13, typeof(ArmpTable) } // Table
+        };
+
+
+
 
 
         public enum TypesV2

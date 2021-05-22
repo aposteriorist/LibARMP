@@ -16,13 +16,13 @@ namespace LibARMP
         /// <summary>
         /// Gets or sets the entry ID.
         /// </summary>
-        public int id { get; set; }
+        public int ID { get; set; }
 
 
         /// <summary>
         /// Gets or sets the entry name.
         /// </summary>
-        public string name { get; set; }
+        public string Name { get; set; }
 
     }
 }

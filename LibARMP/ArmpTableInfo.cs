@@ -2,19 +2,19 @@
 
 namespace LibARMP
 {
-    class ArmpTableInfo
+    public class ArmpTableInfo
     {
 
         public ArmpTableInfo ()
         {
-            this.rowCount = 0;
-            this.columnCount = 0;
-            this.textCount = 0;
-            this.rowValidator = 0;
-            this.columnValidator = 0;
-            this.tableID = 0;
-            this.storageMode = 0;
-            this.hasSubTable = false;
+            this.RowCount = 0;
+            this.ColumnCount = 0;
+            this.TextCount = 0;
+            this.RowValidator = 0;
+            this.ColumnValidator = 0;
+            this.TableID = 0;
+            this.StorageMode = 0;
+            this.HasSubTable = false;
             this.ptrRowNamesOffsetTable = 0;
             this.ptrRowValidity = 0;
             this.ptrColumnDataTypes = 0;
@@ -34,42 +34,42 @@ namespace LibARMP
         /// <summary>
         /// Gets or sets the number of rows.
         /// </summary>
-        public Int32 rowCount { get; set; }
+        public Int32 RowCount { get; set; }
 
         /// <summary>
         /// Gets or sets the number of columns.
         /// </summary>
-        public Int32 columnCount { get; set; }
+        public Int32 ColumnCount { get; set; }
 
         /// <summary>
         /// Gets or sets the number of strings (field values).
         /// </summary>
-        public Int32 textCount { get; set; }
+        public Int32 TextCount { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating the validity of rows.
         /// </summary>
-        public Int32 rowValidator { get; set; }
+        public Int32 RowValidator { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating the validity of columns.
         /// </summary>
-        public Int32 columnValidator { get; set; }
+        public Int32 ColumnValidator { get; set; }
 
         /// <summary>
         /// Gets or sets the table ID (Int24).
         /// </summary>
-        public Int32 tableID { get; set; }
+        public Int32 TableID { get; set; }
 
         /// <summary>
-        /// Gets or sets the storage Mode.
+        /// Gets or sets the storage Mode (only used in version 2).
         /// </summary>
-        public byte storageMode { get; set; }
+        public byte StorageMode { get; set; }
 
         /// <summary>
         /// Gets or sets the boolean indicating if the table has a SubTable.
         /// </summary>
-        public bool hasSubTable { get; set; }
+        public bool HasSubTable { get; set; }
 
         /// <summary>
         /// Gets or sets the pointer to the String Offset Table.

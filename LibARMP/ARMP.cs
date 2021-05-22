@@ -39,36 +39,27 @@ namespace LibARMP
         }
 
 
+
         /// <summary>
         /// Gets or sets the version number.
         /// </summary>
-        public Int16 version { get; set; }
+        public Int16 Version { get; set; }
 
 
         /// <summary>
         /// Gets or sets the revision number.
         /// </summary>
-        public Int16 revision { get; set; }
+        public Int16 Revision { get; set; }
 
 
         /// <summary>
-        /// Entry names.
+        /// Gets or sets the main table.
         /// </summary>
-        public List<string> rowNames { get; set; }
+        public ArmpTable MainTable { get; set; }
 
         /// <summary>
-        /// Column names.
+        /// Gets or sets the subTable.
         /// </summary>
-        public List<string> columnNames { get; set; }
-
-        /// <summary>
-        /// Row validity.
-        /// </summary>
-        public List<bool> rowValidity { get; set; }
-
-        /// <summary>
-        /// Column validity.
-        /// </summary>
-        public List<bool> columnValidity { get; set; }
+        public ArmpTable SubTable { get; set; }
     }
 }
