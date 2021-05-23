@@ -61,6 +61,7 @@ namespace LibARMP
             //Read general data
             table.RowNames = Util.IterateStringList(reader, Util.IterateOffsetList(reader, table.TableInfo.ptrRowNamesOffsetTable, table.TableInfo.RowCount)); //Row names
             table.ColumnNames = Util.IterateStringList(reader, Util.IterateOffsetList(reader, table.TableInfo.ptrColumnNamesOffsetTable, table.TableInfo.ColumnCount)); //Column names
+            if (table.TableInfo.TextCount > 0) table.Text = Util.IterateStringList(reader, Util.IterateOffsetList(reader, table.TableInfo.ptrTextOffsetTable, table.TableInfo.TextCount)); //Text
             table.ColumnDataTypes = GetColumnDataTypes(reader, table.TableInfo.ptrColumnDataTypes, table.TableInfo.ColumnCount, version, false); //Column Data Types
             table.ColumnDataTypesAux = GetColumnDataTypes(reader, table.TableInfo.ptrColumnDataTypesAux, table.TableInfo.ColumnCount, version, true); //Column Data Types Aux
             if (table.TableInfo.ptrRowValidity > 0) table.RowValidity = Util.IterateBooleanBitmask(reader, table.TableInfo.ptrRowValidity, table.TableInfo.RowCount); //Row Validity
@@ -68,7 +69,8 @@ namespace LibARMP
             if (table.TableInfo.ptrRowIndices > 0) table.RowIndices = Util.IterateArray<int>(reader, table.TableInfo.ptrRowIndices, table.TableInfo.RowCount); //Row Indices
             if (table.TableInfo.ptrColumnIndices > 0) table.ColumnIndices = Util.IterateArray<int>(reader, table.TableInfo.ptrColumnIndices, table.TableInfo.ColumnCount); //Column Indices
 
-            
+            InitializeEntries(table);
+            ReadEntryData(reader, table.TableInfo.ptrColumnContentOffsetTable, table.TableInfo.StorageMode, table);
 
             return table;
         }
@@ -188,6 +190,113 @@ namespace LibARMP
             }
 
             return returnList;
+        }
+
+
+        /// <summary>
+        /// Initializes the entries of a table.
+        /// </summary>
+        /// <param name="table">The ArmpTable.</param>
+        private static void InitializeEntries(ArmpTable table)
+        {
+            for (int i=0; i<table.TableInfo.RowCount; i++)
+            {
+                ArmpEntry entry = new ArmpEntry(i, table.RowNames[i], table.RowIndices[i]);
+                table.Entries.Add(entry);
+            }
+        }
+
+
+
+        private static void ReadEntryData (DataReader reader, int ptrOffsetTable, int storageMode, ArmpTable table)
+        {
+            reader.Stream.Seek(ptrOffsetTable);
+
+            if (storageMode == 0)
+            {
+                for (int columnIndex = 0; columnIndex < table.TableInfo.ColumnCount; columnIndex++)
+                {
+                    int ptrData = reader.ReadInt32();
+                    long nextPtr = reader.Stream.Position;
+                    reader.Stream.Seek(ptrData);
+
+                    //TODO change data type table for v2 storagemode 0
+                    Type columnType = table.ColumnDataTypesAux[columnIndex];
+                    for (int rowIndex = 0; rowIndex < table.TableInfo.RowCount; rowIndex++)
+                    {
+                        //Can't do a switch for this because type patterns are in preview or whatever ¯\_(ツ)_/¯
+                        if (columnType == DataTypes.Types["invalid"])
+                        {
+                            table.Entries[rowIndex].Data.Add( table.ColumnNames[columnIndex], null );
+                        }
+
+                        else if (columnType == DataTypes.Types["string"])
+                        {
+                            int index = reader.ReadInt32();
+                            if (index != -1)
+                                table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], table.Text[index]);
+                            else
+                                table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], null);
+                        }
+
+                        else if(columnType == DataTypes.Types["uint8"])
+                        {
+                            byte value = reader.ReadByte();
+                            table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
+                        }
+
+                        else if (columnType == DataTypes.Types["uint16"])
+                        {
+                            UInt16 value = reader.ReadUInt16();
+                            table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
+                        }
+
+                        else if (columnType == DataTypes.Types["uint32"])
+                        {
+                            UInt32 value = reader.ReadUInt32();
+                            table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
+                        }
+
+                        else if (columnType == DataTypes.Types["uint64"])
+                        {
+                            UInt64 value = reader.ReadUInt64();
+                            table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
+                        }
+
+                        else if (columnType == DataTypes.Types["int8"])
+                        {
+                            sbyte value = reader.ReadSByte();
+                            table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
+                        }
+
+                        else if (columnType == DataTypes.Types["int16"])
+                        {
+                            Int16 value = reader.ReadInt16();
+                            table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
+                        }
+
+                        else if (columnType == DataTypes.Types["int32"])
+                        {
+                            Int32 value = reader.ReadInt32();
+                            table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
+                        }
+
+                        else if (columnType == DataTypes.Types["int64"])
+                        {
+                            Int64 value = reader.ReadInt64();
+                            table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
+                        }
+
+                        else
+                        {
+                            table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], null);
+                        }
+
+                    }
+
+                    reader.Stream.Seek(nextPtr);
+                }
+            }
         }
         
 

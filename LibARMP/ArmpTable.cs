@@ -8,7 +8,7 @@ namespace LibARMP
     {
         public ArmpTable()
         {
-
+            Entries = new List<ArmpEntry>();
         }
 
         /// <summary>
@@ -25,6 +25,11 @@ namespace LibARMP
         /// Column names.
         /// </summary>
         public List<string> ColumnNames { get; set; }
+
+        /// <summary>
+        /// Text.
+        /// </summary>
+        public List<string> Text { get; set; }
 
         /// <summary>
         /// Row validity.
@@ -55,5 +60,10 @@ namespace LibARMP
         /// Column data types (auxiliary).
         /// </summary>
         public List<Type> ColumnDataTypesAux { get; set; }
+
+        /// <summary>
+        /// List of entries.
+        /// </summary>
+        public List<ArmpEntry> Entries { get; set; }
     }
 }

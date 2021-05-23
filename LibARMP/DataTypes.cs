@@ -5,6 +5,25 @@ namespace LibARMP
 {
     public class DataTypes
     {
+
+        public static IDictionary<string, Type> Types = new Dictionary<string, Type>
+        {
+            { "invalid", null }, // Invalid
+            { "uint8", typeof(byte) }, // uint8
+            { "uint16", typeof(UInt16) }, // uint16
+            { "uint32", typeof(UInt32) }, // uint32
+            { "uint64", typeof(UInt64) }, // uint64
+            { "int8", typeof(sbyte) }, // int8
+            { "int16", typeof(Int16) }, // int16
+            { "int32", typeof(Int32) }, // int32
+            { "int64", typeof(Int64) }, // int64
+            { "float32", typeof(float) }, // float32
+            { "boolean", typeof(bool) }, // boolean
+            { "string", typeof(string) }, // string
+            { "table", typeof(ArmpTable) } // Table
+        };
+
+
         /// <summary>
         /// Types for version 1.
         /// </summary>

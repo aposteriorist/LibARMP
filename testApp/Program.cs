@@ -25,6 +25,12 @@ namespace testApp
                 Console.WriteLine(column);
             }
 
+            Console.WriteLine("\n--- TEXT ---");
+            foreach (string text in armp.MainTable.Text)
+            {
+                Console.WriteLine(text);
+            }
+
             Console.WriteLine("\n--- ROW INDICES ---");
             foreach (int index in armp.MainTable.RowIndices)
             {
@@ -48,6 +54,14 @@ namespace testApp
             {
                 Console.WriteLine(datatype);
             }
+
+            Console.WriteLine("\n--- ENTRY 1 INFO ---");
+            Console.WriteLine("ID: " + armp.MainTable.Entries[1].ID);
+            Console.WriteLine("Index: " + armp.MainTable.Entries[1].Index);
+            Console.WriteLine("Name: " + armp.MainTable.Entries[1].Name);
+            Console.WriteLine("Column [name]: " + armp.MainTable.Entries[1].Data["name"]);
+            Console.WriteLine("Column [character_id]: " + armp.MainTable.Entries[1].Data["character_id"]);
+            Console.WriteLine("Column [list_index]: " + armp.MainTable.Entries[1].Data["list_index"]);
         }
     }
 }

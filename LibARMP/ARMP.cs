@@ -12,34 +12,6 @@ namespace LibARMP
         }
 
 
-        //public ARMP (string path)
-        //{
-        //    loadARMP(path);
-        //}
-
-
-        /// <summary>
-        /// Reads an armp file and returns and ARMP object
-        /// </summary>
-        /// <param name="path">The path to the armp file.</param>
-        public void loadARMP (string path)
-        {
-            throw new NotImplementedException();
-        }
-
-
-        /// <summary>
-        /// Saves the current ARMP object to an armp file.
-        /// </summary>
-        /// <param name="path">The path where the armp file will be written.</param>
-        public void saveARMP(string path)
-        {
-            //TODO
-            throw new NotImplementedException();
-        }
-
-
-
         /// <summary>
         /// Gets or sets the version number.
         /// </summary>
