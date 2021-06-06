@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Yarhl.IO;
 
@@ -60,9 +61,9 @@ namespace LibARMP
             for (int i = 0; i < Math.Ceiling((float)amount/8); i++)
             {
                 byte b = reader.ReadByte();
-                var bitstring = Convert.ToString(b, 2);
+                var bitstring = Convert.ToString(b, 2).PadLeft(8, '0');
                 bitstring = ReverseString(bitstring);
-                foreach(char c in bitstring)
+                foreach (char c in bitstring)
                 {
                     if (booleanList.Count < amount)
                     {
