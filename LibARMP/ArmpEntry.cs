@@ -51,7 +51,6 @@ namespace LibARMP
         public int Index { get; set; }
 
 
-
         /// <summary>
         /// Gets the value for the specified column.
         /// </summary>
@@ -90,7 +89,7 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Sets the value for the specified column.
+        /// Sets the value for the specified column. NO TYPE CHECKS ARE PERFORMED
         /// </summary>
         /// <param name="column">The column name.</param>
         /// <param name="value">The value to write.</param>
@@ -98,15 +97,7 @@ namespace LibARMP
         {
             if (Data.ContainsKey(column))
             {
-                if (value.GetType() == Data[column].GetType())
-                {
-                    Data[column] = value;
-                }
-                else
-                {
-                    //TODO
-                    throw new Exception("Type mismatch");
-                }
+                Data[column] = value;
             }
             else
             {

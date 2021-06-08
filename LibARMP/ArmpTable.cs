@@ -181,5 +181,37 @@ namespace LibARMP
             return template;
         }
 
+
+        /// <summary>
+        /// Sets the value of a specified column in the specified entry.
+        /// </summary>
+        /// <param name="id">The entry to modify.</param>
+        /// <param name="column">The column name.</param>
+        /// <param name="value">The value to write.</param>
+        public void SetValue (int id, string column, object value)
+        {
+            int columnIndex = ColumnNames.IndexOf(column);
+
+            if (columnIndex != -1)
+            {
+                if (value.GetType() == ColumnDataTypesAux[columnIndex])
+                {
+                    ArmpEntry entry = GetEntry(id);
+                    entry.SetValueFromColumn(column, value);
+                }
+                else
+                {
+                    //TODO
+                    throw new Exception("Type mismatch. Expected '"+ ColumnDataTypesAux[columnIndex] + "' and got '"+value.GetType()+"'.");
+                }
+            }
+            else
+            {
+                throw new ColumnNotFoundException("The column '" + column + "' does not exist.");
+            }
+
+            
+
+        }
     }
 }
