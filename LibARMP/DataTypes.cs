@@ -46,6 +46,27 @@ namespace LibARMP
 
 
         /// <summary>
+        /// Types for version 1. Reverse table for writes.
+        /// </summary>
+        public static IDictionary<Type, sbyte> TypesV1Reverse = new Dictionary<Type, sbyte>
+        {
+            //{ null, -1 }, // Invalid
+            { typeof(byte), 2 }, // uint8
+            { typeof(UInt16), 1 }, // uint16
+            { typeof(UInt32), 0 }, // uint32
+            { typeof(UInt64), 8 }, // uint64
+            { typeof(sbyte), 5 }, // int8
+            { typeof(Int16), 4 }, // int16
+            { typeof(Int32), 3 }, // int32
+            { typeof(Int64), 10 }, // int64
+            { typeof(float), 7 }, // float32
+            { typeof(bool), 6 }, // boolean
+            { typeof(string), 0 }, // string
+            { typeof(ArmpTable), 9 } // Table
+        };
+
+
+        /// <summary>
         /// Types for version 1 (auxiliary table).
         /// </summary>
         public static IDictionary<sbyte, Type> TypesV1Aux = new Dictionary<sbyte, Type>
@@ -63,6 +84,27 @@ namespace LibARMP
             { 11, typeof(bool) }, // boolean
             { 12, typeof(string) }, // string
             { 13, typeof(ArmpTable) } // Table
+        };
+
+
+        /// <summary>
+        /// Types for version 1 (auxiliary table). Reverse table for writes.
+        /// </summary>
+        public static IDictionary<Type, sbyte> TypesV1AuxReverse = new Dictionary<Type, sbyte>
+        {
+            //{ null, -1 }, // Invalid
+            { typeof(byte), 0 }, // uint8
+            { typeof(UInt16), 1 }, // uint16
+            { typeof(UInt32), 2 }, // uint32
+            { typeof(UInt64), 3 }, // uint64
+            { typeof(sbyte), 4 }, // int8
+            { typeof(Int16), 5 }, // int16
+            { typeof(Int32), 6 }, // int32
+            { typeof(Int64), 7 }, // int64
+            { typeof(float), 9 }, // float32
+            { typeof(bool), 11 }, // boolean
+            { typeof(string), 12 }, // string
+            { typeof(ArmpTable), 13 } // Table
         };
 
 

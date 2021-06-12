@@ -65,6 +65,7 @@ namespace LibARMP
             }
             else
             {
+                table.TableInfo.HasRowNames = false;
                 table.RowNames = new List<string>(); //Fill with blanks
                 for (int r=0; r<table.TableInfo.RowCount; r++)
                 {
@@ -78,6 +79,7 @@ namespace LibARMP
             }
             else
             {
+                table.TableInfo.HasColumnNames = false;
                 table.ColumnNames = new List<string>(); //Fill with numbers
                 for (int c = 0; c < table.TableInfo.ColumnCount; c++)
                 {

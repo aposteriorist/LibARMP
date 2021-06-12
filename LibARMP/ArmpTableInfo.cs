@@ -16,11 +16,13 @@ namespace LibARMP
             this.StorageMode = 0;
             this.HasSubTable = false;
             this.ptrRowNamesOffsetTable = 0;
+            this.HasRowNames = true;
             this.ptrRowValidity = 0;
             this.ptrColumnDataTypes = 0;
             this.ptrColumnContentOffsetTable = 0;
             this.ptrTextOffsetTable = 0;
             this.ptrColumnNamesOffsetTable = 0;
+            this.HasColumnNames = true;
             this.ptrRowIndices = 0;
             this.ptrColumnIndices = 0;
             this.ptrColumnValidity = 0;
@@ -77,6 +79,11 @@ namespace LibARMP
         public Int32 ptrRowNamesOffsetTable { get; set; }
 
         /// <summary>
+        /// Gets or sets the boolean indicating if the table has row names.
+        /// </summary>
+        public bool HasRowNames { get; set; }
+
+        /// <summary>
         /// Gets or sets the pointer to the Row Validity bitmask.
         /// </summary>
         public Int32 ptrRowValidity { get; set; }
@@ -100,6 +107,11 @@ namespace LibARMP
         /// Gets or sets the pointer to the Column Names Offset Table.
         /// </summary>
         public Int32 ptrColumnNamesOffsetTable { get; set; }
+
+        /// <summary>
+        /// Gets or sets the boolean indicating if the table has column names.
+        /// </summary>
+        public bool HasColumnNames { get; set; }
 
         /// <summary>
         /// Gets or sets the pointer to the Row Indices int array.

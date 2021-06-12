@@ -111,5 +111,58 @@ namespace LibARMP
             return returnList;
         }
 
+
+        /// <summary>
+        /// Writes a boolean list to a stream.
+        /// </summary>
+        /// <param name="writer">The DataWriter.</param>
+        /// <param name="boolList">The boolean list.</param>
+        public static void WriteBooleanBitmask (DataWriter writer, List<bool> boolList)
+        {
+            string bitstring = "";
+            foreach (bool boolValue in boolList)
+            {
+                bitstring += Convert.ToByte(boolValue).ToString();
+                if (bitstring.Length == 8)
+                {
+                    byte value = Convert.ToByte(ReverseString(bitstring), 2);
+                    bitstring = "";
+                    writer.Write(value);
+                }
+            }
+            if (bitstring != "")
+            {
+                byte value = Convert.ToByte(ReverseString(bitstring).PadLeft(8, '0'), 2);
+                writer.Write(value);
+            }
+        }
+
+
+        /// <summary>
+        /// TODO
+        /// </summary>
+        /// <param name="writer">The DataWriter.</param>
+        /// <param name="textList">The text list.</param>
+        /// <returns>The pointer to the text offset table.</returns>
+        public static int WriteText (DataWriter writer, List<string> textList)
+        {
+            List<int> ptrList = new List<int>();
+            
+            foreach (string text in textList)
+            {
+                ptrList.Add((int)writer.Stream.Position);
+                writer.Write(text, true);
+            }
+            writer.WritePadding(0x00, 8);
+            int ptrOffsetTable = (int)writer.Stream.Position;
+
+            foreach(int pointer in ptrList)
+            {
+                writer.Write(pointer);
+            }
+            writer.WritePadding(0x00, 8);
+            return ptrOffsetTable;
+        }
+
     }
 }

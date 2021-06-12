@@ -105,6 +105,19 @@ namespace LibARMP
 
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="column"></param>
+        /// <returns></returns>
+        public Type GetColumnDataType(string column)
+        {
+            if (!ColumnNames.Contains(column)) throw new ColumnNotFoundException("The column '" + column + "' does not exist in this table.");
+            int columnIndex = ColumnNames.IndexOf(column);
+            return ColumnDataTypesAux[columnIndex];
+        }
+
+
+        /// <summary>
         /// Searches all entries for matching names.
         /// </summary>
         /// <param name="name">The name to search for.</param>
