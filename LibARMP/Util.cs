@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 using Yarhl.IO;
 
 namespace LibARMP
 {
-    class Util
+    public static class Util
     {
         /// <summary>
         /// Stores a determined amount of offsets into a list.
@@ -162,6 +164,22 @@ namespace LibARMP
             }
             writer.WritePadding(0x00, 8);
             return ptrOffsetTable;
+        }
+
+
+        /// <summary>
+        /// Deep copy an object.
+        /// </summary>
+        public static T DeepCopy<T>(this T obj)
+        {
+            using (var ms = new MemoryStream())
+            {
+                var formatter = new BinaryFormatter();
+                formatter.Serialize(ms, obj);
+                ms.Position = 0;
+
+                return (T)formatter.Deserialize(ms);
+            }
         }
 
     }

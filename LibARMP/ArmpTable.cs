@@ -164,6 +164,7 @@ namespace LibARMP
         public void AddEntry (ArmpEntry entry)
         {
             int id = Entries.Count + 1;
+            if (entry.Name != null) RowNames.Add(entry.Name);
             entry.ID = id;
             entry.Index = id;
             Entries.Add(entry);
@@ -189,9 +190,21 @@ namespace LibARMP
         {
             //Entry 0 is always empty, dirty approach is to make a copy.
             //FIXME This wont work for empty armps (not a realistic case but an issue regardless) and subtables may have weird results.
-            ArmpEntry template;
-            template = GetEntry(0);
-            return template;
+            ArmpEntry entry0;
+            entry0 = GetEntry(0);
+            return Util.DeepCopy<ArmpEntry>(entry0);
+        }
+
+
+        /// <summary>
+        /// Copy a specified entry.
+        /// </summary>
+        /// <param name="id">The entry to copy</param>
+        public ArmpEntry CopyEntry (int id)
+        {
+            ArmpEntry entry;
+            entry = GetEntry(id);
+            return Util.DeepCopy<ArmpEntry>(entry);
         }
 
 

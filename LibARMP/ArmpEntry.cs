@@ -5,7 +5,8 @@ using Yarhl.FileFormat;
 using Yarhl.IO;
 
 namespace LibARMP
-{
+{   
+    [Serializable]
     public class ArmpEntry
     {
 

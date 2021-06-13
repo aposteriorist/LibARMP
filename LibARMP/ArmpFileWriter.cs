@@ -176,6 +176,142 @@ namespace LibARMP
             writer.Stream.PopPosition();
             writer.WritePadding(0x00, 4);
 
+
+            //Column Contents
+            List<int> columnValueOffsets = new List<int>();
+            foreach (string column in table.ColumnNames)
+            {
+                int columnIndex = table.ColumnNames.IndexOf(column);
+                if (table.ColumnValidity != null && table.ColumnValidity[columnIndex] != true)
+                {
+                    columnValueOffsets.Add(0);
+                }
+                else
+                {
+                    columnValueOffsets.Add((int)writer.Stream.Position);
+                    List<bool> boolList = new List<bool>(); //Init list in case it is a boolean column
+                    foreach (ArmpEntry entry in table.Entries)
+                    {
+                        if (table.ColumnDataTypesAux[columnIndex] == DataTypes.Types["string"])
+                        {
+                            if (entry.GetValueFromColumn(column) != null)
+                            {
+                                int index = table.Text.IndexOf((string)entry.GetValueFromColumn(column));
+                                writer.Write(index);
+                            }
+                            else
+                            {
+                                writer.Write(-1);
+                            }
+                        }
+
+                        else if (table.ColumnDataTypesAux[columnIndex] == DataTypes.Types["boolean"])
+                        {
+                            boolList.Add((bool)entry.GetValueFromColumn(column));
+                        }
+
+                        else if (table.ColumnDataTypesAux[columnIndex] == DataTypes.Types["table"])
+                        {
+                            //TODO
+                        }
+
+                        else if (table.ColumnDataTypesAux[columnIndex] == DataTypes.Types["uint8"])
+                        {
+                            writer.Write((byte)entry.GetValueFromColumn(column));
+                        }
+
+                        else if (table.ColumnDataTypesAux[columnIndex] == DataTypes.Types["int8"])
+                        {
+                            writer.Write((sbyte)entry.GetValueFromColumn(column));
+                        }
+
+                        else if (table.ColumnDataTypesAux[columnIndex] == DataTypes.Types["uint16"])
+                        {
+                            writer.Write((UInt16)entry.GetValueFromColumn(column));
+                        }
+
+                        else if (table.ColumnDataTypesAux[columnIndex] == DataTypes.Types["int16"])
+                        {
+                            writer.Write((Int16)entry.GetValueFromColumn(column));
+                        }
+
+                        else if (table.ColumnDataTypesAux[columnIndex] == DataTypes.Types["uint32"])
+                        {
+                            writer.Write((UInt32)entry.GetValueFromColumn(column));
+                        }
+
+                        else if (table.ColumnDataTypesAux[columnIndex] == DataTypes.Types["int32"])
+                        {
+                            writer.Write((Int32)entry.GetValueFromColumn(column));
+                        }
+
+                        else if (table.ColumnDataTypesAux[columnIndex] == DataTypes.Types["uint64"])
+                        {
+                            writer.Write((UInt64)entry.GetValueFromColumn(column));
+                        }
+
+                        else if (table.ColumnDataTypesAux[columnIndex] == DataTypes.Types["int64"])
+                        {
+                            writer.Write((Int64)entry.GetValueFromColumn(column));
+                        }
+
+                        else if (table.ColumnDataTypesAux[columnIndex] == DataTypes.Types["float32"])
+                        {
+                            writer.Write((Single)entry.GetValueFromColumn(column));
+                        }
+                    }
+
+                    if (boolList.Count > 0)
+                    {
+                        Util.WriteBooleanBitmask(writer, boolList);
+                    }
+                }
+            }
+
+            writer.WritePadding(0x00, 4);
+            int ptrColumnOffsetTable = (int)writer.Stream.Position;
+            foreach(int offset in columnValueOffsets)
+            {
+                writer.Write(offset);
+            }
+
+            writer.Stream.PushToPosition(baseOffset + 0x1C);
+            writer.Write(ptrColumnOffsetTable);
+            writer.Stream.PopPosition();
+
+
+            //TODO write tables
+
+
+            //Row Indices
+            if (table.RowIndices != null)
+            {
+                ptr = (int)writer.Stream.Position;
+
+                foreach(ArmpEntry entry in table.Entries)
+                {
+                    writer.Write(entry.Index);
+                }
+                writer.Stream.PushToPosition(baseOffset + 0x30);
+                writer.Write(ptr);
+                writer.Stream.PopPosition();
+            }
+
+            //Column Indices
+            if (table.ColumnIndices != null)
+            {
+                ptr = (int)writer.Stream.Position;
+                foreach (int index in table.ColumnIndices)
+                {
+                    writer.Write(index);
+                }
+                writer.Stream.PushToPosition(baseOffset + 0x34);
+                writer.Write(ptr);
+                writer.Stream.PopPosition();
+            }
+
+
+            //TODO validitybool
         }
 
     }
