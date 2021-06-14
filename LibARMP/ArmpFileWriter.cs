@@ -100,6 +100,12 @@ namespace LibARMP
             //Row Names
             if (table.TableInfo.HasRowNames)
             {
+                List<string> rowNames = new List<string>();
+                foreach (ArmpEntry entry in table.Entries)
+                {
+                    rowNames.Add(entry.Name);
+                }
+                table.RowNames = rowNames;
                 ptr = Util.WriteText(writer, table.RowNames);
                 writer.Stream.PushToPosition(baseOffset + 0x10);
                 writer.Write(ptr);
