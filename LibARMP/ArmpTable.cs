@@ -163,7 +163,7 @@ namespace LibARMP
         /// <param name="entry">The entry to add.</param>
         public void AddEntry (ArmpEntry entry)
         {
-            int id = Entries.Count + 1;
+            int id = Entries.Count;
             if (entry.Name != null) RowNames.Add(entry.Name);
             entry.ID = id;
             entry.Index = id;
