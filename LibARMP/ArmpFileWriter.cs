@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LibARMP.Exceptions;
+using System;
 using System.Collections.Generic;
 using Yarhl.IO;
 
@@ -44,7 +45,15 @@ namespace LibARMP
                 {
                     writer.Write(32); //Pointer to main table. Always 0x20 with our way of writing the file.
                     writer.WriteTimes(0x00, 0xC); //Padding
+                    int mainTableBaseOffset = (int)writer.Stream.Position;
                     WriteTable(writer, armp.MainTable);
+                    if (armp.SubTable != null)
+                    {
+                        int ptr = (int)writer.Stream.Position;
+                        WriteTable(writer, armp.SubTable);
+                        writer.Stream.PushToPosition(mainTableBaseOffset + 0x3C);
+                        writer.Write(ptr);
+                    }
                 }
 
             }
@@ -107,7 +116,7 @@ namespace LibARMP
             }
 
             //Text
-            if (table.Text.Count > 0)
+            if (table.Text != null && table.Text.Count > 0)
             {
                 //Force an update of the table text.
 
@@ -190,6 +199,8 @@ namespace LibARMP
                 {
                     columnValueOffsets.Add((int)writer.Stream.Position);
                     List<bool> boolList = new List<bool>(); //Init list in case it is a boolean column
+                    List<ArmpTable> tableList = new List<ArmpTable>(); //Init list in case it is a table column
+                    List<int> tableOffsetList = new List<int>(); //Init list in case it is a table column
                     foreach (ArmpEntry entry in table.Entries)
                     {
                         if (table.ColumnDataTypesAux[columnIndex] == DataTypes.Types["string"])
@@ -212,7 +223,15 @@ namespace LibARMP
 
                         else if (table.ColumnDataTypesAux[columnIndex] == DataTypes.Types["table"])
                         {
-                            //TODO
+                            try
+                            {
+                                tableList.Add((ArmpTable)entry.GetValueFromColumn(column));
+                                tableOffsetList.Add((int)writer.Stream.Position);
+                                writer.WriteTimes(0x00, 0x8);
+                            } catch(ColumnNotFoundException e)
+                            {
+                                writer.WriteTimes(0x00, 0x8);
+                            }
                         }
 
                         else if (table.ColumnDataTypesAux[columnIndex] == DataTypes.Types["uint8"])
@@ -261,9 +280,22 @@ namespace LibARMP
                         }
                     }
 
-                    if (boolList.Count > 0)
+                    if (boolList.Count > 0) //Write booleans
                     {
                         Util.WriteBooleanBitmask(writer, boolList);
+                    }
+                    else if (tableList.Count > 0) //Write tables
+                    {
+                        int i = 0;
+                        foreach (ArmpTable tableValue in tableList)
+                        {
+                            long pointer = writer.Stream.Position;
+                            WriteTable(writer, tableValue);
+                            writer.Stream.PushToPosition(tableOffsetList[i]);
+                            writer.Write(pointer);
+                            writer.Stream.PopPosition();
+                            i++;
+                        }
                     }
                 }
             }
