@@ -78,6 +78,12 @@ namespace LibARMP
             //Row Validity
             if (table.RowValidity != null)
             {
+                List<bool> rowValidity = new List<bool>();
+                foreach (ArmpEntry entry in table.Entries)
+                {
+                    rowValidity.Add(entry.IsValid);
+                }
+                table.RowValidity = rowValidity;
                 ptr = (int)writer.Stream.Position;
                 Util.WriteBooleanBitmask(writer, table.RowValidity);
                 writer.WritePadding(0x00, 8);

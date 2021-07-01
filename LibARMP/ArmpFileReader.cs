@@ -90,13 +90,19 @@ namespace LibARMP
             if (table.TableInfo.TextCount > 0) table.Text = Util.IterateStringList(reader, Util.IterateOffsetList(reader, table.TableInfo.ptrTextOffsetTable, table.TableInfo.TextCount)); //Text
             table.ColumnDataTypes = GetColumnDataTypes(reader, table.TableInfo.ptrColumnDataTypes, table.TableInfo.ColumnCount, version, false); //Column Data Types
             table.ColumnDataTypesAux = GetColumnDataTypes(reader, table.TableInfo.ptrColumnDataTypesAux, table.TableInfo.ColumnCount, version, true); //Column Data Types Aux
-            if (table.TableInfo.ptrRowValidity > 0) table.RowValidity = Util.IterateBooleanBitmask(reader, table.TableInfo.ptrRowValidity, table.TableInfo.RowCount); //Row Validity
             if (table.TableInfo.ptrColumnValidity > 0) table.ColumnValidity = Util.IterateBooleanBitmask(reader, table.TableInfo.ptrColumnValidity, table.TableInfo.ColumnCount); //Column Validity
             if (table.TableInfo.ptrRowIndices > 0) table.RowIndices = Util.IterateArray<int>(reader, table.TableInfo.ptrRowIndices, table.TableInfo.RowCount); //Row Indices
             if (table.TableInfo.ptrColumnIndices > 0) table.ColumnIndices = Util.IterateArray<int>(reader, table.TableInfo.ptrColumnIndices, table.TableInfo.ColumnCount); //Column Indices
 
             InitializeEntries(table);
             ReadEntryData(reader, table.TableInfo.ptrColumnContentOffsetTable, table.TableInfo.StorageMode, version, table);
+
+            if (table.TableInfo.ptrRowValidity > 0) //Row Validity
+            {
+                table.RowValidity = Util.IterateBooleanBitmask(reader, table.TableInfo.ptrRowValidity, table.TableInfo.RowCount);
+                SetRowValidity(table.RowValidity, table.Entries);
+            }
+
 
             return table;
         }
@@ -242,6 +248,14 @@ namespace LibARMP
 
 
 
+        /// <summary>
+        /// Reads the column values for each entry.
+        /// </summary>
+        /// <param name="reader">The DataReader.</param>
+        /// <param name="ptrOffsetTable">The pointer to the offset table.</param>
+        /// <param name="storageMode">Storage mode used (0 = per column, 1 = per row).</param>
+        /// <param name="version">Version of the format.</param>
+        /// <param name="table">The table where the data will be added to.</param>
         private static void ReadEntryData (DataReader reader, int ptrOffsetTable, int storageMode, int version, ArmpTable table)
         {
             reader.Stream.Seek(ptrOffsetTable);
@@ -369,6 +383,23 @@ namespace LibARMP
 
                     reader.Stream.Seek(nextPtr);
                 }
+            }
+        }
+
+
+
+        /// <summary>
+        /// Sets the "Valid" flag for a list of entries.
+        /// </summary>
+        /// <param name="rowValidity">The validity list.</param>
+        /// <param name="entries">The entry list to update.</param>
+        private static void SetRowValidity (List<bool> rowValidity, List<ArmpEntry> entries)
+        {
+            int iter = 0;
+            foreach(bool validity in rowValidity)
+            {
+                entries[iter].IsValid = validity;
+                iter++;
             }
         }
         

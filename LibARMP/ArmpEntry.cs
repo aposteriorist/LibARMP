@@ -12,22 +12,18 @@ namespace LibARMP
 
         public ArmpEntry()
         {
-
-        }
-
-        public ArmpEntry(int id, string name)
-        {
-            ID = id;
-            Name = name;
             Data = new Dictionary<string, object>();
         }
 
-        public ArmpEntry(int id, string name, int index)
+        public ArmpEntry(int id, string name) : this()
         {
             ID = id;
             Name = name;
+        }
+
+        public ArmpEntry(int id, string name, int index) : this(id, name)
+        {
             Index = index;
-            Data = new Dictionary<string, object>();
         }
 
 
@@ -50,6 +46,11 @@ namespace LibARMP
         /// Gets or sets the entry index. Can be NULL
         /// </summary>
         public int Index { get; set; }
+
+        /// <summary>
+        /// Gets or sets if the entry is valid. Can be NULL
+        /// </summary>
+        public bool IsValid { get; set; }
 
 
         /// <summary>
