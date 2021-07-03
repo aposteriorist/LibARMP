@@ -52,6 +52,11 @@ namespace LibARMP
         /// </summary>
         public bool IsValid { get; set; }
 
+        /// <summary>
+        /// Gets or sets the entry flags. Can be NULL
+        /// </summary>
+        public bool[] Flags { get; set; }
+
 
         /// <summary>
         /// Gets the value for the specified column.

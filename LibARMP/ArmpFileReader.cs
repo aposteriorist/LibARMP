@@ -102,7 +102,17 @@ namespace LibARMP
                 table.RowValidity = Util.IterateBooleanBitmask(reader, table.TableInfo.ptrRowValidity, table.TableInfo.RowCount);
                 SetRowValidity(table.RowValidity, table.Entries);
             }
-
+            if (table.TableInfo.ptrFieldInfo > 0) //Extra field info (flags for v1)
+            {
+                if (version == 1)
+                {
+                    IterateEntryFlags(reader, table.TableInfo.ptrFieldInfo, table.Entries);
+                }
+                if (version == 2)
+                {
+                    //TODO
+                }
+            }
 
             return table;
         }
@@ -171,28 +181,6 @@ namespace LibARMP
             return armpTableInfo;
         }
 
-
-        /// <summary>
-        /// Reads a byte array (Validity Bool).
-        /// </summary>
-        /// <param name="reader">The DataStream Reader.</param>
-        /// <param name="ptrArray">The pointer to the array.</param>
-        /// <param name="amount">The amount of values in the array.</param>
-        /// <returns>A list.</returns>
-        private static List<string> IterateValidityBool(DataReader reader, int ptrArray, int amount)
-        {
-            List<string> returnList = new List<string>();
-            reader.Stream.Seek(ptrArray);
-
-            for (int i = 0; i < amount; i++)
-            {
-                byte b = reader.ReadByte();
-                string bitstring = Convert.ToString(b, 2);
-                returnList.Add(bitstring);
-            }
-
-            return returnList;
-        }
 
 
         /// <summary>
@@ -402,7 +390,39 @@ namespace LibARMP
                 iter++;
             }
         }
-        
+
+
+
+        /// <summary>
+        /// Reads the flags of every entry.
+        /// </summary>
+        /// <param name="reader">The DataStream Reader.</param>
+        /// <param name="ptrArray">The pointer to the array.</param>
+        /// <param name="entries">The entry list.</param>
+        /// <returns>A list.</returns>
+        private static void IterateEntryFlags(DataReader reader, int ptrArray, List<ArmpEntry> entries)
+        {
+            reader.Stream.Seek(ptrArray);
+
+            for (int i = 0; i < entries.Count; i++)
+            {
+                byte b = reader.ReadByte();
+                var bitstring = Convert.ToString(b, 2).PadLeft(8, '0');
+                bitstring = Util.ReverseString(bitstring);
+
+                ArmpEntry entry = entries[i];
+                entry.Flags = new bool[8];
+                int iter = 0;
+                foreach (char c in bitstring)
+                {
+                    bool boolvalue = false;
+                    if (c == '1') boolvalue = true;
+                    entry.Flags[iter] = boolvalue;
+                    iter++;
+                }
+            }
+        }
+
 
     }
 }

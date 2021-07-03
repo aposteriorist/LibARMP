@@ -355,7 +355,24 @@ namespace LibARMP
             }
 
 
-            //TODO validitybool
+            //Entry Flags (v1 only)
+            if (table.TableInfo.ptrFieldInfo > 0)
+            {
+                ptr = (int)writer.Stream.Position;
+                foreach(ArmpEntry entry in table.Entries)
+                {
+                    string bitstring = "";
+                    for(int i=0; i<entry.Flags.Length; i++)
+                    {
+                        bitstring += Convert.ToByte(entry.Flags[i]);
+                    }
+                    byte value = Convert.ToByte(Util.ReverseString(bitstring), 2);
+                    writer.Write(value);
+                }
+                writer.Stream.PushToPosition(baseOffset + 0x4C);
+                writer.Write(ptr);
+                writer.Stream.PopPosition();
+            }
         }
 
     }
