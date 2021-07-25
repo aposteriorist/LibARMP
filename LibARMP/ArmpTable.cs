@@ -1,7 +1,6 @@
 ﻿using LibARMP.Exceptions;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace LibARMP
 {
@@ -10,6 +9,7 @@ namespace LibARMP
         public ArmpTable()
         {
             Entries = new List<ArmpEntry>();
+            ColumnDataTypesAuxTable = new List<List<int>>(); //v2 only
         }
 
         /// <summary>
@@ -58,9 +58,14 @@ namespace LibARMP
         public List<Type> ColumnDataTypes { get; set; }
 
         /// <summary>
-        /// Column data types (auxiliary).
+        /// Column data types (auxiliary). Only used in storage mode 0.
         /// </summary>
         public List<Type> ColumnDataTypesAux { get; set; }
+
+        /// <summary>
+        /// Column data types (auxiliary). Only used in storage mode 1. [Type ID, Distance, Array Size, Unknown]
+        /// </summary>
+        public List<List<int>> ColumnDataTypesAuxTable { get; set; }
 
         /// <summary>
         /// List of entries.

@@ -17,7 +17,6 @@ namespace LibARMP
         /// </summary>
         public Int16 Version { get; set; }
 
-
         /// <summary>
         /// Gets or sets the revision number.
         /// </summary>
@@ -26,7 +25,7 @@ namespace LibARMP
         /// <summary>
         /// Is it using the Old Engine version of the format? (it shares the same version and revision numbers with DE).
         /// </summary>
-        public bool isOldEngine { get; set; }
+        public bool IsOldEngine { get; set; }
 
         /// <summary>
         /// Gets or sets the main table.

@@ -7,6 +7,7 @@ namespace LibARMP
 
         public ArmpTableInfo ()
         {
+            //General Info
             this.RowCount = 0;
             this.ColumnCount = 0;
             this.TextCount = 0;
@@ -14,24 +15,38 @@ namespace LibARMP
             this.ColumnValidator = 0;
             this.TableID = 0;
             this.StorageMode = 0;
-            this.HasSubTable = false;
+
+            //Pointers
             this.ptrRowNamesOffsetTable = 0;
-            this.HasRowNames = true;
             this.ptrRowValidity = 0;
             this.ptrColumnDataTypes = 0;
             this.ptrColumnContentOffsetTable = 0;
             this.ptrTextOffsetTable = 0;
             this.ptrColumnNamesOffsetTable = 0;
-            this.HasColumnNames = true;
             this.ptrRowIndices = 0;
             this.ptrColumnIndices = 0;
             this.ptrColumnValidity = 0;
             this.ptrSubTable = 0;
             this.ptrEmptyValuesOffsetTable = 0;
             this.ptrColumnDataTypesAux = 0;
-            this.ptrFieldInfo = 0;
+            this.ptrExtraFieldInfo = 0;
             this.ptrFieldID = 0; //TODO verify
+
+            //Flags
+            this.HasText = false;
+            this.HasSubTable = false;
+            this.HasRowNames = false;
+            this.HasColumnNames = false;
+            this.HasColumnDataTypesAux = false;
+            this.HasRowValidity = false;
+            this.HasColumnValidity = false;
+            this.HasRowIndices = false;
+            this.HasColumnIndices = false;
+            this.HasExtraFieldInfo = false;
         }
+
+
+        //General Info
 
         /// <summary>
         /// Gets or sets the number of rows.
@@ -68,20 +83,15 @@ namespace LibARMP
         /// </summary>
         public byte StorageMode { get; set; }
 
-        /// <summary>
-        /// Gets or sets the boolean indicating if the table has a SubTable.
-        /// </summary>
-        public bool HasSubTable { get; set; }
+
+
+
+        //Pointers
 
         /// <summary>
         /// Gets or sets the pointer to the String Offset Table.
         /// </summary>
         public Int32 ptrRowNamesOffsetTable { get; set; }
-
-        /// <summary>
-        /// Gets or sets the boolean indicating if the table has row names.
-        /// </summary>
-        public bool HasRowNames { get; set; }
 
         /// <summary>
         /// Gets or sets the pointer to the Row Validity bitmask.
@@ -107,11 +117,6 @@ namespace LibARMP
         /// Gets or sets the pointer to the Column Names Offset Table.
         /// </summary>
         public Int32 ptrColumnNamesOffsetTable { get; set; }
-
-        /// <summary>
-        /// Gets or sets the boolean indicating if the table has column names.
-        /// </summary>
-        public bool HasColumnNames { get; set; }
 
         /// <summary>
         /// Gets or sets the pointer to the Row Indices int array.
@@ -146,12 +151,66 @@ namespace LibARMP
         /// <summary>
         /// Gets or sets the pointer to the additional Field Info.
         /// </summary>
-        public Int32 ptrFieldInfo { get; set; }
+        public Int32 ptrExtraFieldInfo { get; set; }
 
         /// <summary>
         /// Gets or sets the pointer to the Field ID list.
         /// </summary>
         public Int32 ptrFieldID { get; set; }
 
+
+
+
+        //Flags
+
+        /// <summary>
+        /// Gets or sets the boolean indicating if the table has text.
+        /// </summary>
+        public bool HasText { get; set; }
+
+        /// <summary>
+        /// Gets or sets the boolean indicating if the table has a SubTable.
+        /// </summary>
+        public bool HasSubTable { get; set; }
+
+        /// <summary>
+        /// Gets or sets the boolean indicating if the table has row names.
+        /// </summary>
+        public bool HasRowNames { get; set; }
+
+        /// <summary>
+        /// Gets or sets the boolean indicating if the table has column names.
+        /// </summary>
+        public bool HasColumnNames { get; set; }
+
+        /// <summary>
+        /// Gets or sets the boolean indicating if the table has an auxiliary column data types list.
+        /// </summary>
+        public bool HasColumnDataTypesAux { get; set; }
+
+        /// <summary>
+        /// Gets or sets the boolean indicating if the table has validity flags for rows.
+        /// </summary>
+        public bool HasRowValidity { get; set; }
+
+        /// <summary>
+        /// Gets or sets the boolean indicating if the table has validity flags for columns.
+        /// </summary>
+        public bool HasColumnValidity { get; set; }
+
+        /// <summary>
+        /// Gets or sets the boolean indicating if the table has row indices.
+        /// </summary>
+        public bool HasRowIndices { get; set; }
+
+        /// <summary>
+        /// Gets or sets the boolean indicating if the table has column indices.
+        /// </summary>
+        public bool HasColumnIndices { get; set; }
+
+        /// <summary>
+        /// Gets or sets the boolean indicating if the table has additional field info (varies between format versions).
+        /// </summary>
+        public bool HasExtraFieldInfo { get; set; }
     }
 }

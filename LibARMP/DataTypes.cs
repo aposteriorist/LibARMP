@@ -18,6 +18,7 @@ namespace LibARMP
             { "int32", typeof(Int32) }, // int32
             { "int64", typeof(Int64) }, // int64
             { "float32", typeof(float) }, // float32
+            { "float64", typeof(double) }, // float64
             { "boolean", typeof(bool) }, // boolean
             { "string", typeof(string) }, // string
             { "table", typeof(ArmpTable) } // Table
@@ -145,37 +146,41 @@ namespace LibARMP
 
 
 
-        public enum TypesV2Aux
+        /// <summary>
+        /// Types for version 2. (auxiliary table)
+        /// </summary>
+        public static IDictionary<sbyte, Type> TypesV2Aux = new Dictionary<sbyte, Type>
         {
-            Invalid = -1,
-            Uint8 = 4,
-            Uint16 = 3,
-            Uint32 = 2,
-            Uint64 = 1,
-            Int8 = 8,
-            Int16 = 7,
-            Int32 = 6,
-            Int64 = 5,
-            Float32 = 10,
-            Float64 = 9,
-            Boolean = 4,
-            String = 12,
-            Table = 13,
-            Uint8_Array = 14,
-            Uint16_Array = 15,
-            Uint32_Array = 16,
-            Uint64_Array = 17,
-            Int8_Array = 18,
-            Int16_Array = 19,
-            Int32_Array = 20,
-            Int64_Array = 21,
-            Float32_Array = 23,
-            Float64_Array = 24,
-            VF128 = 27,
-            Boolean_Array = 29,
-            String_Array = 25,
-            Table_Array = 26
-        }
-
+            { -1, null }, // Invalid
+            { 0, null }, // Invalid
+            { 4, typeof(byte) }, // uint8
+            { 3, typeof(UInt16) }, // uint16
+            { 2, typeof(UInt32) }, // uint32
+            { 1, typeof(UInt64) }, // uint64
+            { 8, typeof(sbyte) }, // int8
+            { 7, typeof(Int16) }, // int16
+            { 6, typeof(Int32) }, // int32
+            { 5, typeof(Int64) }, // int64
+            { 10, typeof(float) }, // float32
+            { 9, typeof(double) }, // float64
+            //Note: booleans are stored as uint8
+            //{ 4, typeof(bool) }, // boolean
+            { 12, typeof(string) }, // string
+            { 13, typeof(ArmpTable) }, // Table
+            { 14, typeof(byte) }, // uint8 array
+            { 15, typeof(UInt16) }, // uint16 array
+            { 16, typeof(UInt32) }, // uint32 array
+            { 17, typeof(UInt64) }, // uint64 array
+            { 18, typeof(sbyte) }, // int8 array
+            { 19, typeof(Int16) }, // int16 array
+            { 20, typeof(Int32) }, // int32 array
+            { 21, typeof(Int64) }, // int64 array
+            { 25, typeof(string) }, // string array
+            { 26, typeof(ArmpTable) }, // table array
+            { 23, typeof(float) }, // float32 array
+            { 24, typeof(double) }, // float64 array
+            { 27, typeof(float) }, // VF128 ?? TODO
+            { 29, typeof(bool) }, // bool array
+        };
     }
 }

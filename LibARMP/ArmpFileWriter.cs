@@ -20,12 +20,12 @@ namespace LibARMP
                 {
                     Endianness = EndiannessMode.LittleEndian,
                 };
-                if (armp.isOldEngine) writer.Endianness = EndiannessMode.BigEndian;
+                if (armp.IsOldEngine) writer.Endianness = EndiannessMode.BigEndian;
 
                 writer.Write("armp", false); //Magic
-                if (armp.isOldEngine) writer.Write(0x02010000); //Endianness identifier for OE
+                if (armp.IsOldEngine) writer.Write(0x02010000); //Endianness identifier for OE
                 else writer.WriteTimes(0x00, 0x4);
-                if (armp.isOldEngine) //Version and Revision are flipped on different endianess. Presumably both values are read together as an int32
+                if (armp.IsOldEngine) //Version and Revision are flipped on different endianess. Presumably both values are read together as an int32
                 {
                     writer.Write(armp.Version);
                     writer.Write(armp.Revision);
@@ -37,7 +37,7 @@ namespace LibARMP
                 }
                 writer.WriteTimes(0x00, 0x4); //File size (only used in OE, placeholder for now)
 
-                if (armp.isOldEngine)
+                if (armp.IsOldEngine)
                 {
                     //TODO
                 }
@@ -55,7 +55,6 @@ namespace LibARMP
                         writer.Write(ptr);
                     }
                 }
-
             }
         }
 
@@ -72,11 +71,17 @@ namespace LibARMP
             writer.Stream.PushToPosition(baseOffset);
             writer.Write(table.Entries.Count);
             writer.Write(table.ColumnNames.Count);
+
+            //Table ID and Storage Mode
+            writer.Stream.Position = baseOffset + 0x20;
+            writer.Write(table.TableInfo.TableID);
+            writer.Stream.Position = baseOffset + 0x23;
+            writer.Write(table.TableInfo.StorageMode);
             writer.Stream.PopPosition();
 
             int ptr = 0;
             //Row Validity
-            if (table.RowValidity != null)
+            if (table.TableInfo.HasRowValidity)
             {
                 List<bool> rowValidity = new List<bool>();
                 foreach (ArmpEntry entry in table.Entries)
@@ -93,7 +98,7 @@ namespace LibARMP
             }
 
             //Column Validity
-            if (table.ColumnValidity != null)
+            if (table.TableInfo.HasColumnValidity)
             {
                 ptr = (int)writer.Stream.Position;
                 Util.WriteBooleanBitmask(writer, table.ColumnValidity);
@@ -128,7 +133,7 @@ namespace LibARMP
             }
 
             //Text
-            if (table.Text != null && table.Text.Count > 0)
+            if (table.TableInfo.HasText)
             {
                 //Force an update of the table text.
 
@@ -296,6 +301,7 @@ namespace LibARMP
                     {
                         Util.WriteBooleanBitmask(writer, boolList);
                     }
+
                     else if (tableList.Count > 0) //Write tables
                     {
                         int i = 0;
@@ -324,11 +330,9 @@ namespace LibARMP
             writer.Stream.PopPosition();
 
 
-            //TODO write tables
-
 
             //Row Indices
-            if (table.RowIndices != null)
+            if (table.TableInfo.HasRowIndices)
             {
                 ptr = (int)writer.Stream.Position;
 
@@ -342,7 +346,7 @@ namespace LibARMP
             }
 
             //Column Indices
-            if (table.ColumnIndices != null)
+            if (table.TableInfo.HasColumnIndices)
             {
                 ptr = (int)writer.Stream.Position;
                 foreach (int index in table.ColumnIndices)
@@ -356,7 +360,7 @@ namespace LibARMP
 
 
             //Entry Flags (v1 only)
-            if (table.TableInfo.ptrFieldInfo > 0)
+            if (table.TableInfo.HasExtraFieldInfo)
             {
                 ptr = (int)writer.Stream.Position;
                 foreach(ArmpEntry entry in table.Entries)
