@@ -128,20 +128,20 @@ namespace LibARMP
             { 6, typeof(bool) }, // boolean
             { 13, typeof(string) }, // string
             { 9, typeof(ArmpTable) }, // Table
-            { 14, typeof(byte) }, // uint8 array
-            { 15, typeof(UInt16) }, // uint16 array
-            { 16, typeof(UInt32) }, // uint32 array
-            { 17, typeof(UInt64) }, // uint64 array
-            { 18, typeof(sbyte) }, // int8 array
-            { 19, typeof(Int16) }, // int16 array
-            { 20, typeof(Int32) }, // int32 array
-            { 21, typeof(Int64) }, // int64 array
-            { 22, typeof(string) }, // string array
-            { 23, typeof(ArmpTable) }, // table array
-            { 25, typeof(float) }, // float32 array
-            { 26, typeof(double) }, // float64 array
-            { 27, typeof(float) }, // VF128 ?? TODO
-            { 29, typeof(bool) }, // bool array
+            { 14, typeof(List<byte>) }, // uint8 array
+            { 15, typeof(List<UInt16>) }, // uint16 array
+            { 16, typeof(List<UInt32>) }, // uint32 array
+            { 17, typeof(List<UInt64>) }, // uint64 array
+            { 18, typeof(List<sbyte>) }, // int8 array
+            { 19, typeof(List<Int16>) }, // int16 array
+            { 20, typeof(List<Int32>) }, // int32 array
+            { 21, typeof(List<Int64>) }, // int64 array
+            { 22, typeof(List<string>) }, // string array
+            { 23, typeof(List<ArmpTable>) }, // table array
+            { 25, typeof(List<float>) }, // float32 array
+            { 26, typeof(List<double>) }, // float64 array
+            { 27, typeof(List<float>) }, // VF128 ?? TODO
+            { 29, typeof(List<bool>) }, // bool array
         };
 
 
@@ -181,6 +181,25 @@ namespace LibARMP
             { 24, typeof(double) }, // float64 array
             { 27, typeof(float) }, // VF128 ?? TODO
             { 29, typeof(bool) }, // bool array
+        };
+
+
+        public static List<Type> TypesV2Specials = new List<Type>
+        {
+            typeof(List<byte>), // uint8 array
+            typeof(List<UInt16>), // uint16 array
+            typeof(List<UInt32>), // uint32 array
+            typeof(List<UInt64>), // uint64 array
+            typeof(List<sbyte>), // int8 array
+            typeof(List<Int16>), // int16 array
+            typeof(List<Int32>), // int32 array
+            typeof(List<Int64>), // int64 array
+            typeof(List<string>), // string array
+            typeof(List<ArmpTable>), // table array
+            typeof(List<float>), // float32 array
+            typeof(List<double>), // float64 array
+            //typeof(List<float>), // VF128 ?? TODO
+            typeof(List<bool>), // bool array
         };
     }
 }

@@ -107,6 +107,12 @@ namespace LibARMP
                 }
             }
 
+            // Special Column list (arrays/lists). Only v2
+            if (version == 2)
+            {
+                table.SpecialColumns = GetSpecialColumnList(table.ColumnDataTypes);
+            }
+
             //Column Validity
             if (table.TableInfo.HasColumnValidity) table.ColumnValidity = Util.IterateBooleanBitmask(reader, table.TableInfo.ptrColumnValidity, table.TableInfo.ColumnCount);
             //Row Indices
@@ -634,6 +640,25 @@ namespace LibARMP
             return typesList;
         }
 
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="columnDataTypes"></param>
+        /// <returns></returns>
+        private static List<bool> GetSpecialColumnList(List<Type> columnDataTypes)
+        {
+            List<bool> returnList = new List<bool>();
+
+            foreach(Type columnType in columnDataTypes)
+            {
+                if (DataTypes.TypesV2Specials.Contains(columnType)) returnList.Add(true);
+                else returnList.Add(false);
+            }
+
+            return returnList;
+        }
 
     }
 }

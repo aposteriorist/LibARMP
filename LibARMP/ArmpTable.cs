@@ -68,6 +68,11 @@ namespace LibARMP
         public List<List<int>> ColumnDataTypesAuxTable { get; set; }
 
         /// <summary>
+        /// List of booleans indicating if the column with the same index is special (arrays/lists).
+        /// </summary>
+        public List<bool> SpecialColumns { get; set; }
+
+        /// <summary>
         /// List of entries.
         /// </summary>
         public List<ArmpEntry> Entries { get; set; }
@@ -116,9 +121,23 @@ namespace LibARMP
         /// <returns></returns>
         public Type GetColumnDataType(string column)
         {
+            //TODO update for v2
             if (!ColumnNames.Contains(column)) throw new ColumnNotFoundException("The column '" + column + "' does not exist in this table.");
             int columnIndex = ColumnNames.IndexOf(column);
             return ColumnDataTypesAux[columnIndex];
+        }
+
+
+        /// <summary>
+        /// Returns if the column is special (array/list). Only used in v2.
+        /// </summary>
+        /// <param name="column">The column name.</param>
+        /// <returns>A boolean</returns>
+        public bool IsColumnSpecial(string column)
+        {
+            if (!ColumnNames.Contains(column)) throw new ColumnNotFoundException("The column '" + column + "' does not exist in this table.");
+            int columnIndex = ColumnNames.IndexOf(column);
+            return SpecialColumns[columnIndex];
         }
 
 
@@ -232,7 +251,7 @@ namespace LibARMP
                 }
                 else
                 {
-                    //TODO
+                    //TODO update for v2
                     throw new Exception("Type mismatch. Expected '"+ ColumnDataTypesAux[columnIndex] + "' and got '"+value.GetType()+"'.");
                 }
             }
