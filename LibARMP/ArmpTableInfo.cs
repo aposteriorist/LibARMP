@@ -30,7 +30,8 @@ namespace LibARMP
             this.ptrEmptyValuesOffsetTable = 0;
             this.ptrColumnDataTypesAux = 0;
             this.ptrExtraFieldInfo = 0;
-            this.ptrFieldID = 0; //TODO verify
+            this.ptrFieldID = 0;
+            this.ptrColumnMetadata = 0;
 
             //Flags
             this.HasText = false;
@@ -64,22 +65,22 @@ namespace LibARMP
         public Int32 TextCount { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating the validity of rows.
+        /// Gets or sets a value indicating the validity of rows. (DRAGON ENGINE ONLY)
         /// </summary>
         public Int32 RowValidator { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating the validity of columns.
+        /// Gets or sets a value indicating the validity of columns. (DRAGON ENGINE ONLY)
         /// </summary>
         public Int32 ColumnValidator { get; set; }
 
         /// <summary>
-        /// Gets or sets the table ID (Int24).
+        /// Gets or sets the table ID (Int24). (DRAGON ENGINE ONLY)
         /// </summary>
         public Int32 TableID { get; set; }
 
         /// <summary>
-        /// Gets or sets the storage Mode (only used in version 2).
+        /// Gets or sets the storage Mode (only used in version 2). (DRAGON ENGINE ONLY)
         /// </summary>
         public byte StorageMode { get; set; }
 
@@ -91,73 +92,77 @@ namespace LibARMP
         /// <summary>
         /// Gets or sets the pointer to the String Offset Table.
         /// </summary>
-        public Int32 ptrRowNamesOffsetTable { get; set; }
+        public UInt32 ptrRowNamesOffsetTable { get; set; }
 
         /// <summary>
         /// Gets or sets the pointer to the Row Validity bitmask.
         /// </summary>
-        public Int32 ptrRowValidity { get; set; }
+        public UInt32 ptrRowValidity { get; set; }
 
         /// <summary>
         /// Gets or sets the pointer to the Column Data Types.
         /// </summary>
-        public Int32 ptrColumnDataTypes { get; set; }
+        public UInt32 ptrColumnDataTypes { get; set; }
 
         /// <summary>
         /// Gets or sets the pointer to the Column Content Offset Table.
         /// </summary>
-        public Int32 ptrColumnContentOffsetTable { get; set; }
+        public UInt32 ptrColumnContentOffsetTable { get; set; }
 
         /// <summary>
         /// Gets or sets the pointer to the Text Offset Table.
         /// </summary>
-        public Int32 ptrTextOffsetTable { get; set; }
+        public UInt32 ptrTextOffsetTable { get; set; }
 
         /// <summary>
         /// Gets or sets the pointer to the Column Names Offset Table.
         /// </summary>
-        public Int32 ptrColumnNamesOffsetTable { get; set; }
+        public UInt32 ptrColumnNamesOffsetTable { get; set; }
 
         /// <summary>
-        /// Gets or sets the pointer to the Row Indices int array.
+        /// Gets or sets the pointer to the Row Indices int array. (DRAGON ENGINE ONLY)
         /// </summary>
-        public Int32 ptrRowIndices { get; set; }
+        public UInt32 ptrRowIndices { get; set; }
 
         /// <summary>
-        /// Gets or sets the pointer to the Column Indices int array.
+        /// Gets or sets the pointer to the Column Indices int array. (DRAGON ENGINE ONLY)
         /// </summary>
-        public Int32 ptrColumnIndices { get; set; }
+        public UInt32 ptrColumnIndices { get; set; }
 
         /// <summary>
-        /// Gets or sets the pointer to the Column Validity bitmask.
+        /// Gets or sets the pointer to the Column Validity bitmask. (DRAGON ENGINE ONLY)
         /// </summary>
-        public Int32 ptrColumnValidity { get; set; }
+        public UInt32 ptrColumnValidity { get; set; }
 
         /// <summary>
-        /// Gets or sets the pointer to the SubTable.
+        /// Gets or sets the pointer to the SubTable. (DRAGON ENGINE ONLY)
         /// </summary>
-        public Int32 ptrSubTable { get; set; }
+        public UInt32 ptrSubTable { get; set; }
 
         /// <summary>
-        /// Gets or sets the pointer to the Empty Values Offset Table.
+        /// Gets or sets the pointer to the Empty Values Offset Table. (DRAGON ENGINE ONLY)
         /// </summary>
-        public Int32 ptrEmptyValuesOffsetTable { get; set; }
+        public UInt32 ptrEmptyValuesOffsetTable { get; set; }
 
         /// <summary>
-        /// Gets or sets the pointer to the Auxiliary Column Data Type Table.
+        /// Gets or sets the pointer to the Auxiliary Column Data Type Table. (DRAGON ENGINE ONLY)
         /// </summary>
-        public Int32 ptrColumnDataTypesAux { get; set; }
+        public UInt32 ptrColumnDataTypesAux { get; set; }
 
         /// <summary>
-        /// Gets or sets the pointer to the additional Field Info.
+        /// Gets or sets the pointer to the additional Field Info. (DRAGON ENGINE ONLY)
         /// </summary>
-        public Int32 ptrExtraFieldInfo { get; set; }
+        public UInt32 ptrExtraFieldInfo { get; set; }
 
         /// <summary>
-        /// Gets or sets the pointer to the Field ID list.
+        /// Gets or sets the pointer to the Field ID list. (DRAGON ENGINE ONLY)
         /// </summary>
-        public Int32 ptrFieldID { get; set; }
+        public UInt32 ptrFieldID { get; set; }
 
+        /// <summary>
+        /// Gets or sets the pointer to the Column Metadata. (OLD ENGINE ONLY)
+        /// </summary>
+        public UInt32 ptrColumnMetadata { get; set; }
 
 
 
@@ -169,7 +174,7 @@ namespace LibARMP
         public bool HasText { get; set; }
 
         /// <summary>
-        /// Gets or sets the boolean indicating if the table has a SubTable.
+        /// Gets or sets the boolean indicating if the table has a SubTable. (DRAGON ENGINE ONLY)
         /// </summary>
         public bool HasSubTable { get; set; }
 
@@ -184,33 +189,38 @@ namespace LibARMP
         public bool HasColumnNames { get; set; }
 
         /// <summary>
-        /// Gets or sets the boolean indicating if the table has an auxiliary column data types list.
+        /// Gets or sets the boolean indicating if the table has an auxiliary column data types list. (DRAGON ENGINE ONLY)
         /// </summary>
         public bool HasColumnDataTypesAux { get; set; }
 
         /// <summary>
-        /// Gets or sets the boolean indicating if the table has validity flags for rows.
+        /// Gets or sets the boolean indicating if the table has validity flags for rows. (DRAGON ENGINE ONLY)
         /// </summary>
         public bool HasRowValidity { get; set; }
 
         /// <summary>
-        /// Gets or sets the boolean indicating if the table has validity flags for columns.
+        /// Gets or sets the boolean indicating if the table has validity flags for columns. (DRAGON ENGINE ONLY)
         /// </summary>
         public bool HasColumnValidity { get; set; }
 
         /// <summary>
-        /// Gets or sets the boolean indicating if the table has row indices.
+        /// Gets or sets the boolean indicating if the table has row indices. (DRAGON ENGINE ONLY)
         /// </summary>
         public bool HasRowIndices { get; set; }
 
         /// <summary>
-        /// Gets or sets the boolean indicating if the table has column indices.
+        /// Gets or sets the boolean indicating if the table has column indices. (DRAGON ENGINE ONLY)
         /// </summary>
         public bool HasColumnIndices { get; set; }
 
         /// <summary>
-        /// Gets or sets the boolean indicating if the table has additional field info (varies between format versions).
+        /// Gets or sets the boolean indicating if the table has additional field info (varies between format versions). (DRAGON ENGINE ONLY)
         /// </summary>
         public bool HasExtraFieldInfo { get; set; }
+
+        /// <summary>
+        /// Gets or sets the boolean indicating if the table has column metadata. (OLD ENGINE ONLY)
+        /// </summary>
+        public bool HasColumnMetadata { get; set; }
     }
 }

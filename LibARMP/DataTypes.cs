@@ -201,5 +201,23 @@ namespace LibARMP
             //typeof(List<float>), // VF128 ?? TODO
             typeof(List<bool>), // bool array
         };
+
+
+        /// <summary>
+        /// Types for Old Engine.
+        /// </summary>
+        public static IDictionary<int, Type> TypesOE = new Dictionary<int, Type>
+        {
+            //TODO figure out type IDs
+            { -1, null }, // Invalid
+            { 2, typeof(sbyte) }, // int8
+            { 1, typeof(Int16) }, // int16
+            { 0, typeof(Int32) }, // int32
+            { 5, typeof(byte) }, // uint8
+            { 4, typeof(UInt16) }, // uint16
+            { 3, typeof(UInt32) }, // uint32
+            { 6, typeof(bool) }, // boolean
+            //{ 0, typeof(string) }, // string
+        };
     }
 }

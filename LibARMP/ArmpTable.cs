@@ -13,7 +13,7 @@ namespace LibARMP
         }
 
         /// <summary>
-        /// Entry names.
+        /// Pointers, flags and general information.
         /// </summary>
         public ArmpTableInfo TableInfo { get; set; }
 
@@ -98,7 +98,7 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Returns all entries in the table.
+        /// Returns a specific entry in the table.
         /// </summary>
         /// <returns>An ArmpEntry list.</returns>
         public ArmpEntry GetEntry (int id)
@@ -114,12 +114,36 @@ namespace LibARMP
         }
 
 
+
+        /// <summary>
+        /// Gets the column names.
+        /// </summary>
+        /// <param name="includeSpecials">Include special columns? (Array data types)</param>
+        /// <returns>A string list.</returns>
+        public List<string> GetColumnNames(bool includeSpecials)
+        {
+            List<string> returnList = new List<string>();
+            for (int i=0; i<ColumnNames.Count; i++)
+            {
+                if(SpecialColumns != null && SpecialColumns[i] == true)
+                {
+                    if (includeSpecials) returnList.Add(ColumnNames[i]);
+                }
+                else
+                {
+                    returnList.Add(ColumnNames[i]);
+                }
+            }
+            return returnList;
+        }
+
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="column"></param>
         /// <returns></returns>
-        public Type GetColumnDataType(string column)
+        public Type GetColumnDataType (string column)
         {
             //TODO update for v2
             if (!ColumnNames.Contains(column)) throw new ColumnNotFoundException("The column '" + column + "' does not exist in this table.");
@@ -133,7 +157,7 @@ namespace LibARMP
         /// </summary>
         /// <param name="column">The column name.</param>
         /// <returns>A boolean</returns>
-        public bool IsColumnSpecial(string column)
+        public bool IsColumnSpecial (string column)
         {
             if (!ColumnNames.Contains(column)) throw new ColumnNotFoundException("The column '" + column + "' does not exist in this table.");
             int columnIndex = ColumnNames.IndexOf(column);
@@ -196,27 +220,14 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Inserts an entry in a specific spot in the table. NOT IMPLEMENTED
+        /// Inserts an entry into the table at the specified index. NOT IMPLEMENTED
         /// </summary>
         /// <param name="entry">The entry to add.</param>
         /// <param name="id">Place in which the entry will be inserted.</param>
-        public void AddEntry (ArmpEntry entry, int id)
+        public void InsertEntry (ArmpEntry entry, int id)
         {
             //TODO
             throw new NotImplementedException();
-        }
-
-
-        /// <summary>
-        /// Returns a dummy entry for the specified table.
-        /// </summary>
-        public ArmpEntry GenerateTemplateArmpEntry()
-        {
-            //Entry 0 is always empty, dirty approach is to make a copy.
-            //FIXME This wont work for empty armps (not a realistic case but an issue regardless) and subtables may have weird results.
-            ArmpEntry entry0;
-            entry0 = GetEntry(0);
-            return Util.DeepCopy<ArmpEntry>(entry0);
         }
 
 
@@ -262,6 +273,19 @@ namespace LibARMP
 
             
 
+        }
+
+
+        /// <summary>
+        /// Returns a dummy entry for the specified table. TODO: THIS IS A PLACEHOLDER
+        /// </summary>
+        public ArmpEntry GenerateTemplateArmpEntry()
+        {
+            //Entry 0 is always empty, dirty approach is to make a copy.
+            //FIXME This wont work for empty armps (not a realistic case but an issue regardless) and subtables may have weird results.
+            ArmpEntry entry0;
+            entry0 = GetEntry(0);
+            return Util.DeepCopy<ArmpEntry>(entry0);
         }
     }
 }
