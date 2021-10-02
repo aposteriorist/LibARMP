@@ -208,6 +208,11 @@ namespace LibARMP
                 SetRowValidity(table.RowValidity, table.Entries);
             }
 
+            //Column Metadata
+            if (table.TableInfo.HasColumnMetadata)
+            {
+                table.ColumnMetadata = Util.IterateArray<uint>(reader, table.TableInfo.ptrColumnMetadata, table.TableInfo.ColumnCount);
+            }
 
             return table;
         }

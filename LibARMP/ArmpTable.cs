@@ -73,6 +73,11 @@ namespace LibARMP
         public List<bool> SpecialColumns { get; set; }
 
         /// <summary>
+        /// List of ints used as column metadata. (OLD ENGINE ONLY)
+        /// </summary>
+        public List<int> ColumnMetadata { get; set; }
+
+        /// <summary>
         /// List of entries.
         /// </summary>
         public List<ArmpEntry> Entries { get; set; }
@@ -160,8 +165,15 @@ namespace LibARMP
         public bool IsColumnSpecial (string column)
         {
             if (!ColumnNames.Contains(column)) throw new ColumnNotFoundException("The column '" + column + "' does not exist in this table.");
-            int columnIndex = ColumnNames.IndexOf(column);
-            return SpecialColumns[columnIndex];
+            if (SpecialColumns != null)
+            {
+                int columnIndex = ColumnNames.IndexOf(column);
+                return SpecialColumns[columnIndex];
+            }
+            else
+            {
+                return false;
+            }
         }
 
 
