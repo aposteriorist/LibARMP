@@ -211,7 +211,7 @@ namespace LibARMP
             //Column Metadata
             if (table.TableInfo.HasColumnMetadata)
             {
-                table.ColumnMetadata = Util.IterateArray<uint>(reader, table.TableInfo.ptrColumnMetadata, table.TableInfo.ColumnCount);
+                table.ColumnMetadata = Util.IterateArray<int>(reader, table.TableInfo.ptrColumnMetadata, table.TableInfo.ColumnCount);
             }
 
             return table;
