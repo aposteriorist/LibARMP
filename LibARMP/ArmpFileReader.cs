@@ -245,10 +245,10 @@ namespace LibARMP
 
                 //Set flags
                 if (armpTableInfo.TextCount > 0) armpTableInfo.HasText = true;
-                if (armpTableInfo.ptrRowNamesOffsetTable > 0) armpTableInfo.HasRowNames = true;
-                if (armpTableInfo.ptrColumnNamesOffsetTable > 0) armpTableInfo.HasColumnNames = true;
-                if (armpTableInfo.ptrRowValidity > 0) armpTableInfo.HasRowValidity = true;
-                if (armpTableInfo.ptrColumnMetadata > 0) armpTableInfo.HasColumnMetadata = true;
+                if (armpTableInfo.ptrRowNamesOffsetTable > 0 && armpTableInfo.ptrRowNamesOffsetTable < 0xFFFFFFFF) armpTableInfo.HasRowNames = true;
+                if (armpTableInfo.ptrColumnNamesOffsetTable > 0 && armpTableInfo.ptrColumnNamesOffsetTable < 0xFFFFFFFF) armpTableInfo.HasColumnNames = true;
+                if (armpTableInfo.ptrRowValidity > 0 && armpTableInfo.ptrRowValidity < 0xFFFFFFFF) armpTableInfo.HasRowValidity = true;
+                if (armpTableInfo.ptrColumnMetadata > 0 && armpTableInfo.ptrColumnMetadata < 0xFFFFFFFF) armpTableInfo.HasColumnMetadata = true;
 
                 //DEBUG
                 Console.WriteLine("Row Count: " + armpTableInfo.RowCount);
@@ -289,15 +289,15 @@ namespace LibARMP
 
                 //Set flags
                 if (armpTableInfo.TextCount > 0) armpTableInfo.HasText = true;
-                if (armpTableInfo.ptrSubTable > 0) armpTableInfo.HasSubTable = true;
-                if (armpTableInfo.ptrRowNamesOffsetTable > 0) armpTableInfo.HasRowNames = true;
-                if (armpTableInfo.ptrColumnNamesOffsetTable > 0) armpTableInfo.HasColumnNames = true;
-                if (armpTableInfo.ptrColumnDataTypesAux > 0) armpTableInfo.HasColumnDataTypesAux = true;
-                if (armpTableInfo.ptrRowValidity > 0) armpTableInfo.HasRowValidity = true;
-                if (armpTableInfo.ptrColumnValidity > 0) armpTableInfo.HasColumnValidity = true;
-                if (armpTableInfo.ptrRowIndices > 0) armpTableInfo.HasRowIndices = true;
-                if (armpTableInfo.ptrColumnIndices > 0) armpTableInfo.HasColumnIndices = true;
-                if (armpTableInfo.ptrExtraFieldInfo > 0) armpTableInfo.HasExtraFieldInfo = true;
+                if (armpTableInfo.ptrSubTable > 0 && armpTableInfo.ptrSubTable < 0xFFFFFFFF) armpTableInfo.HasSubTable = true;
+                if (armpTableInfo.ptrRowNamesOffsetTable > 0 && armpTableInfo.ptrRowNamesOffsetTable < 0xFFFFFFFF) armpTableInfo.HasRowNames = true;
+                if (armpTableInfo.ptrColumnNamesOffsetTable > 0 && armpTableInfo.ptrColumnNamesOffsetTable < 0xFFFFFFFF) armpTableInfo.HasColumnNames = true;
+                if (armpTableInfo.ptrColumnDataTypesAux > 0 && armpTableInfo.ptrColumnDataTypesAux < 0xFFFFFFFF) armpTableInfo.HasColumnDataTypesAux = true;
+                if (armpTableInfo.ptrRowValidity > 0 && armpTableInfo.ptrRowValidity < 0xFFFFFFFF) armpTableInfo.HasRowValidity = true;
+                if (armpTableInfo.ptrColumnValidity > 0 && armpTableInfo.ptrColumnValidity < 0xFFFFFFFF) armpTableInfo.HasColumnValidity = true;
+                if (armpTableInfo.ptrRowIndices > 0 && armpTableInfo.ptrRowIndices < 0xFFFFFFFF) armpTableInfo.HasRowIndices = true;
+                if (armpTableInfo.ptrColumnIndices > 0 && armpTableInfo.ptrColumnIndices < 0xFFFFFFFF) armpTableInfo.HasColumnIndices = true;
+                if (armpTableInfo.ptrExtraFieldInfo > 0 && armpTableInfo.ptrExtraFieldInfo < 0xFFFFFFFF) armpTableInfo.HasExtraFieldInfo = true;
 
 
                 //DEBUG
