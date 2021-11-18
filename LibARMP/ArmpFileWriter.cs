@@ -40,6 +40,7 @@ namespace LibARMP
                 if (armp.IsOldEngine)
                 {
                     //TODO
+                    WriteTableOE(writer, armp.MainTable);
                 }
                 else
                 {
@@ -59,9 +60,172 @@ namespace LibARMP
         }
 
 
+
         /// <summary>
-        /// 
+        /// Writes an OE table to the DataStream.
         /// </summary>
+        /// <param name="writer">The DataWriter.</param>
+        /// <param name="table">The ArmpTable to write.</param>
+        private static void WriteTableOE (DataWriter writer, ArmpTable table)
+        {
+            long baseOffset = writer.Stream.Position;
+            writer.WriteTimes(0x00, 0x40); //Placeholder table
+
+            writer.Stream.PushToPosition(baseOffset);
+            writer.Write(table.Entries.Count);
+            //TODO Ishin variant
+            writer.Stream.PopPosition();
+
+            int ptr = 0;
+            //Row Validity
+            if (table.TableInfo.HasRowValidity)
+            {
+                //TODO Ishin
+                List<bool> rowValidity = new List<bool>();
+                foreach (ArmpEntry entry in table.Entries)
+                {
+                    rowValidity.Add(entry.IsValid);
+                }
+                table.RowValidity = rowValidity;
+                ptr = (int)writer.Stream.Position;
+                Util.WriteBooleanBitmask(writer, table.RowValidity);
+                writer.WritePadding(0x00, 8);
+                writer.Stream.PushToPosition(baseOffset + 0xC);
+                writer.Write(ptr);
+                writer.Stream.PopPosition();
+            }
+
+            //Row Names
+            if (table.TableInfo.HasRowNames)
+            {
+                List<string> rowNames = new List<string>();
+                foreach (ArmpEntry entry in table.Entries)
+                {
+                    rowNames.Add(entry.Name);
+                }
+                table.RowNames = rowNames;
+                ptr = Util.WriteText(writer, table.RowNames);
+                writer.Stream.PushToPosition(baseOffset + 0x8);
+                writer.Write(ptr);
+                writer.Stream.PopPosition();
+            }
+
+            //Column Names and Count
+            if (table.TableInfo.HasColumnNames)
+            {
+                ptr = Util.WriteText(writer, table.ColumnNames);
+                writer.Stream.PushToPosition(baseOffset + 0x10);
+                writer.Write(table.ColumnNames.Count);
+                writer.Write(ptr);
+                writer.Stream.PopPosition();
+            }
+
+            //Column Types
+            ptr = (int)writer.Stream.Position;
+            foreach (Type type in table.ColumnDataTypes)
+            {
+                int typeID = -1;
+                if (type != null)
+                {
+                    typeID = DataTypes.TypesOEReverse[type];
+                }
+                writer.Write(typeID);
+            }
+            writer.Stream.PushToPosition(baseOffset + 0x18);
+            writer.Write(ptr);
+            writer.Stream.PopPosition();
+
+            //Column Metadata
+            if (table.TableInfo.HasColumnMetadata)
+            {
+                ptr = (int)writer.Stream.Position;
+                foreach (int meta in table.ColumnMetadata)
+                {
+                    writer.Write(meta);
+                }
+                writer.Stream.PushToPosition(baseOffset + 0x24);
+                writer.Write(ptr);
+                writer.Stream.PopPosition();
+            }
+
+            //Column Contents
+            List<int> columnValueOffsets = new List<int>();
+            foreach (string column in table.ColumnNames)
+            {
+                int columnIndex = table.ColumnNames.IndexOf(column);
+                if (table.ColumnValidity != null && table.ColumnValidity[columnIndex] != true)
+                {
+                    columnValueOffsets.Add(0);
+                }
+                else
+                {
+                    columnValueOffsets.Add((int)writer.Stream.Position);
+                    List<bool> boolList = new List<bool>(); //Init list in case it is a boolean column
+                    foreach (ArmpEntry entry in table.Entries)
+                    {
+                        if (table.ColumnDataTypes[columnIndex] == DataTypes.Types["boolean"])
+                        {
+                            boolList.Add((bool)entry.GetValueFromColumn(column));
+                        }
+
+                        else if (table.ColumnDataTypes[columnIndex] == DataTypes.Types["uint8"])
+                        {
+                            writer.Write((byte)entry.GetValueFromColumn(column));
+                        }
+
+                        else if (table.ColumnDataTypes[columnIndex] == DataTypes.Types["int8"])
+                        {
+                            writer.Write((sbyte)entry.GetValueFromColumn(column));
+                        }
+
+                        else if (table.ColumnDataTypes[columnIndex] == DataTypes.Types["uint16"])
+                        {
+                            writer.Write((UInt16)entry.GetValueFromColumn(column));
+                        }
+
+                        else if (table.ColumnDataTypes[columnIndex] == DataTypes.Types["int16"])
+                        {
+                            writer.Write((Int16)entry.GetValueFromColumn(column));
+                        }
+
+                        else if (table.ColumnDataTypes[columnIndex] == DataTypes.Types["uint32"])
+                        {
+                            writer.Write((UInt32)entry.GetValueFromColumn(column));
+                        }
+
+                        else if (table.ColumnDataTypes[columnIndex] == DataTypes.Types["int32"])
+                        {
+                            writer.Write((Int32)entry.GetValueFromColumn(column));
+                        }
+
+                    }
+
+                    if (boolList.Count > 0) //Write booleans
+                    {
+                        Util.WriteBooleanBitmask(writer, boolList);
+                    }
+                }
+            }
+
+            writer.WritePadding(0x00, 4);
+            int ptrColumnOffsetTable = (int)writer.Stream.Position;
+            foreach (int offset in columnValueOffsets)
+            {
+                writer.Write(offset);
+            }
+
+            writer.Stream.PushToPosition(baseOffset + 0x1C);
+            writer.Write(ptrColumnOffsetTable);
+            writer.Stream.PopPosition();
+        }
+
+
+
+        /// <summary>
+        /// Writes a DE table to the DataStream.
+        /// </summary>
+        /// <param name="writer">The DataWriter.</param>
+        /// <param name="table">The ArmpTable to write.</param>
         private static void WriteTable (DataWriter writer, ArmpTable table)
         {
             long baseOffset = writer.Stream.Position;

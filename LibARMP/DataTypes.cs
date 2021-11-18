@@ -219,5 +219,21 @@ namespace LibARMP
             { 6, typeof(bool) }, // boolean
             //{ 0, typeof(string) }, // string
         };
+
+
+        /// <summary>
+        /// Types for Old Engine. Reverse table for writes.
+        /// </summary>
+        public static IDictionary<Type, int> TypesOEReverse = new Dictionary<Type, int>
+        {
+            //{ null, -1 }, // Invalid
+            { typeof(sbyte), 2 }, // int8
+            { typeof(Int16), 1 }, // int16
+            { typeof(Int32), 0 }, // int32
+            { typeof(byte), 5 }, // uint8
+            { typeof(UInt16), 4 }, // uint16
+            { typeof(UInt32), 3 }, // uint32
+            { typeof(bool), 6 }, // boolean
+        };
     }
 }
