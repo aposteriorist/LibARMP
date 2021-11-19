@@ -44,6 +44,11 @@ namespace LibARMP
             this.HasRowIndices = false;
             this.HasColumnIndices = false;
             this.HasExtraFieldInfo = false;
+
+            //Extra data
+            this.IsOldEngine = false;
+            this.IsIshin = false;
+            this.IsDragonEngineV2 = false;
         }
 
 
@@ -222,5 +227,24 @@ namespace LibARMP
         /// Gets or sets the boolean indicating if the table has column metadata. (OLD ENGINE ONLY)
         /// </summary>
         public bool HasColumnMetadata { get; set; }
+
+
+
+        //Extra Data
+
+        /// <summary>
+        /// Gets or sets the boolean indicating if the table uses the Old Engine (0-K1-FOTNS) version.
+        /// </summary>
+        public bool IsOldEngine { get; set; }
+
+        /// <summary>
+        /// Gets or sets the boolean indicating if the table uses the Old Engine (Ishin) version.
+        /// </summary>
+        public bool IsIshin { get; set; }
+
+        /// <summary>
+        /// Gets or sets the boolean indicating if the table uses the Dragon Engine version 2.
+        /// </summary>
+        public bool IsDragonEngineV2 { get; set; }
     }
 }

@@ -144,16 +144,17 @@ namespace LibARMP
 
 
         /// <summary>
-        /// 
+        /// Gets the column's data type.
         /// </summary>
         /// <param name="column"></param>
-        /// <returns></returns>
+        /// <returns>The column Type.</returns>
         public Type GetColumnDataType (string column)
         {
-            //TODO update for v2
+            List<Type> dataTypes = ColumnDataTypesAux; //Default for DE v1
+            if (TableInfo.IsOldEngine || TableInfo.IsIshin || TableInfo.IsDragonEngineV2) dataTypes = ColumnDataTypes;
             if (!ColumnNames.Contains(column)) throw new ColumnNotFoundException("The column '" + column + "' does not exist in this table.");
             int columnIndex = ColumnNames.IndexOf(column);
-            return ColumnDataTypesAux[columnIndex];
+            return dataTypes[columnIndex];
         }
 
 
@@ -264,18 +265,19 @@ namespace LibARMP
         public void SetValue (int id, string column, object value)
         {
             int columnIndex = ColumnNames.IndexOf(column);
+            List<Type> dataTypes = ColumnDataTypesAux; //Default for DE v1
+            if (TableInfo.IsOldEngine || TableInfo.IsIshin || TableInfo.IsDragonEngineV2) dataTypes = ColumnDataTypes;
 
             if (columnIndex != -1)
             {
-                if (value.GetType() == ColumnDataTypesAux[columnIndex])
+                if (value.GetType() == dataTypes[columnIndex])
                 {
                     ArmpEntry entry = GetEntry(id);
                     entry.SetValueFromColumn(column, value);
                 }
                 else
                 {
-                    //TODO update for v2
-                    throw new Exception("Type mismatch. Expected '"+ ColumnDataTypesAux[columnIndex] + "' and got '"+value.GetType()+"'.");
+                    throw new Exception("Type mismatch. Expected '"+ dataTypes[columnIndex] + "' and got '"+value.GetType()+"'.");
                 }
             }
             else

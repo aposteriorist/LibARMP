@@ -77,6 +77,7 @@ namespace LibARMP
 
             reader.Stream.Seek(ptrMainTable);
             table.TableInfo = GetARMPTableInfo(reader, false);
+            if (version == 2) table.TableInfo.IsDragonEngineV2 = true;
 
             //Read general data
             //Row names
@@ -204,6 +205,7 @@ namespace LibARMP
             //Row Validity
             if (table.TableInfo.HasRowValidity)
             {
+                //TODO Ishin
                 table.RowValidity = Util.IterateBooleanBitmask(reader, table.TableInfo.ptrRowValidity, table.TableInfo.RowCount);
                 SetRowValidity(table.RowValidity, table.Entries);
             }
@@ -227,13 +229,24 @@ namespace LibARMP
         {
             ArmpTableInfo armpTableInfo = new ArmpTableInfo();
 
+            //Old Engine
             if (IsOldEngine)
             {
-                //TODO check for Ishin version
                 armpTableInfo.RowCount = reader.ReadInt32();
-                reader.ReadBytes(0x4);
+                //Ishin check
+                uint check = reader.ReadUInt32();
+                if (check > 0)
+                {
+                    armpTableInfo.IsIshin = true;
+                    armpTableInfo.ptrRowValidity = check;
+                }
+                else
+                {
+                    armpTableInfo.IsOldEngine = true;
+                }
                 armpTableInfo.ptrRowNamesOffsetTable = reader.ReadUInt32();
-                armpTableInfo.ptrRowValidity = reader.ReadUInt32();
+                if (armpTableInfo.IsOldEngine) armpTableInfo.ptrRowValidity = reader.ReadUInt32();
+                else reader.ReadBytes(0x4);
                 armpTableInfo.ColumnCount = reader.ReadInt32();
                 armpTableInfo.ptrColumnNamesOffsetTable = reader.ReadUInt32();
                 armpTableInfo.ptrColumnDataTypes = reader.ReadUInt32();
@@ -262,6 +275,8 @@ namespace LibARMP
                 Console.WriteLine("Pointer to Column Names Offset Table: " + armpTableInfo.ptrColumnNamesOffsetTable);
                 Console.WriteLine("Pointer to Column Metadata: " + armpTableInfo.ptrColumnMetadata);
             }
+
+            //Dragon Engine
             else
             {
                 armpTableInfo.RowCount = reader.ReadInt32();
