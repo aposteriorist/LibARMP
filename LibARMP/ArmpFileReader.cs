@@ -18,6 +18,7 @@ namespace LibARMP
                 var reader = new DataReader(stream)
                 {
                     Endianness = EndiannessMode.LittleEndian,
+                    DefaultEncoding = System.Text.Encoding.UTF8,
                 };
 
                 ARMP armp = new ARMP();
@@ -29,6 +30,7 @@ namespace LibARMP
                 if (endianess == 258)
                 {
                     reader.Endianness = EndiannessMode.BigEndian;
+                    reader.DefaultEncoding = System.Text.Encoding.GetEncoding(932);
                     armp.IsOldEngine = true;
                 }
 
@@ -186,6 +188,15 @@ namespace LibARMP
             if (table.TableInfo.HasRowNames)
             {
                 table.RowNames = Util.IterateStringList(reader, Util.IterateOffsetList(reader, table.TableInfo.ptrRowNamesOffsetTable, table.TableInfo.RowCount));
+            }
+            else
+            {
+                //Fill with blanks
+                table.RowNames = new List<string>();
+                for (int r = 0; r < table.TableInfo.RowCount; r++)
+                {
+                    table.RowNames.Add("");
+                }
             }
 
             //Column names

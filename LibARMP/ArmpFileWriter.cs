@@ -19,8 +19,13 @@ namespace LibARMP
                 var writer = new DataWriter(stream)
                 {
                     Endianness = EndiannessMode.LittleEndian,
+                    DefaultEncoding = System.Text.Encoding.UTF8,
                 };
-                if (armp.IsOldEngine) writer.Endianness = EndiannessMode.BigEndian;
+                if (armp.IsOldEngine)
+                {
+                    writer.Endianness = EndiannessMode.BigEndian;
+                    writer.DefaultEncoding = System.Text.Encoding.GetEncoding(932);
+                }
 
                 writer.Write("armp", false); //Magic
                 if (armp.IsOldEngine) writer.Write(0x02010000); //Endianness identifier for OE
