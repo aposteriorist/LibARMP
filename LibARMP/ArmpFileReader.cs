@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using System.Collections.Generic;
 using Yarhl.IO;
 
@@ -205,7 +206,22 @@ namespace LibARMP
                 table.ColumnNames = Util.IterateStringList(reader, Util.IterateOffsetList(reader, table.TableInfo.ptrColumnNamesOffsetTable, table.TableInfo.ColumnCount));
             }
 
-            if (table.TableInfo.HasText) table.Text = Util.IterateStringList(reader, Util.IterateOffsetList(reader, table.TableInfo.ptrTextOffsetTable, table.TableInfo.TextCount));
+            if (table.TableInfo.HasText)
+            {
+                List<uint> offsetList = Util.IterateOffsetList(reader, table.TableInfo.ptrTextOffsetTable, table.TableInfo.TextCount);
+                //Change encoding to utf8 to read the strings and convert to sjis later. Reading directly as sjis results in broken text (????)
+                Encoding utf8 = Encoding.UTF8;
+                Encoding sjis = Encoding.GetEncoding(932);
+                reader.DefaultEncoding = utf8;
+                table.Text = Util.IterateStringList(reader, offsetList);
+                reader.DefaultEncoding = sjis;
+                for (int i=0; i<table.Text.Count; i++)
+                {
+                    byte[] utfBytes = utf8.GetBytes(table.Text[i]);
+                    byte[] sjisBytes = Encoding.Convert(utf8, sjis, utfBytes);
+                    table.Text[i] = sjis.GetString(sjisBytes);
+                }
+            }
 
             //Column Data Types
             table.ColumnDataTypes = GetColumnDataTypes(reader, table.TableInfo.ptrColumnDataTypes, table.TableInfo.ColumnCount);

@@ -222,7 +222,9 @@ namespace LibARMP
         {
             if (!ColumnNames.Contains(column)) throw new ColumnNotFoundException("The column '"+column+"' does not exist in this table.");
             int columnIndex = ColumnNames.IndexOf(column);
-            value = Convert.ChangeType(value, ColumnDataTypesAux[columnIndex]);
+            List<Type> dataTypes = ColumnDataTypesAux; //Default for DE v1
+            if (TableInfo.IsOldEngine || TableInfo.IsIshin || TableInfo.IsDragonEngineV2) dataTypes = ColumnDataTypes;
+            value = Convert.ChangeType(value, dataTypes[columnIndex]);
 
             List<ArmpEntry> returnList = new List<ArmpEntry>();
             foreach (ArmpEntry entry in Entries)
