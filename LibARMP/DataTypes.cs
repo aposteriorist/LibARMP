@@ -217,7 +217,7 @@ namespace LibARMP
             { 4, typeof(UInt16) }, // uint16
             { 3, typeof(UInt32) }, // uint32
             { 6, typeof(bool) }, // boolean
-            //{ 0, typeof(string) }, // string
+            //{ 8, typeof(??) }, // ??
         };
 
 
@@ -234,6 +234,8 @@ namespace LibARMP
             { typeof(UInt16), 4 }, // uint16
             { typeof(UInt32), 3 }, // uint32
             { typeof(bool), 6 }, // boolean
+            { typeof(string), 1 }, // string (indices as int16)
+            //{ typeof(??), 8 }, // ??
         };
     }
 }

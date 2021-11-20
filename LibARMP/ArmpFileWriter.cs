@@ -153,6 +153,43 @@ namespace LibARMP
                 writer.Stream.PopPosition();
             }
 
+            //Text
+            if (table.TableInfo.HasText)
+            {
+                //Force an update of the text table.
+
+                //Get the columns of type string 
+                List<string> stringTypeColumns = new List<string>();
+                foreach (string column in table.ColumnNames)
+                {
+                    int columnIndex = table.ColumnNames.IndexOf(column);
+                    if (table.ColumnDataTypes[columnIndex] == DataTypes.Types["string"])
+                    {
+                        stringTypeColumns.Add(column);
+                    }
+                }
+
+                List<string> textList = new List<string>();
+                foreach (ArmpEntry entry in table.Entries)
+                {
+                    foreach (string column in stringTypeColumns)
+                    {
+                        string str = (string)entry.GetValueFromColumn(column);
+                        if (!textList.Contains(str) && str != null) textList.Add(str);
+                    }
+                }
+                table.Text = textList;
+
+                ptr = Util.WriteText(writer, table.Text);
+                writer.Stream.PushToPosition(baseOffset + 0x28);
+                writer.Write(ptr);
+                writer.Stream.PopPosition();
+                //Text count
+                writer.Stream.PushToPosition(baseOffset + 0x2C);
+                writer.Write(table.Text.Count);
+                writer.Stream.PopPosition();
+            }
+
             //Column Contents
             List<int> columnValueOffsets = new List<int>();
             foreach (string column in table.ColumnNames)
@@ -168,7 +205,20 @@ namespace LibARMP
                     List<bool> boolList = new List<bool>(); //Init list in case it is a boolean column
                     foreach (ArmpEntry entry in table.Entries)
                     {
-                        if (table.ColumnDataTypes[columnIndex] == DataTypes.Types["boolean"])
+                        if (table.ColumnDataTypes[columnIndex] == DataTypes.Types["string"])
+                        {
+                            if (entry.GetValueFromColumn(column) != null)
+                            {
+                                int index = table.Text.IndexOf((string)entry.GetValueFromColumn(column));
+                                writer.WriteOfType<Int16>((Int16)index);
+                            }
+                            else
+                            {
+                                writer.WriteOfType<Int16>(-1);
+                            }
+                        }
+
+                        else if (table.ColumnDataTypes[columnIndex] == DataTypes.Types["boolean"])
                         {
                             boolList.Add((bool)entry.GetValueFromColumn(column));
                         }

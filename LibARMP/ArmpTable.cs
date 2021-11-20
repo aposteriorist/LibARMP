@@ -119,7 +119,6 @@ namespace LibARMP
         }
 
 
-
         /// <summary>
         /// Gets the column names.
         /// </summary>
@@ -135,6 +134,25 @@ namespace LibARMP
                     if (includeSpecials) returnList.Add(ColumnNames[i]);
                 }
                 else
+                {
+                    returnList.Add(ColumnNames[i]);
+                }
+            }
+            return returnList;
+        }
+
+
+        /// <summary>
+        /// Gets the columns of the selected type.
+        /// </summary>
+        /// <typeparam name="T">Type</typeparam>
+        /// <returns>A string list.</returns>
+        public List<string> GetColumnNamesByType<T> ()
+        {
+            List<string> returnList = new List<string>();
+            for (int i = 0; i < ColumnNames.Count; i++)
+            {
+                if (GetColumnDataType(ColumnNames[i]) == typeof(T))
                 {
                     returnList.Add(ColumnNames[i]);
                 }
@@ -287,6 +305,30 @@ namespace LibARMP
 
             
 
+        }
+
+
+        /// <summary>
+        /// Sets the selected column as string type. (This is only needed for Old Engine files with text).
+        /// </summary>
+        /// <param name="column">The column name.</param>
+        public void SetTextColumnOE (string column)
+        {
+            int columnIndex = ColumnNames.IndexOf(column);
+            if (columnIndex != -1)
+            {
+                ColumnDataTypes[columnIndex] = typeof(string);
+                foreach (ArmpEntry entry in Entries)
+                {
+                    Int16 textIndex = (Int16)entry.Data[column];
+                    if (textIndex != -1) entry.Data[column] = Text[textIndex];
+                    else entry.Data[column] = null;
+                }
+            }
+            else
+            {
+                throw new ColumnNotFoundException("The column '" + column + "' does not exist.");
+            }
         }
 
 
