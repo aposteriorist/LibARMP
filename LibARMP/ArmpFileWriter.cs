@@ -55,6 +55,7 @@ namespace LibARMP
                     WriteTable(writer, armp.MainTable);
                     if (armp.SubTable != null)
                     {
+                        writer.WritePadding(0x00, 0x10);
                         int ptr = (int)writer.Stream.Position;
                         WriteTable(writer, armp.SubTable);
                         writer.Stream.PushToPosition(mainTableBaseOffset + 0x3C);
@@ -315,6 +316,17 @@ namespace LibARMP
                 writer.Write(ptr);
                 writer.Stream.PopPosition();
             }
+            else
+            {
+                writer.Stream.PushToPosition(baseOffset + 0x14);
+                writer.Write(-1);
+                writer.Stream.PopPosition();
+            }
+
+            //Row Validator
+            writer.Stream.PushToPosition(baseOffset + 0xC);
+            writer.Write(table.TableInfo.RowValidator);
+            writer.Stream.PopPosition();
 
             //Column Validity
             if (table.TableInfo.HasColumnValidity)
@@ -326,6 +338,17 @@ namespace LibARMP
                 writer.Write(ptr);
                 writer.Stream.PopPosition();
             }
+            else
+            {
+                writer.Stream.PushToPosition(baseOffset + 0x38);
+                writer.Write(-1);
+                writer.Stream.PopPosition();
+            }
+
+            //Column Validator
+            writer.Stream.PushToPosition(baseOffset + 0x2C);
+            writer.Write(table.TableInfo.ColumnValidator);
+            writer.Stream.PopPosition();
 
             //Row Names
             if (table.TableInfo.HasRowNames)
