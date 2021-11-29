@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 namespace LibARMP
 {
+    [Serializable]
     public class ArmpTable
     {
         public ArmpTable()

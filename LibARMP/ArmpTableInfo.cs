@@ -2,6 +2,7 @@
 
 namespace LibARMP
 {
+    [Serializable]
     public class ArmpTableInfo
     {
 
