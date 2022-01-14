@@ -31,7 +31,6 @@ namespace LibARMP
             this.ptrEmptyValuesOffsetTable = 0;
             this.ptrColumnDataTypesAux = 0;
             this.ptrExtraFieldInfo = 0;
-            this.ptrFieldID = 0;
             this.ptrColumnMetadata = 0;
 
             //Flags
@@ -161,12 +160,7 @@ namespace LibARMP
         public UInt32 ptrExtraFieldInfo { get; set; }
 
         /// <summary>
-        /// Gets or sets the pointer to the Field ID list. (DRAGON ENGINE ONLY)
-        /// </summary>
-        public UInt32 ptrFieldID { get; set; }
-
-        /// <summary>
-        /// Gets or sets the pointer to the Column Metadata. (OLD ENGINE ONLY)
+        /// Gets or sets the pointer to the Column Metadata.
         /// </summary>
         public UInt32 ptrColumnMetadata { get; set; }
 
@@ -225,7 +219,7 @@ namespace LibARMP
         public bool HasExtraFieldInfo { get; set; }
 
         /// <summary>
-        /// Gets or sets the boolean indicating if the table has column metadata. (OLD ENGINE ONLY)
+        /// Gets or sets the boolean indicating if the table has column metadata.
         /// </summary>
         public bool HasColumnMetadata { get; set; }
 

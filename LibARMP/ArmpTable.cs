@@ -74,7 +74,7 @@ namespace LibARMP
         public List<bool> SpecialColumns { get; set; }
 
         /// <summary>
-        /// List of ints used as column metadata. (OLD ENGINE ONLY)
+        /// List of ints used as column metadata.
         /// </summary>
         public List<int> ColumnMetadata { get; set; }
 
@@ -250,6 +250,7 @@ namespace LibARMP
             entry.ID = id;
             entry.Index = id;
             Entries.Add(entry);
+            //TODO create additional entry related data
         }
 
 
@@ -268,12 +269,23 @@ namespace LibARMP
         /// <summary>
         /// Copy a specified entry.
         /// </summary>
-        /// <param name="id">The entry to copy</param>
+        /// <param name="id">The entry to copy.</param>
         public ArmpEntry CopyEntry (int id)
         {
             ArmpEntry entry;
             entry = GetEntry(id);
             return Util.DeepCopy<ArmpEntry>(entry);
+        }
+
+
+        /// <summary>
+        /// Deletes the specified entry and updates the ids for any entries after it.
+        /// </summary>
+        /// <param name="id">The entry to delete.</param>
+        public void DeleteEntry (int id)
+        {
+            //TODO
+            throw new NotImplementedException();
         }
 
 
@@ -305,9 +317,6 @@ namespace LibARMP
             {
                 throw new ColumnNotFoundException("The column '" + column + "' does not exist.");
             }
-
-            
-
         }
 
 

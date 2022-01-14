@@ -600,6 +600,18 @@ namespace LibARMP
                 writer.Stream.PopPosition();
             }
 
+            //Column Metadata
+            if (table.TableInfo.HasColumnMetadata)
+            {
+                ptr = (int)writer.Stream.Position;
+                foreach (int metadata in table.ColumnMetadata)
+                {
+                    writer.Write(metadata);
+                }
+                writer.Stream.PushToPosition(baseOffset + 0x40);
+                writer.Write(ptr);
+                writer.Stream.PopPosition();
+            }
 
             //Entry Flags (v1 only)
             if (table.TableInfo.HasExtraFieldInfo)

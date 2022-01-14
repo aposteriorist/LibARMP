@@ -143,6 +143,8 @@ namespace LibARMP
             if (table.TableInfo.HasRowIndices) table.RowIndices = Util.IterateArray<int>(reader, table.TableInfo.ptrRowIndices, table.TableInfo.RowCount);
             //Column Indices
             if (table.TableInfo.HasColumnIndices) table.ColumnIndices = Util.IterateArray<int>(reader, table.TableInfo.ptrColumnIndices, table.TableInfo.ColumnCount);
+            //Column Metadata
+            if (table.TableInfo.HasColumnMetadata) table.ColumnMetadata = Util.IterateArray<int>(reader, table.TableInfo.ptrColumnMetadata, table.TableInfo.ColumnCount);
 
             InitializeEntries(table);
             ReadEntryData(reader, table.TableInfo.ptrColumnContentOffsetTable, table.TableInfo.StorageMode, version, table);
@@ -323,7 +325,7 @@ namespace LibARMP
                 armpTableInfo.ptrColumnIndices = reader.ReadUInt32();
                 armpTableInfo.ptrColumnValidity = reader.ReadUInt32();
                 armpTableInfo.ptrSubTable = reader.ReadUInt32();
-                armpTableInfo.ptrFieldID = reader.ReadUInt32(); //TODO verify (this seems to go unused)
+                armpTableInfo.ptrColumnMetadata = reader.ReadUInt32(); //This seems to be used as a band aid fix for when a column name has or starts with special characters. (minigame_karaoke_music_data -> ?karaoke_music_kind)
                 armpTableInfo.ptrEmptyValuesOffsetTable = reader.ReadUInt32();
                 armpTableInfo.ptrColumnDataTypesAux = reader.ReadUInt32();
                 armpTableInfo.ptrExtraFieldInfo = reader.ReadUInt32();
@@ -339,6 +341,7 @@ namespace LibARMP
                 if (armpTableInfo.ptrColumnValidity > 0 && armpTableInfo.ptrColumnValidity < 0xFFFFFFFF) armpTableInfo.HasColumnValidity = true;
                 if (armpTableInfo.ptrRowIndices > 0 && armpTableInfo.ptrRowIndices < 0xFFFFFFFF) armpTableInfo.HasRowIndices = true;
                 if (armpTableInfo.ptrColumnIndices > 0 && armpTableInfo.ptrColumnIndices < 0xFFFFFFFF) armpTableInfo.HasColumnIndices = true;
+                if (armpTableInfo.ptrColumnMetadata > 0 && armpTableInfo.ptrColumnMetadata < 0xFFFFFFFF) armpTableInfo.HasColumnMetadata = true;
                 if (armpTableInfo.ptrExtraFieldInfo > 0 && armpTableInfo.ptrExtraFieldInfo < 0xFFFFFFFF) armpTableInfo.HasExtraFieldInfo = true;
 
 
@@ -360,7 +363,7 @@ namespace LibARMP
                 Console.WriteLine("Pointer to Column Indices: " + armpTableInfo.ptrColumnIndices);
                 Console.WriteLine("Pointer to Column Validity: " + armpTableInfo.ptrColumnValidity);
                 Console.WriteLine("Pointer to SubTable: " + armpTableInfo.ptrSubTable);
-                Console.WriteLine("Pointer to Field IDs: " + armpTableInfo.ptrFieldID);
+                Console.WriteLine("Pointer to Column Metadata: " + armpTableInfo.ptrColumnMetadata);
                 Console.WriteLine("Pointer to Empty Values Offset Table: " + armpTableInfo.ptrEmptyValuesOffsetTable);
                 Console.WriteLine("Pointer to Column Data Types Aux: " + armpTableInfo.ptrColumnDataTypesAux);
                 Console.WriteLine("Pointer to Field Info: " + armpTableInfo.ptrExtraFieldInfo);
