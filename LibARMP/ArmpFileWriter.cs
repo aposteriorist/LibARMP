@@ -68,6 +68,19 @@ namespace LibARMP
 
 
         /// <summary>
+        /// Writes a value of type T to the DataStream.
+        /// </summary>
+        /// <typeparam name="T">The type to read.</typeparam>
+        /// <param name="writer">The DataWriter.</param>
+        /// <param name="value">The value of type T to write.</param>
+        private static void WriteType<T> (DataWriter writer, object value)
+        {
+            writer.WriteOfType<T>((T)value);
+        }
+
+
+
+        /// <summary>
         /// Writes an OE table to the DataStream.
         /// </summary>
         /// <param name="writer">The DataWriter.</param>
@@ -450,7 +463,12 @@ namespace LibARMP
             foreach (string column in table.ColumnNames)
             {
                 int columnIndex = table.ColumnNames.IndexOf(column);
-                if (table.ColumnValidity != null && table.ColumnValidity[columnIndex] != true)
+                if (table.NoDataColumns.Contains(columnIndex))
+                {
+                    Console.WriteLine("NO DATA!!!");
+                    columnValueOffsets.Add(-1);
+                }
+                else if (table.ColumnValidity != null && table.ColumnValidity[columnIndex] != true)
                 {
                     columnValueOffsets.Add(0);
                 }
@@ -458,7 +476,7 @@ namespace LibARMP
                 {
                     columnValueOffsets.Add((int)writer.Stream.Position);
                     List<bool> boolList = new List<bool>(); //Init list in case it is a boolean column
-                    List<ArmpTable> tableList = new List<ArmpTable>(); //Init list in case it is a table column
+                    List<ARMP> tableList = new List<ARMP>(); //Init list in case it is a table column
                     List<int> tableOffsetList = new List<int>(); //Init list in case it is a table column
                     foreach (ArmpEntry entry in table.Entries)
                     {
@@ -484,7 +502,7 @@ namespace LibARMP
                         {
                             try
                             {
-                                tableList.Add((ArmpTable)entry.GetValueFromColumn(column));
+                                tableList.Add((ARMP)entry.GetValueFromColumn(column));
                                 tableOffsetList.Add((int)writer.Stream.Position);
                                 writer.WriteTimes(0x00, 0x8);
                             } catch(ColumnNotFoundException e)
@@ -493,49 +511,11 @@ namespace LibARMP
                             }
                         }
 
-                        else if (table.ColumnDataTypesAux[columnIndex] == DataTypes.Types["uint8"])
+                        else
                         {
-                            writer.Write((byte)entry.GetValueFromColumn(column));
-                        }
-
-                        else if (table.ColumnDataTypesAux[columnIndex] == DataTypes.Types["int8"])
-                        {
-                            writer.Write((sbyte)entry.GetValueFromColumn(column));
-                        }
-
-                        else if (table.ColumnDataTypesAux[columnIndex] == DataTypes.Types["uint16"])
-                        {
-                            writer.Write((UInt16)entry.GetValueFromColumn(column));
-                        }
-
-                        else if (table.ColumnDataTypesAux[columnIndex] == DataTypes.Types["int16"])
-                        {
-                            writer.Write((Int16)entry.GetValueFromColumn(column));
-                        }
-
-                        else if (table.ColumnDataTypesAux[columnIndex] == DataTypes.Types["uint32"])
-                        {
-                            writer.Write((UInt32)entry.GetValueFromColumn(column));
-                        }
-
-                        else if (table.ColumnDataTypesAux[columnIndex] == DataTypes.Types["int32"])
-                        {
-                            writer.Write((Int32)entry.GetValueFromColumn(column));
-                        }
-
-                        else if (table.ColumnDataTypesAux[columnIndex] == DataTypes.Types["uint64"])
-                        {
-                            writer.Write((UInt64)entry.GetValueFromColumn(column));
-                        }
-
-                        else if (table.ColumnDataTypesAux[columnIndex] == DataTypes.Types["int64"])
-                        {
-                            writer.Write((Int64)entry.GetValueFromColumn(column));
-                        }
-
-                        else if (table.ColumnDataTypesAux[columnIndex] == DataTypes.Types["float32"])
-                        {
-                            writer.Write((Single)entry.GetValueFromColumn(column));
+                            var methodinfo = typeof(ArmpFileWriter).GetMethod("WriteType", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+                            var methodref = methodinfo.MakeGenericMethod(table.ColumnDataTypesAux[columnIndex]);
+                            methodref.Invoke(null, new object[] { writer, entry.GetValueFromColumn(column) });
                         }
                     }
 
@@ -546,15 +526,51 @@ namespace LibARMP
 
                     else if (tableList.Count > 0) //Write tables
                     {
+                        List<ArmpTable> subtables = new List<ArmpTable>();
+                        List<int> subtableptrs = new List<int>();
+                        int s = 0;
                         int i = 0;
-                        foreach (ArmpTable tableValue in tableList)
+                        foreach (ARMP tableValue in tableList)
                         {
+                            writer.WritePadding(0x00, 0x10);
                             long pointer = writer.Stream.Position;
-                            WriteTable(writer, tableValue);
+                            //This is a test for different approaches to writing subtables
+                            if (tableValue.MainTable.TableInfo.HasSubTable)
+                            {
+                                subtables.Add(tableValue.SubTable);
+                                subtableptrs.Add((int)pointer + 0x3C);
+                            }
+                            //end
+                            WriteTable(writer, tableValue.MainTable); //TODO
+                            //if (tableValue.SubTable != null) //Subtable
+                            //{
+                            //    Console.WriteLine("<---------- written subtable of subtable ------------->");
+                            //    //foreach (string nnnn in tableValue.SubTable.RowNames)
+                            //    //{
+                            //    //    Console.WriteLine(nnnn);
+                            //    //}
+                            //    writer.WritePadding(0x00, 0x10);
+                            //    int stptr = (int)writer.Stream.Position;
+                            //    WriteTable(writer, tableValue.SubTable);
+                            //    writer.Stream.PushToPosition(pointer + 0x3C);
+                            //    writer.Write(stptr);
+                            //    writer.Stream.PopPosition();
+                            //}
                             writer.Stream.PushToPosition(tableOffsetList[i]);
                             writer.Write(pointer);
                             writer.Stream.PopPosition();
                             i++;
+                        }
+                        //TEST
+                        foreach (ArmpTable subtable in subtables)
+                        {
+                            writer.WritePadding(0x00, 0x10);
+                            int pointer = (int)writer.Stream.Position;
+                            WriteTable(writer, subtable);
+                            writer.Stream.PushToPosition(subtableptrs[s]);
+                            writer.Write(pointer);
+                            writer.Stream.PopPosition();
+                            s++;
                         }
                     }
                 }

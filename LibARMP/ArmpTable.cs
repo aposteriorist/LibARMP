@@ -11,6 +11,7 @@ namespace LibARMP
         {
             Entries = new List<ArmpEntry>();
             ColumnDataTypesAuxTable = new List<List<int>>(); //v2 only
+            NoDataColumns = new List<int>();
         }
 
         /// <summary>
@@ -82,6 +83,11 @@ namespace LibARMP
         /// List of entries.
         /// </summary>
         public List<ArmpEntry> Entries { get; set; }
+
+        /// <summary>
+        /// Index list of columns that for some reason have no data (pointer = -1) despite being marked as valid.
+        /// </summary>
+        public List<int> NoDataColumns { get; set; }
 
 
 

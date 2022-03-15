@@ -341,6 +341,7 @@ namespace LibARMP
                 if (armpTableInfo.ptrColumnValidity > 0 && armpTableInfo.ptrColumnValidity < 0xFFFFFFFF) armpTableInfo.HasColumnValidity = true;
                 if (armpTableInfo.ptrRowIndices > 0 && armpTableInfo.ptrRowIndices < 0xFFFFFFFF) armpTableInfo.HasRowIndices = true;
                 if (armpTableInfo.ptrColumnIndices > 0 && armpTableInfo.ptrColumnIndices < 0xFFFFFFFF) armpTableInfo.HasColumnIndices = true;
+                if (armpTableInfo.ptrEmptyValuesOffsetTable > 0 && armpTableInfo.ptrEmptyValuesOffsetTable < 0xFFFFFFFF) armpTableInfo.HasEmptyValues = true;
                 if (armpTableInfo.ptrColumnMetadata > 0 && armpTableInfo.ptrColumnMetadata < 0xFFFFFFFF) armpTableInfo.HasColumnMetadata = true;
                 if (armpTableInfo.ptrExtraFieldInfo > 0 && armpTableInfo.ptrExtraFieldInfo < 0xFFFFFFFF) armpTableInfo.HasExtraFieldInfo = true;
 
@@ -458,6 +459,22 @@ namespace LibARMP
 
 
         /// <summary>
+        /// Reads a value of type T and stores it in the corresponding entry.
+        /// </summary>
+        /// <typeparam name="T">The type to read.</typeparam>
+        /// <param name="reader">The DataReader.</param>
+        /// <param name="table">The ArmpTable to store the read value.</param>
+        /// <param name="rowIndex">Row to insert the value into.</param>
+        /// <param name="columnIndex">Column to insert the value into.</param>
+        private static void ReadType<T> (DataReader reader, ArmpTable table, int rowIndex, int columnIndex)
+        {
+            T value = reader.Read<T>();
+            table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
+        }
+
+
+
+        /// <summary>
         /// Reads the column values for each entry. (DRAGON ENGINE ONLY)
         /// </summary>
         /// <param name="reader">The DataReader.</param>
@@ -473,11 +490,23 @@ namespace LibARMP
             {
                 for (int columnIndex = 0; columnIndex < table.TableInfo.ColumnCount; columnIndex++)
                 {
+                    bool noData = false; //Only happens with boolean column types? Unsure. TODO: verify
+
                     uint ptrData = reader.ReadUInt32();
                     long nextPtr = reader.Stream.Position;
-                    reader.Stream.Seek(ptrData);
+                    if (ptrData == 0xFFFFFFFF)
+                    {
+                        noData = true;
+                        Console.WriteLine(String.Format("No data column -- > {0}", table.ColumnNames[columnIndex]));
+                        table.NoDataColumns.Add(columnIndex);
+                    }
+                    else
+                    {
+                        reader.Stream.Seek(ptrData);
+                    }
+                    
 
-                    //TODO change data type table for v2 storagemode 0
+                    //TODO change data type table for v2 storagemode 0. Edit: They use the same values ??
                     Type columnType;
                     if (version == 1)
                     {
@@ -487,119 +516,80 @@ namespace LibARMP
                     {
                         columnType = table.ColumnDataTypes[columnIndex];
                     }
-                        
 
-                    //Only storage mode 0
-                    List<bool> booleanColumnDataTemp = new List<bool>();
-                    if (columnType == DataTypes.Types["boolean"])
+                    if (!noData) //TODO this is a placeholder fix
                     {
-                        booleanColumnDataTemp = Util.IterateBooleanBitmask(reader, (uint)reader.Stream.Position, table.TableInfo.RowCount);
-                    }
-
-                    for (int rowIndex = 0; rowIndex < table.TableInfo.RowCount; rowIndex++)
-                    {
-                        //Can't do a switch for this because type patterns are in preview or whatever ¯\_(ツ)_/¯
-                        if (columnType == DataTypes.Types["invalid"])
+                        Console.WriteLine(table.ColumnNames[columnIndex] + " ----> " + columnType);
+                        //Only storage mode 0
+                        List<bool> booleanColumnDataTemp = new List<bool>();
+                        if (columnType == DataTypes.Types["boolean"])
                         {
-                            table.Entries[rowIndex].Data.Add( table.ColumnNames[columnIndex], null );
+                            booleanColumnDataTemp = Util.IterateBooleanBitmask(reader, (uint)reader.Stream.Position, table.TableInfo.RowCount);
                         }
 
-                        else if (columnType == DataTypes.Types["string"])
+                        for (int rowIndex = 0; rowIndex < table.TableInfo.RowCount; rowIndex++)
                         {
-                            int index = reader.ReadInt32();
-                            if (index != -1)
-                                table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], table.Text[index]);
-                            else
+                            if (columnType == DataTypes.Types["invalid"])
+                            {
                                 table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], null);
-                        }
+                            }
 
-                        else if(columnType == DataTypes.Types["uint8"])
-                        {
-                            byte value = reader.ReadByte();
-                            table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
-                        }
+                            else if (columnType == DataTypes.Types["string"])
+                            {
+                                int index = reader.ReadInt32();
+                                if (index != -1)
+                                    table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], table.Text[index]);
+                                else
+                                    table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], null);
+                            }
 
-                        else if (columnType == DataTypes.Types["uint16"])
-                        {
-                            UInt16 value = reader.ReadUInt16();
-                            table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
-                        }
+                            else if (columnType == DataTypes.Types["boolean"])
+                            {
+                                bool value = booleanColumnDataTemp[rowIndex];
+                                table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
+                            }
 
-                        else if (columnType == DataTypes.Types["uint32"])
-                        {
-                            UInt32 value = reader.ReadUInt32();
-                            table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
-                        }
+                            else if (columnType == DataTypes.Types["string"])
+                            {
+                                Int32 strpointer = reader.ReadInt32();
+                                reader.Stream.Position = strpointer;
+                                string value = reader.ReadString();
+                                table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
+                            }
 
-                        else if (columnType == DataTypes.Types["uint64"])
-                        {
-                            UInt64 value = reader.ReadUInt64();
-                            table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
-                        }
+                            else if (columnType == DataTypes.Types["table"])
+                            {
+                                Int64 tablepointer = reader.ReadInt64();
+                                Int64 currentpos = reader.Stream.Position;
+                                if (tablepointer == 0 || tablepointer == -1) continue;
+                                ARMP armpdata = new ARMP();
+                                armpdata.MainTable = ReadTable(reader, tablepointer, version);
+                                //TODO subtables inside table elements
+                                if (armpdata.MainTable.TableInfo.HasSubTable)
+                                {
+                                    Console.WriteLine("--------------Subtable in subtable-------------------");
+                                    armpdata.SubTable = ReadTable(reader, armpdata.MainTable.TableInfo.ptrSubTable, version);
+                                    foreach(string entryname in armpdata.SubTable.RowNames)
+                                    {
+                                        Console.WriteLine(entryname);
+                                    }
+                                }
+                                
+                                table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], armpdata);
+                                reader.Stream.Position = currentpos; //Reset position to the offset table
+                            }
 
-                        else if (columnType == DataTypes.Types["int8"])
-                        {
-                            sbyte value = reader.ReadSByte();
-                            table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
-                        }
+                            else if (table.IsColumnSpecial(table.ColumnNames[columnIndex]))
+                            {
+                                Console.WriteLine(table.ColumnNames[columnIndex] + " IS SPECIAL");
+                            }
 
-                        else if (columnType == DataTypes.Types["int16"])
-                        {
-                            Int16 value = reader.ReadInt16();
-                            table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
-                        }
-
-                        else if (columnType == DataTypes.Types["int32"])
-                        {
-                            Int32 value = reader.ReadInt32();
-                            table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
-                        }
-
-                        else if (columnType == DataTypes.Types["int64"])
-                        {
-                            Int64 value = reader.ReadInt64();
-                            table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
-                        }
-
-                        else if (columnType == DataTypes.Types["float32"])
-                        {
-                            float value = reader.ReadSingle();
-                            table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
-                        }
-
-                        else if (columnType == DataTypes.Types["float64"])
-                        {
-                            double value = reader.ReadDouble();
-                            table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
-                        }
-
-                        else if (columnType == DataTypes.Types["boolean"])
-                        {
-                            bool value = booleanColumnDataTemp[rowIndex];
-                            table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
-                        }
-
-                        else if (columnType == DataTypes.Types["string"])
-                        {
-                            Int32 strpointer = reader.ReadInt32();
-                            reader.Stream.Position = strpointer;
-                            string value = reader.ReadString();
-                            table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
-                        }
-
-                        else if (columnType == DataTypes.Types["table"])
-                        {
-                            Int64 tablepointer = reader.ReadInt64();
-                            Int64 currentpos = reader.Stream.Position;
-                            if (tablepointer == 0 || tablepointer == -1) continue;
-                            ArmpTable tbl = ReadTable(reader, tablepointer, version);
-                            table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], tbl);
-                            reader.Stream.Position = currentpos; //Reset position to the offset table
-                        }
-
-                        else
-                        {
-                            table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], null);
+                            else
+                            {
+                                var methodinfo = typeof(ArmpFileReader).GetMethod("ReadType", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+                                var methodref = methodinfo.MakeGenericMethod(columnType);
+                                methodref.Invoke(null, new object[] { reader, table, rowIndex, columnIndex });
+                            }
                         }
 
                     }
@@ -622,70 +612,11 @@ namespace LibARMP
                         //TODO
                         Type columnType = table.ColumnDataTypes[columnIndex];
                         reader.Stream.Seek(ptrData + table.ColumnDataTypesAuxTable[columnIndex][1]);
+                        Console.WriteLine(columnType);
 
                         if (columnType == DataTypes.Types["invalid"])
                         {
                             table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], null);
-                        }
-
-                        else if (columnType == DataTypes.Types["uint8"])
-                        {
-                            byte value = reader.ReadByte();
-                            table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
-                        }
-
-                        else if (columnType == DataTypes.Types["uint16"])
-                        {
-                            UInt16 value = reader.ReadUInt16();
-                            table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
-                        }
-
-                        else if (columnType == DataTypes.Types["uint32"])
-                        {
-                            UInt32 value = reader.ReadUInt32();
-                            table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
-                        }
-
-                        else if (columnType == DataTypes.Types["uint64"])
-                        {
-                            UInt64 value = reader.ReadUInt64();
-                            table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
-                        }
-
-                        else if (columnType == DataTypes.Types["int8"])
-                        {
-                            sbyte value = reader.ReadSByte();
-                            table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
-                        }
-
-                        else if (columnType == DataTypes.Types["int16"])
-                        {
-                            Int16 value = reader.ReadInt16();
-                            table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
-                        }
-
-                        else if (columnType == DataTypes.Types["int32"])
-                        {
-                            Int32 value = reader.ReadInt32();
-                            table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
-                        }
-
-                        else if (columnType == DataTypes.Types["int64"])
-                        {
-                            Int64 value = reader.ReadInt64();
-                            table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
-                        }
-
-                        else if (columnType == DataTypes.Types["float32"])
-                        {
-                            float value = reader.ReadSingle();
-                            table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
-                        }
-
-                        else if (columnType == DataTypes.Types["float64"])
-                        {
-                            float value = reader.ReadSingle();
-                            table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
                         }
 
                         else if (columnType == DataTypes.Types["boolean"])
@@ -708,14 +639,33 @@ namespace LibARMP
                             Int64 tablepointer = reader.ReadInt64();
                             Int64 currentpos = reader.Stream.Position;
                             if (tablepointer == 0 || tablepointer == -1) continue;
-                            ArmpTable tbl = ReadTable(reader, tablepointer, version);
-                            table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], tbl);
+                            ARMP armpdata = new ARMP();
+                            armpdata.MainTable = ReadTable(reader, tablepointer, version);
+                            //TODO subtables inside table elements
+                            if (armpdata.MainTable.TableInfo.HasSubTable)
+                            {
+                                Console.WriteLine("--------------Subtable in subtable-------------------");
+                                armpdata.SubTable = ReadTable(reader, armpdata.MainTable.TableInfo.ptrSubTable, version);
+                                foreach (string entryname in armpdata.SubTable.RowNames)
+                                {
+                                    Console.WriteLine(entryname);
+                                }
+                            }
+
+                            table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], armpdata);
                             reader.Stream.Position = currentpos; //Reset position to the offset table
+                        }
+
+                        else if (table.IsColumnSpecial(table.ColumnNames[columnIndex]))
+                        {
+                            Console.WriteLine(table.ColumnNames[columnIndex] + " IS SPECIAL");
                         }
 
                         else
                         {
-                            table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], null);
+                            var methodinfo = typeof(ArmpFileReader).GetMethod("ReadType", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+                            var methodref = methodinfo.MakeGenericMethod(columnType);
+                            methodref.Invoke(null, new object[] { reader, table, rowIndex, columnIndex });
                         }
                     }
 
@@ -759,42 +709,6 @@ namespace LibARMP
                         table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], null);
                     }
 
-                    else if (columnType == DataTypes.Types["uint8"])
-                    {
-                        byte value = reader.ReadByte();
-                        table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
-                    }
-
-                    else if (columnType == DataTypes.Types["uint16"])
-                    {
-                        UInt16 value = reader.ReadUInt16();
-                        table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
-                    }
-
-                    else if (columnType == DataTypes.Types["uint32"])
-                    {
-                        UInt32 value = reader.ReadUInt32();
-                        table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
-                    }
-
-                    else if (columnType == DataTypes.Types["int8"])
-                    {
-                        sbyte value = reader.ReadSByte();
-                        table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
-                    }
-
-                    else if (columnType == DataTypes.Types["int16"])
-                    {
-                        Int16 value = reader.ReadInt16();
-                        table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
-                    }
-
-                    else if (columnType == DataTypes.Types["int32"])
-                    {
-                        Int32 value = reader.ReadInt32();
-                        table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
-                    }
-
                     else if (columnType == DataTypes.Types["boolean"])
                     {
                         bool value = booleanColumnDataTemp[rowIndex];
@@ -803,7 +717,9 @@ namespace LibARMP
 
                     else
                     {
-                        table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], null);
+                        var methodinfo = typeof(ArmpFileReader).GetMethod("ReadType", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+                        var methodref = methodinfo.MakeGenericMethod(columnType);
+                        methodref.Invoke(null, new object[] { reader, table, rowIndex, columnIndex });
                     }
                 }
 

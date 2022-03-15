@@ -21,7 +21,21 @@ namespace LibARMP
             { "float64", typeof(double) }, // float64
             { "boolean", typeof(bool) }, // boolean
             { "string", typeof(string) }, // string
-            { "table", typeof(ArmpTable) } // Table
+            { "table", typeof(ARMP) }, // Table
+            { "uint8_array", typeof(List<byte>) }, // uint8 array
+            { "uint16_array", typeof(List<UInt16>) }, // uint16 array
+            { "uint32_array", typeof(List<UInt32>) }, // uint32 array
+            { "uint64_array", typeof(List<UInt64>) }, // uint64 array
+            { "int8_array", typeof(List<sbyte>) }, // int8 array
+            { "int16_array", typeof(List<Int16>) }, // int16 array
+            { "int32_array", typeof(List<Int32>) }, // int32 array
+            { "int64_array", typeof(List<Int64>) }, // int64 array
+            { "string_array", typeof(List<string>) }, // string array
+            { "table_array", typeof(List<ARMP>) }, // table array
+            { "float32_array", typeof(List<float>) }, // float32 array
+            { "float64_array", typeof(List<double>) }, // float64 array
+            { "vf128_array", typeof(List<float>) }, // VF128
+            { "bool_array", typeof(List<bool>) }, // bool array
         };
 
 
@@ -42,7 +56,7 @@ namespace LibARMP
             { 7, typeof(float) }, // float32
             { 6, typeof(bool) }, // boolean
             //{ 0, typeof(string) }, // string
-            { 9, typeof(ArmpTable) } // Table
+            { 9, typeof(ARMP) } // Table
         };
 
 
@@ -63,7 +77,7 @@ namespace LibARMP
             { typeof(float), 7 }, // float32
             { typeof(bool), 6 }, // boolean
             { typeof(string), 0 }, // string
-            { typeof(ArmpTable), 9 } // Table
+            { typeof(ARMP), 9 } // Table
         };
 
 
@@ -84,7 +98,7 @@ namespace LibARMP
             { 9, typeof(float) }, // float32
             { 11, typeof(bool) }, // boolean
             { 12, typeof(string) }, // string
-            { 13, typeof(ArmpTable) } // Table
+            { 13, typeof(ARMP) } // Table
         };
 
 
@@ -105,7 +119,7 @@ namespace LibARMP
             { typeof(float), 9 }, // float32
             { typeof(bool), 11 }, // boolean
             { typeof(string), 12 }, // string
-            { typeof(ArmpTable), 13 } // Table
+            { typeof(ARMP), 13 } // Table
         };
 
 
@@ -127,7 +141,7 @@ namespace LibARMP
             { 11, typeof(double) }, // float64
             { 6, typeof(bool) }, // boolean
             { 13, typeof(string) }, // string
-            { 9, typeof(ArmpTable) }, // Table
+            { 9, typeof(ARMP) }, // Table
             { 14, typeof(List<byte>) }, // uint8 array
             { 15, typeof(List<UInt16>) }, // uint16 array
             { 16, typeof(List<UInt32>) }, // uint32 array
@@ -137,7 +151,7 @@ namespace LibARMP
             { 20, typeof(List<Int32>) }, // int32 array
             { 21, typeof(List<Int64>) }, // int64 array
             { 22, typeof(List<string>) }, // string array
-            { 23, typeof(List<ArmpTable>) }, // table array
+            { 23, typeof(List<ARMP>) }, // table array
             { 25, typeof(List<float>) }, // float32 array
             { 26, typeof(List<double>) }, // float64 array
             { 27, typeof(List<float>) }, // VF128 ?? TODO
@@ -166,7 +180,7 @@ namespace LibARMP
             //Note: booleans are stored as uint8
             //{ 4, typeof(bool) }, // boolean
             { 12, typeof(string) }, // string
-            { 13, typeof(ArmpTable) }, // Table
+            { 13, typeof(ARMP) }, // Table
             { 14, typeof(byte) }, // uint8 array
             { 15, typeof(UInt16) }, // uint16 array
             { 16, typeof(UInt32) }, // uint32 array
@@ -176,7 +190,7 @@ namespace LibARMP
             { 20, typeof(Int32) }, // int32 array
             { 21, typeof(Int64) }, // int64 array
             { 25, typeof(string) }, // string array
-            { 26, typeof(ArmpTable) }, // table array
+            { 26, typeof(ARMP) }, // table array
             { 23, typeof(float) }, // float32 array
             { 24, typeof(double) }, // float64 array
             { 27, typeof(float) }, // VF128 ?? TODO
@@ -195,10 +209,10 @@ namespace LibARMP
             typeof(List<Int32>), // int32 array
             typeof(List<Int64>), // int64 array
             typeof(List<string>), // string array
-            typeof(List<ArmpTable>), // table array
+            typeof(List<ARMP>), // table array
             typeof(List<float>), // float32 array
             typeof(List<double>), // float64 array
-            //typeof(List<float>), // VF128 ?? TODO
+            typeof(List<float>), // VF128 ?? TODO
             typeof(List<bool>), // bool array
         };
 

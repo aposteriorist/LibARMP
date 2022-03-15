@@ -214,6 +214,11 @@ namespace LibARMP
         public bool HasColumnIndices { get; set; }
 
         /// <summary>
+        /// Gets or sets the boolean indicating if the table has an Empty Values Table. (DRAGON ENGINE ONLY)
+        /// </summary>
+        public bool HasEmptyValues { get; set; }
+
+        /// <summary>
         /// Gets or sets the boolean indicating if the table has additional field info (varies between format versions). (DRAGON ENGINE ONLY)
         /// </summary>
         public bool HasExtraFieldInfo { get; set; }
