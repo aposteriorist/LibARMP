@@ -2,6 +2,7 @@
 using System.Text;
 using System.Collections.Generic;
 using Yarhl.IO;
+using System.IO;
 
 namespace LibARMP
 {
@@ -10,62 +11,108 @@ namespace LibARMP
         /// <summary>
         /// Reads an armp file.
         /// </summary>
+        /// <param name="datastream">The armp file as DataStream.</param>
+        /// <returns>An ARMP object.</returns>
+        public static ARMP ReadARMP(DataStream datastream)
+        {
+            var reader = new DataReader(datastream)
+            {
+                Endianness = EndiannessMode.LittleEndian,
+                DefaultEncoding = System.Text.Encoding.UTF8,
+            };
+
+            ARMP armp = new ARMP();
+
+            ArmpTable subTable = new ArmpTable();
+
+            char[] magic = reader.ReadChars(4);
+            int endianess = reader.ReadInt32(); //Only used in OE
+            if (endianess == 258)
+            {
+                reader.Endianness = EndiannessMode.BigEndian;
+                reader.DefaultEncoding = System.Text.Encoding.GetEncoding(932);
+                armp.IsOldEngine = true;
+            }
+
+            if (armp.IsOldEngine)
+            {
+                armp.Version = reader.ReadInt16();
+                armp.Revision = reader.ReadInt16();
+            }
+            else
+            {
+                armp.Revision = reader.ReadInt16();
+                armp.Version = reader.ReadInt16();
+            }
+
+            //DEBUG
+            Console.WriteLine("Version: " + armp.Version);
+            Console.WriteLine("Revision: " + armp.Revision);
+
+            int fileSize = reader.ReadInt32(); //Only used in OE
+
+            if (armp.IsOldEngine)
+            {
+                armp.MainTable = ReadTable(reader);
+            }
+            else
+            {
+                uint ptrMainTable = reader.ReadUInt32();
+                armp.MainTable = ReadTable(reader, ptrMainTable, armp.Version);
+                if (armp.MainTable.TableInfo.HasSubTable) armp.SubTable = ReadTable(reader, armp.MainTable.TableInfo.ptrSubTable, armp.Version);
+            }
+
+            return armp;
+        }
+
+
+
+        /// <summary>
+        /// Reads an armp file.
+        /// </summary>
+        /// <param name="fileBytes">The armp file as byte array.</param>
+        /// <param name="offset">The location in the array to start reading data from.</param>
+        /// <param name="length">The number of bytes to read from the array.</param>
+        /// <returns>An ARMP object.</returns>
+        public static ARMP ReadARMP (byte[] fileBytes, int offset=0, int length=0)
+        {
+            if (length == 0) length = fileBytes.Length;
+            using (var datastream = DataStreamFactory.FromArray(fileBytes, offset, length))
+            {
+                return ReadARMP(datastream);
+            }
+        }
+
+
+
+        /// <summary>
+        /// Reads an armp file.
+        /// </summary>
+        /// <param name="stream">The armp file as stream.</param>
+        /// <returns>An ARMP object.</returns>
+        public static ARMP ReadARMP(Stream stream)
+        {
+            using (var datastream = DataStreamFactory.FromStream(stream))
+            {
+                return ReadARMP(datastream);
+            }
+        }
+
+
+
+        /// <summary>
+        /// Reads an armp file.
+        /// </summary>
         /// <param name="path">The path to the armp file.</param>
         /// <returns>An ARMP object.</returns>
         public static ARMP ReadARMP (string path)
         {
-            using (var stream = DataStreamFactory.FromFile(path, FileOpenMode.Read))
+            using (var datastream = DataStreamFactory.FromFile(path, FileOpenMode.Read))
             {
-                var reader = new DataReader(stream)
-                {
-                    Endianness = EndiannessMode.LittleEndian,
-                    DefaultEncoding = System.Text.Encoding.UTF8,
-                };
-
-                ARMP armp = new ARMP();
-                
-                ArmpTable subTable = new ArmpTable();
-
-                char[] magic = reader.ReadChars(4);
-                int endianess = reader.ReadInt32(); //Only used in OE
-                if (endianess == 258)
-                {
-                    reader.Endianness = EndiannessMode.BigEndian;
-                    reader.DefaultEncoding = System.Text.Encoding.GetEncoding(932);
-                    armp.IsOldEngine = true;
-                }
-
-                if (armp.IsOldEngine)
-                {
-                    armp.Version = reader.ReadInt16();
-                    armp.Revision = reader.ReadInt16();
-                }
-                else
-                {
-                    armp.Revision = reader.ReadInt16();
-                    armp.Version = reader.ReadInt16();
-                }
-
-                //DEBUG
-                Console.WriteLine("Version: " + armp.Version);
-                Console.WriteLine("Revision: " + armp.Revision);
-
-                int fileSize = reader.ReadInt32(); //Only used in OE
-
-                if (armp.IsOldEngine)
-                {
-                    armp.MainTable = ReadTable(reader);
-                }
-                else
-                {
-                    uint ptrMainTable = reader.ReadUInt32();
-                    armp.MainTable = ReadTable(reader, ptrMainTable, armp.Version);
-                    if (armp.MainTable.TableInfo.HasSubTable) armp.SubTable = ReadTable(reader, armp.MainTable.TableInfo.ptrSubTable, armp.Version);
-                }
-
-                return armp;
+                return ReadARMP(datastream);
             }
         }
+
 
 
         /// <summary>

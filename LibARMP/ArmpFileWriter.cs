@@ -1,68 +1,104 @@
 ﻿using LibARMP.Exceptions;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Yarhl.IO;
 
 namespace LibARMP
 {
     public static class ArmpFileWriter
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="armp"></param>
-        /// <param name="path"></param>
-        public static void SaveARMP (ARMP armp, string path)
+        private static void WriteARMP(ARMP armp, DataStream datastream)
         {
-            using (var stream = DataStreamFactory.FromFile(path, FileOpenMode.Write))
+            var writer = new DataWriter(datastream)
             {
-                var writer = new DataWriter(stream)
-                {
-                    Endianness = EndiannessMode.LittleEndian,
-                    DefaultEncoding = System.Text.Encoding.UTF8,
-                };
-                if (armp.IsOldEngine)
-                {
-                    writer.Endianness = EndiannessMode.BigEndian;
-                    writer.DefaultEncoding = System.Text.Encoding.GetEncoding(932);
-                }
+                Endianness = EndiannessMode.LittleEndian,
+                DefaultEncoding = System.Text.Encoding.UTF8,
+            };
+            if (armp.IsOldEngine)
+            {
+                writer.Endianness = EndiannessMode.BigEndian;
+                writer.DefaultEncoding = System.Text.Encoding.GetEncoding(932);
+            }
 
-                writer.Write("armp", false); //Magic
-                if (armp.IsOldEngine) writer.Write(0x02010000); //Endianness identifier for OE
-                else writer.WriteTimes(0x00, 0x4);
-                if (armp.IsOldEngine) //Version and Revision are flipped on different endianess. Presumably both values are read together as an int32
-                {
-                    writer.Write(armp.Version);
-                    writer.Write(armp.Revision);
-                }
-                else
-                {
-                    writer.Write(armp.Revision);
-                    writer.Write(armp.Version);
-                }
-                writer.WriteTimes(0x00, 0x4); //File size (only used in OE, placeholder for now)
+            writer.Write("armp", false); //Magic
+            if (armp.IsOldEngine) writer.Write(0x02010000); //Endianness identifier for OE
+            else writer.WriteTimes(0x00, 0x4);
+            if (armp.IsOldEngine) //Version and Revision are flipped on different endianess. Presumably both values are read together as an int32
+            {
+                writer.Write(armp.Version);
+                writer.Write(armp.Revision);
+            }
+            else
+            {
+                writer.Write(armp.Revision);
+                writer.Write(armp.Version);
+            }
+            writer.WriteTimes(0x00, 0x4); //File size (only used in OE, placeholder for now)
 
-                if (armp.IsOldEngine)
+            if (armp.IsOldEngine)
+            {
+                //TODO
+                WriteTableOE(writer, armp.MainTable);
+            }
+            else
+            {
+                writer.Write(32); //Pointer to main table. Always 0x20 with our way of writing the file.
+                writer.WriteTimes(0x00, 0xC); //Padding
+                int mainTableBaseOffset = (int)writer.Stream.Position;
+                WriteTable(writer, armp.MainTable);
+                if (armp.SubTable != null)
                 {
-                    //TODO
-                    WriteTableOE(writer, armp.MainTable);
-                }
-                else
-                {
-                    writer.Write(32); //Pointer to main table. Always 0x20 with our way of writing the file.
-                    writer.WriteTimes(0x00, 0xC); //Padding
-                    int mainTableBaseOffset = (int)writer.Stream.Position;
-                    WriteTable(writer, armp.MainTable);
-                    if (armp.SubTable != null)
-                    {
-                        writer.WritePadding(0x00, 0x10);
-                        int ptr = (int)writer.Stream.Position;
-                        WriteTable(writer, armp.SubTable);
-                        writer.Stream.PushToPosition(mainTableBaseOffset + 0x3C);
-                        writer.Write(ptr);
-                    }
+                    writer.WritePadding(0x00, 0x10);
+                    int ptr = (int)writer.Stream.Position;
+                    WriteTable(writer, armp.SubTable);
+                    writer.Stream.PushToPosition(mainTableBaseOffset + 0x3C);
+                    writer.Write(ptr);
                 }
             }
+        }
+
+
+
+        /// <summary>
+        /// Writes an ARMP to a file.
+        /// </summary>
+        /// <param name="armp">The ARMP to write.</param>
+        /// <param name="path">The destination file path.</param>
+        public static void WriteARMPToFile(ARMP armp, string path)
+        {
+            using (var datastream = DataStreamFactory.FromFile(path, FileOpenMode.Write))
+            {
+                WriteARMP(armp, datastream);
+            }
+        }
+
+
+
+        /// <summary>
+        /// Writes an ARMP to a stream.
+        /// </summary>
+        /// <param name="armp">The ARMP to write.</param>
+        public static Stream WriteARMPToStream(ARMP armp)
+        {
+            MemoryStream stream = new MemoryStream();
+            DataStream tempds = DataStreamFactory.FromMemory();
+            WriteARMP(armp, tempds);
+            tempds.WriteTo(stream);
+            return stream;
+        }
+
+
+
+        /// <summary>
+        /// Writes an ARMP to a byte array.
+        /// </summary>
+        /// <param name="armp"></param>
+        public static byte[] WriteARMPToArray(ARMP armp)
+        {
+            DataStream tempds = DataStreamFactory.FromMemory();
+            WriteARMP(armp, tempds);
+            return tempds.ToArray();
         }
 
 

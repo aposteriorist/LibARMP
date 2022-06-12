@@ -182,5 +182,34 @@ namespace LibARMP
             }
         }
 
+
+
+        ///// EXTENSIONS /////
+
+        /// <summary>
+        /// Writes the complete DataStream into a Stream.
+        /// </summary>
+        /// <param name="stream">The destination stream.</param>
+        public static void WriteTo(this DataStream ds, Stream stream)
+        {
+            ds.Seek(0);
+            byte[] temp = new byte[ds.Length];
+            ds.Read(temp, 0, (int)ds.Length);
+            stream.Write(temp, 0, temp.Length);
+            stream.Seek(0, SeekOrigin.Begin);
+        }
+
+
+        /// <summary>
+        /// Returns the contents of the DataStream as a byte array.
+        /// </summary>
+        public static byte[] ToArray(this DataStream ds)
+        {
+            ds.Seek(0);
+            byte[] array = new byte[ds.Length];
+            ds.Read(array, 0, (int)ds.Length);
+            return array;
+        }
+
     }
 }
