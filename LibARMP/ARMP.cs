@@ -30,11 +30,6 @@ namespace LibARMP
         /// <summary>
         /// Gets or sets the main table.
         /// </summary>
-        public ArmpTable MainTable { get; set; }
-
-        /// <summary>
-        /// Gets or sets the subTable.
-        /// </summary>
-        public ArmpTable SubTable { get; set; }
+        public ArmpTableMain MainTable { get; set; }
     }
 }

@@ -47,11 +47,11 @@ namespace LibARMP
                 writer.WriteTimes(0x00, 0xC); //Padding
                 int mainTableBaseOffset = (int)writer.Stream.Position;
                 WriteTable(writer, armp.MainTable);
-                if (armp.SubTable != null)
+                if (armp.MainTable.SubTable != null)
                 {
                     writer.WritePadding(0x00, 0x10);
                     int ptr = (int)writer.Stream.Position;
-                    WriteTable(writer, armp.SubTable);
+                    WriteTable(writer, armp.MainTable.SubTable);
                     writer.Stream.PushToPosition(mainTableBaseOffset + 0x3C);
                     writer.Write(ptr);
                 }
@@ -121,7 +121,7 @@ namespace LibARMP
         /// </summary>
         /// <param name="writer">The DataWriter.</param>
         /// <param name="table">The ArmpTable to write.</param>
-        private static void WriteTableOE (DataWriter writer, ArmpTable table)
+        private static void WriteTableOE (DataWriter writer, ArmpTableMain table)
         {
             long baseOffset = writer.Stream.Position;
             writer.WriteTimes(0x00, 0x40); //Placeholder table
@@ -512,7 +512,7 @@ namespace LibARMP
                 {
                     columnValueOffsets.Add((int)writer.Stream.Position);
                     List<bool> boolList = new List<bool>(); //Init list in case it is a boolean column
-                    List<ARMP> tableList = new List<ARMP>(); //Init list in case it is a table column
+                    List<ArmpTableMain> tableList = new List<ArmpTableMain>(); //Init list in case it is a table column
                     List<int> tableOffsetList = new List<int>(); //Init list in case it is a table column
                     foreach (ArmpEntry entry in table.Entries)
                     {
@@ -538,7 +538,7 @@ namespace LibARMP
                         {
                             try
                             {
-                                tableList.Add((ARMP)entry.GetValueFromColumn(column));
+                                tableList.Add((ArmpTableMain)entry.GetValueFromColumn(column));
                                 tableOffsetList.Add((int)writer.Stream.Position);
                                 writer.WriteTimes(0x00, 0x8);
                             } catch(ColumnNotFoundException e)
@@ -566,18 +566,18 @@ namespace LibARMP
                         List<int> subtableptrs = new List<int>();
                         int s = 0;
                         int i = 0;
-                        foreach (ARMP tableValue in tableList)
+                        foreach (ArmpTableMain tableValue in tableList)
                         {
                             writer.WritePadding(0x00, 0x10);
                             long pointer = writer.Stream.Position;
                             //This is a test for different approaches to writing subtables
-                            if (tableValue.MainTable.TableInfo.HasSubTable)
+                            if (tableValue.TableInfo.HasSubTable)
                             {
                                 subtables.Add(tableValue.SubTable);
                                 subtableptrs.Add((int)pointer + 0x3C);
                             }
                             //end
-                            WriteTable(writer, tableValue.MainTable); //TODO
+                            WriteTable(writer, tableValue); //TODO
                             //if (tableValue.SubTable != null) //Subtable
                             //{
                             //    Console.WriteLine("<---------- written subtable of subtable ------------->");
@@ -684,6 +684,5 @@ namespace LibARMP
                 writer.Stream.PopPosition();
             }
         }
-
     }
 }

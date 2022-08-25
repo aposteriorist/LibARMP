@@ -3,10 +3,10 @@ using System.Collections.Generic;
 
 namespace LibARMP
 {
-    public class DataTypes
+    internal class DataTypes
     {
         //TODO add v2 types here
-        public static IDictionary<string, Type> Types = new Dictionary<string, Type>
+        internal static IDictionary<string, Type> Types = new Dictionary<string, Type>
         {
             { "invalid", null }, // Invalid
             { "uint8", typeof(byte) }, // uint8
@@ -21,7 +21,7 @@ namespace LibARMP
             { "float64", typeof(double) }, // float64
             { "boolean", typeof(bool) }, // boolean
             { "string", typeof(string) }, // string
-            { "table", typeof(ARMP) }, // Table
+            { "table", typeof(ArmpTableMain) }, // Table
             { "uint8_array", typeof(List<byte>) }, // uint8 array
             { "uint16_array", typeof(List<UInt16>) }, // uint16 array
             { "uint32_array", typeof(List<UInt32>) }, // uint32 array
@@ -31,7 +31,7 @@ namespace LibARMP
             { "int32_array", typeof(List<Int32>) }, // int32 array
             { "int64_array", typeof(List<Int64>) }, // int64 array
             { "string_array", typeof(List<string>) }, // string array
-            { "table_array", typeof(List<ARMP>) }, // table array
+            { "table_array", typeof(List<ArmpTableMain>) }, // table array
             { "float32_array", typeof(List<float>) }, // float32 array
             { "float64_array", typeof(List<double>) }, // float64 array
             { "vf128_array", typeof(List<float>) }, // VF128
@@ -42,7 +42,7 @@ namespace LibARMP
         /// <summary>
         /// Types for version 1.
         /// </summary>
-        public static IDictionary<sbyte, Type> TypesV1 = new Dictionary<sbyte, Type>
+        internal static IDictionary<sbyte, Type> TypesV1 = new Dictionary<sbyte, Type>
         {
             { -1, null }, // Invalid
             { 2, typeof(byte) }, // uint8
@@ -56,14 +56,14 @@ namespace LibARMP
             { 7, typeof(float) }, // float32
             { 6, typeof(bool) }, // boolean
             //{ 0, typeof(string) }, // string
-            { 9, typeof(ARMP) } // Table
+            { 9, typeof(ArmpTableMain) } // Table
         };
 
 
         /// <summary>
         /// Types for version 1. Reverse table for writes.
         /// </summary>
-        public static IDictionary<Type, sbyte> TypesV1Reverse = new Dictionary<Type, sbyte>
+        internal static IDictionary<Type, sbyte> TypesV1Reverse = new Dictionary<Type, sbyte>
         {
             //{ null, -1 }, // Invalid
             { typeof(byte), 2 }, // uint8
@@ -77,14 +77,14 @@ namespace LibARMP
             { typeof(float), 7 }, // float32
             { typeof(bool), 6 }, // boolean
             { typeof(string), 0 }, // string
-            { typeof(ARMP), 9 } // Table
+            { typeof(ArmpTableMain), 9 } // Table
         };
 
 
         /// <summary>
         /// Types for version 1 (auxiliary table).
         /// </summary>
-        public static IDictionary<sbyte, Type> TypesV1Aux = new Dictionary<sbyte, Type>
+        internal static IDictionary<sbyte, Type> TypesV1Aux = new Dictionary<sbyte, Type>
         {
             { -1, null }, // Invalid
             { 0, typeof(byte) }, // uint8
@@ -98,14 +98,14 @@ namespace LibARMP
             { 9, typeof(float) }, // float32
             { 11, typeof(bool) }, // boolean
             { 12, typeof(string) }, // string
-            { 13, typeof(ARMP) } // Table
+            { 13, typeof(ArmpTableMain) } // Table
         };
 
 
         /// <summary>
         /// Types for version 1 (auxiliary table). Reverse table for writes.
         /// </summary>
-        public static IDictionary<Type, sbyte> TypesV1AuxReverse = new Dictionary<Type, sbyte>
+        internal static IDictionary<Type, sbyte> TypesV1AuxReverse = new Dictionary<Type, sbyte>
         {
             //{ null, -1 }, // Invalid
             { typeof(byte), 0 }, // uint8
@@ -119,14 +119,14 @@ namespace LibARMP
             { typeof(float), 9 }, // float32
             { typeof(bool), 11 }, // boolean
             { typeof(string), 12 }, // string
-            { typeof(ARMP), 13 } // Table
+            { typeof(ArmpTableMain), 13 } // Table
         };
 
 
         /// <summary>
         /// Types for version 2.
         /// </summary>
-        public static IDictionary<sbyte, Type> TypesV2 = new Dictionary<sbyte, Type>
+        internal static IDictionary<sbyte, Type> TypesV2 = new Dictionary<sbyte, Type>
         {
             { -1, null }, // Invalid
             { 2, typeof(byte) }, // uint8
@@ -141,7 +141,7 @@ namespace LibARMP
             { 11, typeof(double) }, // float64
             { 6, typeof(bool) }, // boolean
             { 13, typeof(string) }, // string
-            { 9, typeof(ARMP) }, // Table
+            { 9, typeof(ArmpTableMain) }, // Table
             { 14, typeof(List<byte>) }, // uint8 array
             { 15, typeof(List<UInt16>) }, // uint16 array
             { 16, typeof(List<UInt32>) }, // uint32 array
@@ -151,7 +151,7 @@ namespace LibARMP
             { 20, typeof(List<Int32>) }, // int32 array
             { 21, typeof(List<Int64>) }, // int64 array
             { 22, typeof(List<string>) }, // string array
-            { 23, typeof(List<ARMP>) }, // table array
+            { 23, typeof(List<ArmpTableMain>) }, // table array
             { 25, typeof(List<float>) }, // float32 array
             { 26, typeof(List<double>) }, // float64 array
             { 27, typeof(List<float>) }, // VF128 ?? TODO
@@ -163,7 +163,7 @@ namespace LibARMP
         /// <summary>
         /// Types for version 2. (auxiliary table)
         /// </summary>
-        public static IDictionary<sbyte, Type> TypesV2Aux = new Dictionary<sbyte, Type>
+        internal static IDictionary<sbyte, Type> TypesV2Aux = new Dictionary<sbyte, Type>
         {
             { -1, null }, // Invalid
             { 0, null }, // Invalid
@@ -180,7 +180,7 @@ namespace LibARMP
             //Note: booleans are stored as uint8
             //{ 4, typeof(bool) }, // boolean
             { 12, typeof(string) }, // string
-            { 13, typeof(ARMP) }, // Table
+            { 13, typeof(ArmpTableMain) }, // Table
             { 14, typeof(byte) }, // uint8 array
             { 15, typeof(UInt16) }, // uint16 array
             { 16, typeof(UInt32) }, // uint32 array
@@ -190,7 +190,7 @@ namespace LibARMP
             { 20, typeof(Int32) }, // int32 array
             { 21, typeof(Int64) }, // int64 array
             { 25, typeof(string) }, // string array
-            { 26, typeof(ARMP) }, // table array
+            { 26, typeof(ArmpTableMain) }, // table array
             { 23, typeof(float) }, // float32 array
             { 24, typeof(double) }, // float64 array
             { 27, typeof(float) }, // VF128 ?? TODO
@@ -198,7 +198,7 @@ namespace LibARMP
         };
 
 
-        public static List<Type> TypesV2Specials = new List<Type>
+        internal static List<Type> TypesV2Specials = new List<Type>
         {
             typeof(List<byte>), // uint8 array
             typeof(List<UInt16>), // uint16 array
@@ -209,7 +209,7 @@ namespace LibARMP
             typeof(List<Int32>), // int32 array
             typeof(List<Int64>), // int64 array
             typeof(List<string>), // string array
-            typeof(List<ARMP>), // table array
+            typeof(List<ArmpTableMain>), // table array
             typeof(List<float>), // float32 array
             typeof(List<double>), // float64 array
             typeof(List<float>), // VF128 ?? TODO
@@ -220,7 +220,7 @@ namespace LibARMP
         /// <summary>
         /// Types for Old Engine.
         /// </summary>
-        public static IDictionary<int, Type> TypesOE = new Dictionary<int, Type>
+        internal static IDictionary<int, Type> TypesOE = new Dictionary<int, Type>
         {
             //TODO figure out type IDs
             { -1, null }, // Invalid
@@ -238,7 +238,7 @@ namespace LibARMP
         /// <summary>
         /// Types for Old Engine. Reverse table for writes.
         /// </summary>
-        public static IDictionary<Type, int> TypesOEReverse = new Dictionary<Type, int>
+        internal static IDictionary<Type, int> TypesOEReverse = new Dictionary<Type, int>
         {
             //{ null, -1 }, // Invalid
             { typeof(sbyte), 2 }, // int8

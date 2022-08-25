@@ -7,7 +7,7 @@ using Yarhl.IO;
 
 namespace LibARMP
 {
-    public static class Util
+    internal static class Util
     {
         /// <summary>
         /// Stores a determined amount of offsets into a list.
@@ -16,7 +16,7 @@ namespace LibARMP
         /// <param name="ptrOffsetList">Pointer to the Offset List.</param>
         /// <param name="amount">Amount of offsets to store.</param>
         /// <returns>An int list.</returns>
-        public static List<UInt32> IterateOffsetList (DataReader reader, UInt32 ptrOffsetList, int amount)
+        internal static List<UInt32> IterateOffsetList (DataReader reader, UInt32 ptrOffsetList, int amount)
         {
             List<UInt32> offsetList = new List<UInt32>();
             reader.Stream.Seek(ptrOffsetList);
@@ -35,7 +35,7 @@ namespace LibARMP
         /// <param name="reader">The DataStream Reader.</param>
         /// <param name="offsetList">The String Offset List.</param>
         /// <returns>A string list.</returns>
-        public static List<string> IterateStringList (DataReader reader, List<UInt32> offsetList)
+        internal static List<string> IterateStringList (DataReader reader, List<UInt32> offsetList)
         {
             List<string> stringList = new List<string>();
 
@@ -55,7 +55,7 @@ namespace LibARMP
         /// <param name="ptrBitmask">The pointer to the bitmask.</param>
         /// <param name="amount">The amount of values in the bitmask.</param>
         /// <returns>A bool list.</returns>
-        public static List<bool> IterateBooleanBitmask (DataReader reader, UInt32 ptrBitmask, int amount)
+        internal static List<bool> IterateBooleanBitmask (DataReader reader, UInt32 ptrBitmask, int amount)
         {
             List<bool> booleanList = new List<bool>();
 
@@ -84,7 +84,7 @@ namespace LibARMP
         /// </summary>
         /// <param name="str">The string to reverse.</param>
         /// <returns>A reversed string.</returns>
-        public static string ReverseString (string str)
+        internal static string ReverseString (string str)
         {
             char[] charArray = str.ToCharArray();
             Array.Reverse(charArray);
@@ -99,7 +99,7 @@ namespace LibARMP
         /// <param name="ptrArray">The pointer to the array.</param>
         /// <param name="amount">The amount of values in the array.</param>
         /// <returns>A list.</returns>
-        public static dynamic IterateArray<T> (DataReader reader, UInt32 ptrArray, int amount)
+        internal static dynamic IterateArray<T> (DataReader reader, UInt32 ptrArray, int amount)
         {
             List<T> returnList = new List<T>();
             reader.Stream.Seek(ptrArray);
@@ -119,7 +119,7 @@ namespace LibARMP
         /// </summary>
         /// <param name="writer">The DataWriter.</param>
         /// <param name="boolList">The boolean list.</param>
-        public static void WriteBooleanBitmask (DataWriter writer, List<bool> boolList)
+        internal static void WriteBooleanBitmask (DataWriter writer, List<bool> boolList)
         {
             string bitstring = "";
             foreach (bool boolValue in boolList)
@@ -146,7 +146,7 @@ namespace LibARMP
         /// <param name="writer">The DataWriter.</param>
         /// <param name="textList">The text list.</param>
         /// <returns>The pointer to the text offset table.</returns>
-        public static int WriteText (DataWriter writer, List<string> textList)
+        internal static int WriteText (DataWriter writer, List<string> textList)
         {
             List<int> ptrList = new List<int>();
             
@@ -170,7 +170,7 @@ namespace LibARMP
         /// <summary>
         /// Deep copy an object.
         /// </summary>
-        public static T DeepCopy<T>(this T obj)
+        internal static T DeepCopy<T>(this T obj)
         {
             using (var ms = new MemoryStream())
             {
@@ -190,7 +190,7 @@ namespace LibARMP
         /// Writes the complete DataStream into a Stream.
         /// </summary>
         /// <param name="stream">The destination stream.</param>
-        public static void WriteTo(this DataStream ds, Stream stream)
+        internal static void WriteTo(this DataStream ds, Stream stream)
         {
             ds.Seek(0);
             byte[] temp = new byte[ds.Length];
@@ -203,7 +203,7 @@ namespace LibARMP
         /// <summary>
         /// Returns the contents of the DataStream as a byte array.
         /// </summary>
-        public static byte[] ToArray(this DataStream ds)
+        internal static byte[] ToArray(this DataStream ds)
         {
             ds.Seek(0);
             byte[] array = new byte[ds.Length];

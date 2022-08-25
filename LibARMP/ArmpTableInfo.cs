@@ -97,72 +97,72 @@ namespace LibARMP
         /// <summary>
         /// Gets or sets the pointer to the String Offset Table.
         /// </summary>
-        public UInt32 ptrRowNamesOffsetTable { get; set; }
+        internal UInt32 ptrRowNamesOffsetTable { get; set; }
 
         /// <summary>
         /// Gets or sets the pointer to the Row Validity bitmask.
         /// </summary>
-        public UInt32 ptrRowValidity { get; set; }
+        internal UInt32 ptrRowValidity { get; set; }
 
         /// <summary>
         /// Gets or sets the pointer to the Column Data Types.
         /// </summary>
-        public UInt32 ptrColumnDataTypes { get; set; }
+        internal UInt32 ptrColumnDataTypes { get; set; }
 
         /// <summary>
         /// Gets or sets the pointer to the Column Content Offset Table.
         /// </summary>
-        public UInt32 ptrColumnContentOffsetTable { get; set; }
+        internal UInt32 ptrColumnContentOffsetTable { get; set; }
 
         /// <summary>
         /// Gets or sets the pointer to the Text Offset Table.
         /// </summary>
-        public UInt32 ptrTextOffsetTable { get; set; }
+        internal UInt32 ptrTextOffsetTable { get; set; }
 
         /// <summary>
         /// Gets or sets the pointer to the Column Names Offset Table.
         /// </summary>
-        public UInt32 ptrColumnNamesOffsetTable { get; set; }
+        internal UInt32 ptrColumnNamesOffsetTable { get; set; }
 
         /// <summary>
         /// Gets or sets the pointer to the Row Indices int array. (DRAGON ENGINE ONLY)
         /// </summary>
-        public UInt32 ptrRowIndices { get; set; }
+        internal UInt32 ptrRowIndices { get; set; }
 
         /// <summary>
         /// Gets or sets the pointer to the Column Indices int array. (DRAGON ENGINE ONLY)
         /// </summary>
-        public UInt32 ptrColumnIndices { get; set; }
+        internal UInt32 ptrColumnIndices { get; set; }
 
         /// <summary>
         /// Gets or sets the pointer to the Column Validity bitmask. (DRAGON ENGINE ONLY)
         /// </summary>
-        public UInt32 ptrColumnValidity { get; set; }
+        internal UInt32 ptrColumnValidity { get; set; }
 
         /// <summary>
         /// Gets or sets the pointer to the SubTable. (DRAGON ENGINE ONLY)
         /// </summary>
-        public UInt32 ptrSubTable { get; set; }
+        internal UInt32 ptrSubTable { get; set; }
 
         /// <summary>
         /// Gets or sets the pointer to the Empty Values Offset Table. (DRAGON ENGINE ONLY)
         /// </summary>
-        public UInt32 ptrEmptyValuesOffsetTable { get; set; }
+        internal UInt32 ptrEmptyValuesOffsetTable { get; set; }
 
         /// <summary>
         /// Gets or sets the pointer to the Auxiliary Column Data Type Table. (DRAGON ENGINE ONLY)
         /// </summary>
-        public UInt32 ptrColumnDataTypesAux { get; set; }
+        internal UInt32 ptrColumnDataTypesAux { get; set; }
 
         /// <summary>
         /// Gets or sets the pointer to the additional Field Info. (DRAGON ENGINE ONLY)
         /// </summary>
-        public UInt32 ptrExtraFieldInfo { get; set; }
+        internal UInt32 ptrExtraFieldInfo { get; set; }
 
         /// <summary>
         /// Gets or sets the pointer to the Column Metadata.
         /// </summary>
-        public UInt32 ptrColumnMetadata { get; set; }
+        internal UInt32 ptrColumnMetadata { get; set; }
 
 
 
