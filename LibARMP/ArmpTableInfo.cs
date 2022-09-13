@@ -95,6 +95,11 @@ namespace LibARMP
         //Pointers
 
         /// <summary>
+        /// Gets or sets the pointer to the Main Table. DEBUG
+        /// </summary>
+        public UInt32 ptrMainTable { get; set; }
+
+        /// <summary>
         /// Gets or sets the pointer to the String Offset Table.
         /// </summary>
         internal UInt32 ptrRowNamesOffsetTable { get; set; }

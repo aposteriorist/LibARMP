@@ -214,6 +214,35 @@ namespace LibARMP
                 }
             }
 
+            if (table.TableInfo.HasEmptyValues)
+            {
+                Dictionary<int, List<bool>> EmptyValues = new Dictionary<int, List<bool>>();
+                List<bool> EmptyValuesIsNegativeOffset = new List<bool>();
+
+                List<uint> emptyValuesOffsetList = Util.IterateOffsetList(reader, table.TableInfo.ptrEmptyValuesOffsetTable, table.TableInfo.ColumnCount);
+
+                int columnIndex = -1;
+                foreach (uint offset in emptyValuesOffsetList)
+                {
+                    columnIndex++;
+                    if (offset == 0xFFFFFFFF)
+                    {
+                        EmptyValuesIsNegativeOffset.Add(true);
+                        continue;
+                    }
+                    else
+                    {
+                        EmptyValuesIsNegativeOffset.Add(false);
+                        if (offset == 0) continue;
+
+                        EmptyValues.Add(columnIndex, Util.IterateBooleanBitmask(reader, offset, table.TableInfo.RowCount));
+                    }
+                }
+
+                table.EmptyValues = EmptyValues;
+                table.EmptyValuesIsNegativeOffset = EmptyValuesIsNegativeOffset;
+            }
+            
             return table;
         }
 
@@ -383,6 +412,7 @@ namespace LibARMP
             //Dragon Engine
             else
             {
+                armpTableInfo.ptrMainTable = (uint)reader.Stream.Position; //DEBUG
                 armpTableInfo.RowCount = reader.ReadInt32();
                 armpTableInfo.ColumnCount = reader.ReadInt32();
                 armpTableInfo.TextCount = reader.ReadInt32();

@@ -89,6 +89,16 @@ namespace LibARMP
         /// </summary>
         public List<int> NoDataColumns { get; set; }
 
+        /// <summary>
+        /// Values marked as empty for specific columns (despite actually having a value) [column index, list<bool> (length = row count)]
+        /// </summary>
+        public Dictionary<int, List<bool>> EmptyValues { get; set; }
+
+        /// <summary>
+        /// DEBUG: Boolean list (length = column count) to indicate if the offset in the empty values offset list was -1. The difference between 0 and -1 is unknown.
+        /// </summary>
+        public List<bool> EmptyValuesIsNegativeOffset { get; set; }
+
 
 
 
@@ -180,6 +190,40 @@ namespace LibARMP
             if (!ColumnNames.Contains(column)) throw new ColumnNotFoundException("The column '" + column + "' does not exist in this table.");
             int columnIndex = ColumnNames.IndexOf(column);
             return dataTypes[columnIndex];
+        }
+
+
+        /// <summary>
+        /// Gets a list of column names matching the type.
+        /// </summary>
+        /// <param name="type">The Type to look for.</param>
+        /// <returns>A string list.</returns>
+        public List<string> GetColumnNamesByType (Type type)
+        {
+            List<string> returnList = new List<string>();
+            foreach (string column in GetColumnNames(true))
+            {
+                if (GetColumnDataType(column) == type) returnList.Add(column);
+            }
+
+            return returnList;
+        }
+
+
+        /// <summary>
+        /// Gets a list of column indices matching the type.
+        /// </summary>
+        /// <param name="type">The Type to look for.</param>
+        /// <returns>An int list.</returns>
+        public List<int> GetColumnIndicesByType(Type type)
+        {
+            List<int> returnList = new List<int>();
+            foreach (string column in GetColumnNames(true))
+            {
+                if (GetColumnDataType(column) == type) returnList.Add(ColumnNames.IndexOf(column));
+            }
+
+            return returnList;
         }
 
 
