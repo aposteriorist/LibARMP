@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 
 namespace LibARMP
@@ -19,8 +20,8 @@ namespace LibARMP
         /// <param name="armpTable">The source ArmpTable object.</param>
         public ArmpTableMain(ArmpTable armpTable) : this()
         {
-            var srcProperties = armpTable.GetType().GetProperties();
-            var dstProperties = this.GetType().GetProperties();
+            var srcProperties = armpTable.GetType().GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            var dstProperties = this.GetType().GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
             foreach (var srcProp in srcProperties)
             {
