@@ -1,6 +1,7 @@
 ﻿using LibARMP.Exceptions;
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 
 namespace LibARMP
 {
@@ -12,6 +13,8 @@ namespace LibARMP
             Entries = new List<ArmpEntry>();
             ColumnDataTypesAuxTable = new List<List<int>>(); //v2 only
             NoDataColumns = new List<int>();
+            EmptyValues = new Dictionary<int, List<bool>>();
+            EmptyValuesIsNegativeOffset = new List<bool>();
         }
 
         /// <summary>
@@ -22,82 +25,82 @@ namespace LibARMP
         /// <summary>
         /// Entry names.
         /// </summary>
-        public List<string> RowNames { get; set; }
+        internal List<string> RowNames { get; set; }
 
         /// <summary>
         /// Column names.
         /// </summary>
-        public List<string> ColumnNames { get; set; }
+        internal List<string> ColumnNames { get; set; }
 
         /// <summary>
         /// Text.
         /// </summary>
-        public List<string> Text { get; set; }
+        internal List<string> Text { get; set; }
 
         /// <summary>
         /// Row validity.
         /// </summary>
-        public List<bool> RowValidity { get; set; }
+        internal List<bool> RowValidity { get; set; }
 
         /// <summary>
         /// Column validity.
         /// </summary>
-        public List<bool> ColumnValidity { get; set; }
+        internal List<bool> ColumnValidity { get; set; }
 
         /// <summary>
         /// Row indices.
         /// </summary>
-        public List<int> RowIndices { get; set; }
+        internal List<int> RowIndices { get; set; }
 
         /// <summary>
-        /// Column indices.
+        /// Column indices. These override the regular order.
         /// </summary>
-        public List<int> ColumnIndices { get; set; }
+        internal List<int> ColumnIndices { get; set; }
 
         /// <summary>
         /// Column data types.
         /// </summary>
-        public List<Type> ColumnDataTypes { get; set; }
+        internal List<Type> ColumnDataTypes { get; set; }
 
         /// <summary>
         /// Column data types (auxiliary). Only used in storage mode 0.
         /// </summary>
-        public List<Type> ColumnDataTypesAux { get; set; }
+        internal List<Type> ColumnDataTypesAux { get; set; }
 
         /// <summary>
         /// Column data types (auxiliary). Only used in storage mode 1. [Type ID, Distance, Array Size, Unknown]
         /// </summary>
-        public List<List<int>> ColumnDataTypesAuxTable { get; set; }
+        internal List<List<int>> ColumnDataTypesAuxTable { get; set; }
 
         /// <summary>
         /// List of booleans indicating if the column with the same index is special (arrays/lists).
         /// </summary>
-        public List<bool> SpecialColumns { get; set; }
+        internal List<bool> SpecialColumns { get; set; }
 
         /// <summary>
         /// List of ints used as column metadata.
         /// </summary>
-        public List<int> ColumnMetadata { get; set; }
+        internal List<int> ColumnMetadata { get; set; }
 
         /// <summary>
         /// List of entries.
         /// </summary>
-        public List<ArmpEntry> Entries { get; set; }
+        internal List<ArmpEntry> Entries { get; set; }
 
         /// <summary>
         /// Index list of columns that for some reason have no data (pointer = -1) despite being marked as valid.
         /// </summary>
-        public List<int> NoDataColumns { get; set; }
+        internal List<int> NoDataColumns { get; set; }
 
         /// <summary>
         /// Values marked as empty for specific columns (despite actually having a value) [column index, list<bool> (length = row count)]
         /// </summary>
-        public Dictionary<int, List<bool>> EmptyValues { get; set; }
+        internal Dictionary<int, List<bool>> EmptyValues { get; set; }
 
         /// <summary>
         /// DEBUG: Boolean list (length = column count) to indicate if the offset in the empty values offset list was -1. The difference between 0 and -1 is unknown.
         /// </summary>
-        public List<bool> EmptyValuesIsNegativeOffset { get; set; }
+        internal List<bool> EmptyValuesIsNegativeOffset { get; set; }
 
 
 
@@ -112,7 +115,7 @@ namespace LibARMP
             {
                 return Entries;
             }
-            catch (Exception e)
+            catch
             {
                 throw new EntryNotFoundException("No entries found for this table.");
             }
@@ -129,9 +132,43 @@ namespace LibARMP
             {
                 return Entries[id];
             }
-            catch (Exception e) 
+            catch
             {
-                throw new EntryNotFoundException("No entry with ID '"+id+"'.");
+                throw new EntryNotFoundException(String.Format("No entry with ID {0}", id));
+            }
+        }
+
+
+        /// <summary>
+        /// Gets the row names.
+        /// </summary>
+        /// <returns>A string list.</returns>
+        public List<string> GetRowNames()
+        {
+            if (RowNames == null)
+                throw new Exception("There are no row names in this table.");
+
+            return RowNames;
+        }
+
+
+        /// <summary>
+        /// Gets the name of a specific row.
+        /// </summary>
+        /// <param name="id">The ID of the row.</param>
+        /// <returns>A string.</returns>
+        public string GetRowName(int id)
+        {
+            if (RowNames == null)
+                throw new Exception("There are no row names in this table.");
+
+            try
+            {
+                return RowNames[id];
+            }
+            catch
+            {
+                throw new Exception(String.Format("No row name with ID {0}", id));
             }
         }
 
@@ -141,7 +178,7 @@ namespace LibARMP
         /// </summary>
         /// <param name="includeSpecials">Include special columns? (Array data types)</param>
         /// <returns>A string list.</returns>
-        public List<string> GetColumnNames(bool includeSpecials)
+        public List<string> GetColumnNames(bool includeSpecials = true)
         {
             List<string> returnList = new List<string>();
             for (int i=0; i<ColumnNames.Count; i++)
@@ -160,34 +197,15 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Gets the columns of the selected type.
-        /// </summary>
-        /// <typeparam name="T">Type</typeparam>
-        /// <returns>A string list.</returns>
-        public List<string> GetColumnNamesByType<T> ()
-        {
-            List<string> returnList = new List<string>();
-            for (int i = 0; i < ColumnNames.Count; i++)
-            {
-                if (GetColumnDataType(ColumnNames[i]) == typeof(T))
-                {
-                    returnList.Add(ColumnNames[i]);
-                }
-            }
-            return returnList;
-        }
-
-
-        /// <summary>
         /// Gets the column's data type.
         /// </summary>
         /// <param name="column"></param>
         /// <returns>The column Type.</returns>
-        public Type GetColumnDataType (string column)
+        public Type GetColumnDataType(string column)
         {
             List<Type> dataTypes = ColumnDataTypesAux; //Default for DE v1
             if (TableInfo.IsOldEngine || TableInfo.IsIshin || TableInfo.IsDragonEngineV2) dataTypes = ColumnDataTypes;
-            if (!ColumnNames.Contains(column)) throw new ColumnNotFoundException("The column '" + column + "' does not exist in this table.");
+            if (!ColumnNames.Contains(column)) throw new ColumnNotFoundException(String.Format("The column '{0}' does not exist in this table.", column));
             int columnIndex = ColumnNames.IndexOf(column);
             return dataTypes[columnIndex];
         }
@@ -203,10 +221,23 @@ namespace LibARMP
             List<string> returnList = new List<string>();
             foreach (string column in GetColumnNames(true))
             {
-                if (GetColumnDataType(column) == type) returnList.Add(column);
+                if (GetColumnDataType(column) == type) 
+                    returnList.Add(column);
             }
 
             return returnList;
+        }
+
+
+        /// <summary>
+        /// Gets a list of column names matching the type.
+        /// </summary>
+        /// <typeparam name="T">The Type to look for.</typeparam>
+        /// <returns>A string list.</returns>
+        public List<string> GetColumnNamesByType<T>()
+        {
+            Type type = typeof(T);
+            return GetColumnNamesByType(type);
         }
 
 
@@ -215,7 +246,7 @@ namespace LibARMP
         /// </summary>
         /// <param name="type">The Type to look for.</param>
         /// <returns>An int list.</returns>
-        public List<int> GetColumnIndicesByType(Type type)
+        public List<int> GetColumnIndicesByType (Type type)
         {
             List<int> returnList = new List<int>();
             foreach (string column in GetColumnNames(true))
@@ -228,13 +259,173 @@ namespace LibARMP
 
 
         /// <summary>
+        /// Gets a list of column indices matching the type.
+        /// </summary>
+        /// <typeparam name="T">The Type to look for.</typeparam>
+        /// <returns>An int list.</returns>
+        public List<int> GetColumnIndicesByType<T>()
+        {
+            Type type = typeof(T);
+            return GetColumnIndicesByType(type);
+        }
+
+
+        /// <summary>
+        /// Gets the column index by name.
+        /// </summary>
+        /// <param name="column">The column name.</param>
+        /// <returns>The column index.</returns>
+        public int GetColumnIndex (string column)
+        {
+            try
+            {
+                return ColumnNames.IndexOf(column);
+            }
+            catch
+            {
+                throw new Exception(String.Format("No column with name '{0}'.", column));
+            }
+        }
+
+
+        /// <summary>
+        /// Gets a column's override index.
+        /// </summary>
+        /// <param name="index">The base column index.</param>
+        /// <returns>The override index.</returns>
+        public int GetColumnOverrideIndex(int index)
+        {
+            if (ColumnIndices == null) throw new Exception("This table has no column index overrides.");
+
+            try
+            {
+                return ColumnIndices[index];
+            }
+            catch
+            {
+                throw new Exception(String.Format("There is no column with index {0}.", index));
+            }
+        }
+
+
+        /// <summary>
+        /// Gets a column's override index.
+        /// </summary>
+        /// <param name="column">The column name.</param>
+        /// <returns>The override index.</returns>
+        public int GetColumnOverrideIndex(string column)
+        {
+            if (ColumnIndices == null) throw new Exception("This table has no column index overrides.");
+
+            try
+            {
+                int index = ColumnNames.IndexOf(column);
+                return ColumnIndices[index];
+            }
+            catch
+            {
+                throw new Exception(String.Format("There is no column with name '{0}'.", column));
+            }
+        }
+
+
+        /// <summary>
+        /// Sets a column's override index.
+        /// </summary>
+        /// <param name="index">The base column index.</param>
+        /// <param name="newOverrideIndex">The new override index.</param>
+        public void SetColumnOverrideIndex(int index, int newOverrideIndex)
+        {
+            if (ColumnIndices == null) throw new Exception("This table has no column index overrides.");
+
+            try
+            {
+                ColumnIndices[index] = newOverrideIndex;
+            }
+            catch
+            {
+                throw new Exception(String.Format("There is no column with index {0}.", index));
+            }
+        }
+
+
+        /// <summary>
+        /// Sets a column's override index.
+        /// </summary>
+        /// <param name="column">The column name.</param>
+        /// <param name="newOverrideIndex">The new override index.</param>
+        public void SetColumnOverrideIndex(string column, int newOverrideIndex)
+        {
+            if (ColumnIndices == null) throw new Exception("This table has no column index overrides.");
+
+            try
+            {
+                int index = GetColumnIndex(column);
+                ColumnIndices[index] = newOverrideIndex;
+            }
+            catch
+            {
+                throw new Exception(String.Format("There is no column with name '{0}'.", column));
+            }
+        }
+
+
+        /// <summary>
+        /// Gets a boolean indicating if the column is valid.
+        /// </summary>
+        /// <param name="columnIndex">The column index.</param>
+        /// <returns>A boolean.</returns>
+        public bool IsColumnValid (int columnIndex)
+        {
+            if (ColumnValidity == null) throw new Exception("This table has no column validity.");
+
+            try
+            {
+                return ColumnValidity[columnIndex];
+            }
+            catch
+            {
+                throw new Exception(String.Format("No column with index {0}", columnIndex));
+            }
+        }
+
+
+        /// <summary>
+        /// Gets a boolean indicating if the column is valid.
+        /// </summary>
+        /// <param name="column">The column name.</param>
+        /// <returns>A boolean.</returns>
+        public bool IsColumnValid (string column)
+        {
+            if (ColumnValidity == null) throw new Exception("This table has no column validity.");
+
+            try
+            {
+                int columnIndex = GetColumnIndex(column);
+                return ColumnValidity[columnIndex];
+            }
+            catch
+            {
+                throw new Exception(String.Format("No column with name '{0}'", column));
+            }
+        }
+
+
+        public void SetColumnValidity (string column, bool validity)
+        {
+            //TODO: Makes a column valid/invalid. Clear all the values if invalid, fill with default values if valid.
+            throw new NotImplementedException();
+        }
+
+
+        /// <summary>
         /// Returns if the column is special (array/list). Only used in v2.
         /// </summary>
         /// <param name="column">The column name.</param>
         /// <returns>A boolean</returns>
         public bool IsColumnSpecial (string column)
         {
-            if (!ColumnNames.Contains(column)) throw new ColumnNotFoundException("The column '" + column + "' does not exist in this table.");
+            if (!ColumnNames.Contains(column)) throw new ColumnNotFoundException(String.Format("The column '{0}' does not exist in this table.", column));
             if (SpecialColumns != null)
             {
                 int columnIndex = ColumnNames.IndexOf(column);
@@ -271,7 +462,7 @@ namespace LibARMP
         /// <returns>An ArmpEntry list.</returns>
         public List<ArmpEntry> SearchByValue (string column, object value)
         {
-            if (!ColumnNames.Contains(column)) throw new ColumnNotFoundException("The column '"+column+"' does not exist in this table.");
+            if (!ColumnNames.Contains(column)) throw new ColumnNotFoundException(String.Format("The column '{0}' does not exist in this table.", column));
             int columnIndex = ColumnNames.IndexOf(column);
             List<Type> dataTypes = ColumnDataTypesAux; //Default for DE v1
             if (TableInfo.IsOldEngine || TableInfo.IsIshin || TableInfo.IsDragonEngineV2) dataTypes = ColumnDataTypes;
@@ -360,12 +551,12 @@ namespace LibARMP
                 }
                 else
                 {
-                    throw new Exception("Type mismatch. Expected '"+ dataTypes[columnIndex] + "' and got '"+value.GetType()+"'.");
+                    throw new Exception(String.Format("Type mismatch. Expected {0} and got {1}.", dataTypes[columnIndex], value.GetType()));
                 }
             }
             else
             {
-                throw new ColumnNotFoundException("The column '" + column + "' does not exist.");
+                throw new ColumnNotFoundException(String.Format("The column '{0}' does not exist.", column));
             }
         }
 
@@ -389,7 +580,7 @@ namespace LibARMP
             }
             else
             {
-                throw new ColumnNotFoundException("The column '" + column + "' does not exist.");
+                throw new ColumnNotFoundException(String.Format("The column '{0}' does not exist.", column));
             }
         }
 

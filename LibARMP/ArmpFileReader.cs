@@ -216,9 +216,6 @@ namespace LibARMP
 
             if (table.TableInfo.HasEmptyValues)
             {
-                Dictionary<int, List<bool>> EmptyValues = new Dictionary<int, List<bool>>();
-                List<bool> EmptyValuesIsNegativeOffset = new List<bool>();
-
                 List<uint> emptyValuesOffsetList = Util.IterateOffsetList(reader, table.TableInfo.ptrEmptyValuesOffsetTable, table.TableInfo.ColumnCount);
 
                 int columnIndex = -1;
@@ -227,20 +224,17 @@ namespace LibARMP
                     columnIndex++;
                     if (offset == 0xFFFFFFFF)
                     {
-                        EmptyValuesIsNegativeOffset.Add(true);
+                        table.EmptyValuesIsNegativeOffset.Add(true);
                         continue;
                     }
                     else
                     {
-                        EmptyValuesIsNegativeOffset.Add(false);
+                        table.EmptyValuesIsNegativeOffset.Add(false);
                         if (offset == 0) continue;
 
-                        EmptyValues.Add(columnIndex, Util.IterateBooleanBitmask(reader, offset, table.TableInfo.RowCount));
+                        table.EmptyValues.Add(columnIndex, Util.IterateBooleanBitmask(reader, offset, table.TableInfo.RowCount));
                     }
                 }
-
-                table.EmptyValues = EmptyValues;
-                table.EmptyValuesIsNegativeOffset = EmptyValuesIsNegativeOffset;
             }
             
             return table;
