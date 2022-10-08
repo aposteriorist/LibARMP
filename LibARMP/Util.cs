@@ -168,6 +168,25 @@ namespace LibARMP
 
 
         /// <summary>
+        /// Counts the amount of occurences of a substring in a string list.
+        /// </summary>
+        /// <param name="str">The string to look for.</param>
+        /// <param name="strList">The string list to look for occurrences in.</param>
+        /// <returns>The amount of occurrences.</returns>
+        internal static int CountStringOccurrences(string str, List<string> strList)
+        {
+            int count = 0;
+
+            foreach(string str2 in strList)
+            {
+                if (str2.Contains(str)) count++;
+            }
+
+            return count;
+        }
+
+
+        /// <summary>
         /// Deep copy an object.
         /// </summary>
         internal static T DeepCopy<T>(this T obj)

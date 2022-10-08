@@ -43,7 +43,7 @@ namespace LibARMP
             }
             else
             {
-                writer.WriteTimes(0x00, 0x10); //Padding
+                writer.WriteTimes(0x00, 0x10); //Dummy main table pointer and padding
                 uint mainPtr = WriteTableRecursive(writer, armp.MainTable);
                 writer.Stream.Seek(0x10);
                 writer.Write(mainPtr);
@@ -477,7 +477,7 @@ namespace LibARMP
                 foreach (string column in table.ColumnNames)
                 {
                     int columnIndex = table.ColumnNames.IndexOf(column);
-                    if (table.ColumnDataTypesAux[columnIndex] == DataTypes.Types["string"])
+                    if (table.GetColumnDataType(column) == DataTypes.Types["string"])
                     {
                         stringTypeColumns.Add(column);
                     }
@@ -506,12 +506,15 @@ namespace LibARMP
 
             //Column Types
             ptr = (int)writer.Stream.Position;
+            IDictionary<Type, sbyte> typesReverse = DataTypes.TypesV1Reverse;
+            if (table.TableInfo.IsDragonEngineV2)
+                typesReverse = DataTypes.TypesV2Reverse;
             foreach (Type type in table.ColumnDataTypes)
             {
                 sbyte typeID = -1;
                 if (type != null)
                 {
-                    typeID = DataTypes.TypesV1Reverse[type];
+                    typeID = typesReverse[type];
                 }
                 writer.Write(typeID);
             }
@@ -528,107 +531,182 @@ namespace LibARMP
                 writer.Stream.PopPosition();
             }
 
-            //Column Types Aux
-            //TODO v2 table
-            ptr = (int)writer.Stream.Position;
-            foreach (Type type in table.ColumnDataTypesAux)
+            //Column Types Aux (V1)
+            if (!table.TableInfo.IsDragonEngineV2)
             {
-                sbyte typeID = -1;
-                if (type != null)
+                ptr = (int)writer.Stream.Position;
+                foreach (Type type in table.ColumnDataTypesAux)
                 {
-                    typeID = DataTypes.TypesV1AuxReverse[type];
+                    sbyte typeID = -1;
+                    if (type != null)
+                    {
+                        typeID = DataTypes.TypesV1AuxReverse[type];
+                    }
+                    writer.Write(typeID);
                 }
-                writer.Write(typeID);
+                writer.Stream.PushToPosition(baseOffset + 0x48);
+                writer.Write(ptr);
+                writer.Stream.PopPosition();
             }
-            writer.Stream.PushToPosition(baseOffset + 0x48);
-            writer.Write(ptr);
-            writer.Stream.PopPosition();
-            //writer.WritePadding(0x00, 4);
 
 
             //Column Contents
-            List<int> columnValueOffsets = new List<int>();
-            foreach (string column in table.ColumnNames)
+            if (table.TableInfo.StorageMode == 0)
             {
-                int columnIndex = table.ColumnNames.IndexOf(column);
-                if (table.NoDataColumns.Contains(columnIndex))
+                List<int> columnValueOffsets = new List<int>();
+                foreach (string column in table.GetColumnNames())
                 {
-                    Console.WriteLine("NO DATA!!!");
-                    columnValueOffsets.Add(-1);
-                }
-                else if (table.ColumnValidity != null && table.ColumnValidity[columnIndex] != true)
-                {
-                    columnValueOffsets.Add(0);
-                }
-                else
-                {
-
-                    if (table.GetColumnDataType(column) == DataTypes.Types["table"])
+                    int columnIndex = table.GetColumnIndex(column);
+                    if (table.NoDataColumns.Contains(columnIndex))
                     {
-                        writer.WritePadding(0x00, 0x4);
+                        Console.WriteLine("NO DATA!!!");
+                        columnValueOffsets.Add(-1);
                     }
-                    columnValueOffsets.Add((int)writer.Stream.Position);
-                    List<bool> boolList = new List<bool>(); //Init list in case it is a boolean column
-                    List<ArmpTableMain> tableList = new List<ArmpTableMain>(); //Init list in case it is a table column
-                    List<int> tableOffsetList = new List<int>(); //Init list in case it is a table column
-                    foreach (ArmpEntry entry in table.Entries)
+                    else if (table.ColumnValidity != null && table.ColumnValidity[columnIndex] != true)
                     {
-                        if (table.ColumnDataTypesAux[columnIndex] == DataTypes.Types["string"])
+                        columnValueOffsets.Add(0);
+                    }
+                    else
+                    {
+
+                        if (table.GetColumnDataType(column) == DataTypes.Types["table"])
                         {
-                            if (entry.GetValueFromColumn(column) != null)
+                            writer.WritePadding(0x00, 0x8);
+                        }
+                        columnValueOffsets.Add((int)writer.Stream.Position);
+                        List<bool> boolList = new List<bool>(); //Init list in case it is a boolean column
+                        List<ArmpTableMain> tableList = new List<ArmpTableMain>(); //Init list in case it is a table column
+                        List<int> tableOffsetList = new List<int>(); //Init list in case it is a table column
+
+                        if (table.TableInfo.IsDragonEngineV2 && table.IsColumnSpecial(column)) continue;
+
+                        foreach (ArmpEntry entry in table.Entries)
+                        {
+                            if (table.GetColumnDataType(column) == DataTypes.Types["string"])
                             {
-                                int index = table.Text.IndexOf((string)entry.GetValueFromColumn(column));
-                                writer.Write(index);
+                                if (entry.GetValueFromColumn(column) != null)
+                                {
+                                    int index = table.Text.IndexOf((string)entry.GetValueFromColumn(column));
+                                    writer.Write(index);
+                                }
+                                else
+                                {
+                                    writer.Write(-1);
+                                }
                             }
+
+                            else if (table.GetColumnDataType(column) == DataTypes.Types["boolean"])
+                            {
+                                boolList.Add((bool)entry.GetValueFromColumn(column));
+                            }
+
+                            else if (table.GetColumnDataType(column) == DataTypes.Types["table"])
+                            {
+                                try
+                                {
+                                    ulong tablePtr = tableValuePointers[(ArmpTableMain)entry.GetValueFromColumn(column)];
+                                    writer.Write(tablePtr);
+                                }
+                                catch
+                                {
+                                    writer.WriteTimes(0x00, 0x8);
+                                }
+                            }
+
                             else
                             {
-                                writer.Write(-1);
+                                var methodinfo = typeof(ArmpFileWriter).GetMethod("WriteType", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+                                var methodref = methodinfo.MakeGenericMethod(table.GetColumnDataType(column));
+                                methodref.Invoke(null, new object[] { writer, entry.GetValueFromColumn(column) });
                             }
                         }
 
-                        else if (table.ColumnDataTypesAux[columnIndex] == DataTypes.Types["boolean"])
+                        if (boolList.Count > 0) //Write booleans
                         {
-                            boolList.Add((bool)entry.GetValueFromColumn(column));
+                            Util.WriteBooleanBitmask(writer, boolList);
                         }
 
-                        else if (table.ColumnDataTypesAux[columnIndex] == DataTypes.Types["table"])
-                        {
-                            try
-                            {
-                                ulong tablePtr = tableValuePointers[(ArmpTableMain)entry.GetValueFromColumn(column)];
-                                writer.Write(tablePtr);
-                            } catch
-                            {
-                                writer.WriteTimes(0x00, 0x8);
-                            }
-                        }
-
-                        else
-                        {
-                            var methodinfo = typeof(ArmpFileWriter).GetMethod("WriteType", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-                            var methodref = methodinfo.MakeGenericMethod(table.ColumnDataTypesAux[columnIndex]);
-                            methodref.Invoke(null, new object[] { writer, entry.GetValueFromColumn(column) });
-                        }
                     }
-
-                    if (boolList.Count > 0) //Write booleans
-                    {
-                        Util.WriteBooleanBitmask(writer, boolList);
-                    }
-
                 }
+
+                writer.WritePadding(0x00, 0x10);
+                int ptrColumnOffsetTable = (int)writer.Stream.Position;
+                foreach (int offset in columnValueOffsets)
+                {
+                    writer.Write(offset);
+                }
+
+                writer.Stream.PushToPosition(baseOffset + 0x1C);
+                writer.Write(ptrColumnOffsetTable);
+                writer.Stream.PopPosition();
             }
 
-            writer.WritePadding(0x00, 0x10);
-            int ptrColumnOffsetTable = (int)writer.Stream.Position;
-            foreach(int offset in columnValueOffsets)
+
+            else if (table.TableInfo.StorageMode == 1)
             {
-                writer.Write(offset);
-            }
+                List<int> entryValueOffsets = new List<int>();
+                foreach (ArmpEntry entry in table.GetAllEntries())
+                {
+                    entryValueOffsets.Add((int)writer.Stream.Position);
 
-            writer.Stream.PushToPosition(baseOffset + 0x1C);
-            writer.Write(ptrColumnOffsetTable);
-            writer.Stream.PopPosition();
+                    foreach (string columnName in table.GetColumnNames(false))
+                    {
+                        if (table.TableInfo.HasColumnValidity && table.IsColumnValid(columnName))
+                        {
+                            Type columnType = table.GetColumnDataType(columnName);
+
+                            if (columnType == DataTypes.Types["string"])
+                            {
+                                if (entry.GetValueFromColumn(columnName) != null)
+                                {
+                                    long index = table.Text.IndexOf((string)entry.GetValueFromColumn(columnName));
+                                    writer.Write(index);
+                                }
+                                else
+                                {
+                                    writer.Write((long)-1);
+                                }
+                            }
+
+                            else if (columnType == DataTypes.Types["boolean"])
+                            {
+                                bool val = (bool)entry.GetValueFromColumn(columnName);
+                                writer.Write(Convert.ToByte(val));
+                            }
+
+                            else if (columnType == DataTypes.Types["table"])
+                            {
+                                try
+                                {
+                                    ulong tablePtr = tableValuePointers[(ArmpTableMain)entry.GetValueFromColumn(columnName)];
+                                    writer.Write(tablePtr);
+                                }
+                                catch
+                                {
+                                    writer.WriteTimes(0x00, 0x8);
+                                }
+                            }
+
+                            else
+                            {
+                                var methodinfo = typeof(ArmpFileWriter).GetMethod("WriteType", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+                                var methodref = methodinfo.MakeGenericMethod(columnType);
+                                methodref.Invoke(null, new object[] { writer, entry.GetValueFromColumn(columnName) });
+                            }
+                        }
+                    }
+                }
+                writer.WritePadding(0x00, 0x10);
+                int ptrColumnOffsetTable = (int)writer.Stream.Position;
+                foreach (int offset in entryValueOffsets)
+                {
+                    writer.Write(offset);
+                }
+
+                writer.Stream.PushToPosition(baseOffset + 0x1C);
+                writer.Write(ptrColumnOffsetTable);
+                writer.Stream.PopPosition();
+            }
 
 
 
@@ -673,7 +751,7 @@ namespace LibARMP
             }
 
             //Entry Flags (v1 only)
-            if (table.TableInfo.HasExtraFieldInfo)
+            if (table.TableInfo.HasExtraFieldInfo && !table.TableInfo.IsDragonEngineV2)
             {
                 ptr = (int)writer.Stream.Position;
                 foreach(ArmpEntry entry in table.Entries)
@@ -725,6 +803,52 @@ namespace LibARMP
                 writer.Stream.PushToPosition(baseOffset + 0x44);
                 writer.Write(ptr);
                 writer.Stream.PopPosition();
+            }
+
+            // Column Data Types Aux (V2)
+            if (table.TableInfo.StorageMode == 1 && table.TableInfo.HasColumnDataTypesAux)
+            {
+                writer.WritePadding(0x00, 0x10);
+                ptr = (int)writer.Stream.Position;
+                WriteColumnDataTypesAuxTable(writer, table);
+
+                writer.Stream.PushToPosition(baseOffset + 0x48);
+                writer.Write(ptr);
+                writer.Stream.PopPosition();
+            }
+        }
+
+
+        /// <summary>
+        /// Writes the DE v2 Data Types Aux table.
+        /// </summary>
+        /// <param name="writer">The DataWriter.</param>
+        /// <param name="table">The ArmpTable.</param>
+        private static void WriteColumnDataTypesAuxTable(DataWriter writer, ArmpTable table)
+        {
+            int distance = 0; //Distance from start
+
+            foreach (string column in table.GetColumnNames())
+            {
+                Type type = table.GetColumnDataType(column);
+                sbyte typeID = -1;
+                if (type != null)
+                    typeID = DataTypes.TypesV2Reverse[type];
+
+                int size = 0;
+                if (table.IsColumnSpecial(column))
+                    size = Util.CountStringOccurrences($"{column}[", table.GetColumnNames());
+
+                writer.Write((int)DataTypes.TypeIDsV2Aux[typeID]); //Aux Type ID
+                if (typeID == -1)
+                    writer.Write(-1);
+                else
+                    writer.Write(distance); //Distance from start
+                writer.Write(size); //Array size
+                writer.WriteTimes(0x00, 4); //Padding
+
+                if (typeID != -1)
+                    distance += DataTypes.TypesV2Sizes[typeID];
             }
         }
     }

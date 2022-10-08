@@ -651,12 +651,8 @@ namespace LibARMP
                                         
                     for (int columnIndex = 0; columnIndex < table.TableInfo.ColumnCount; columnIndex++)
                     {
-                        //TODO
                         Type columnType = table.ColumnDataTypes[columnIndex];
                         reader.Stream.Seek(ptrData + table.ColumnDataTypesAuxTable[columnIndex][1]);
-#if DEBUG
-                        Console.WriteLine(columnType);
-#endif
                         ReadValue(reader, table, version, columnType, rowIndex, columnIndex);
                     }
 
@@ -694,14 +690,16 @@ namespace LibARMP
                 else
                 {
                     byte value = reader.ReadByte();
-                    table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
+                    bool boolValue = true;
+                    if (value == 0) boolValue = false;
+                    table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], boolValue);
                 }
             }
 
             else if (columnType == DataTypes.Types["string"])
             {
                 int index = reader.ReadInt32();
-                if (index != -1)
+                if (index != -1 && table.TableInfo.HasText) //Some files have valid string ids despite not having any text.
                     table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], table.Text[index]);
                 else
                     table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], null);
@@ -713,7 +711,6 @@ namespace LibARMP
                 Int64 currentpos = reader.Stream.Position;
                 if (tablepointer == 0 || tablepointer == -1) return;
                 ArmpTableMain tableValue = ReadTableMain(reader, tablepointer, version);
-                Console.WriteLine(string.Format("ptr: {0}",tablepointer)); //DEBUG table order
 
                 table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], tableValue);
                 reader.Stream.Position = currentpos; //Reset position to the offset table

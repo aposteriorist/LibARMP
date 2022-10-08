@@ -140,6 +140,27 @@ namespace LibARMP
 
 
         /// <summary>
+        /// Returns a specific entry in the table.
+        /// </summary>
+        /// <returns>An ArmpEntry list.</returns>
+        public ArmpEntry GetEntry(string name)
+        {
+            try
+            {
+                foreach (ArmpEntry entry in GetAllEntries())
+                {
+                    if (entry.Name == name) return entry;
+                }
+                throw new EntryNotFoundException(String.Format("No entry with name '{0}'", name));
+            }
+            catch
+            {
+                throw new EntryNotFoundException(String.Format("No entry with name '{0}'", name));
+            }
+        }
+
+
+        /// <summary>
         /// Gets the row names.
         /// </summary>
         /// <returns>A string list.</returns>
@@ -455,7 +476,7 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Searches all entries for matching vales in the specified column.
+        /// Searches all entries for matching values in the specified column.
         /// </summary>
         /// <param name="column">The column containing the value to find.</param>
         /// <param name="value">The value to find.</param>
