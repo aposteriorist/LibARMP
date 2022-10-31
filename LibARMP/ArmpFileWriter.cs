@@ -2,12 +2,16 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using Yarhl.IO;
 
 namespace LibARMP
 {
     public static class ArmpFileWriter
     {
+
+        internal static Dictionary<Type, MethodInfo> WriteTypeCache = new Dictionary<Type, MethodInfo>();
+
         private static void WriteARMP(ARMP armp, DataStream datastream)
         {
             var writer = new DataWriter(datastream)
@@ -615,9 +619,19 @@ namespace LibARMP
 
                             else
                             {
-                                var methodinfo = typeof(ArmpFileWriter).GetMethod("WriteType", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-                                var methodref = methodinfo.MakeGenericMethod(table.GetColumnDataType(column));
-                                methodref.Invoke(null, new object[] { writer, entry.GetValueFromColumn(column) });
+                                Type columnType = table.GetColumnDataType(column);
+                                if (WriteTypeCache.ContainsKey(columnType))
+                                {
+                                    MethodInfo methodref = WriteTypeCache[columnType];
+                                    methodref.Invoke(null, new object[] { writer, entry.GetValueFromColumn(column) });
+                                }
+                                else
+                                {
+                                    MethodInfo methodinfo = typeof(ArmpFileWriter).GetMethod("WriteType", BindingFlags.NonPublic | BindingFlags.Static);
+                                    MethodInfo methodref = methodinfo.MakeGenericMethod(columnType);
+                                    WriteTypeCache.Add(columnType, methodref);
+                                    methodref.Invoke(null, new object[] { writer, entry.GetValueFromColumn(column) });
+                                }
                             }
                         }
 
@@ -689,9 +703,18 @@ namespace LibARMP
 
                             else
                             {
-                                var methodinfo = typeof(ArmpFileWriter).GetMethod("WriteType", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-                                var methodref = methodinfo.MakeGenericMethod(columnType);
-                                methodref.Invoke(null, new object[] { writer, entry.GetValueFromColumn(columnName) });
+                                if (WriteTypeCache.ContainsKey(columnType))
+                                {
+                                    MethodInfo methodref = WriteTypeCache[columnType];
+                                    methodref.Invoke(null, new object[] { writer, entry.GetValueFromColumn(columnName) });
+                                }
+                                else
+                                {
+                                    MethodInfo methodinfo = typeof(ArmpFileWriter).GetMethod("WriteType", BindingFlags.NonPublic | BindingFlags.Static);
+                                    MethodInfo methodref = methodinfo.MakeGenericMethod(columnType);
+                                    WriteTypeCache.Add(columnType, methodref);
+                                    methodref.Invoke(null, new object[] { writer, entry.GetValueFromColumn(columnName) });
+                                }
                             }
                         }
                     }

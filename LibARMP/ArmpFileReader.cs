@@ -3,11 +3,15 @@ using System.Text;
 using System.Collections.Generic;
 using Yarhl.IO;
 using System.IO;
+using System.Reflection;
 
 namespace LibARMP
 {
     public static class ArmpFileReader
     {
+
+        internal static Dictionary<Type, MethodInfo> ReadTypeCache = new Dictionary<Type, MethodInfo>();
+
         /// <summary>
         /// Reads an armp file.
         /// </summary>
@@ -725,9 +729,18 @@ namespace LibARMP
 
             else
             {
-                var methodinfo = typeof(ArmpFileReader).GetMethod("ReadType", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-                var methodref = methodinfo.MakeGenericMethod(columnType);
-                methodref.Invoke(null, new object[] { reader, table, rowIndex, columnIndex });
+                if (ReadTypeCache.ContainsKey(columnType))
+                {
+                    MethodInfo methodref = ReadTypeCache[columnType];
+                    methodref.Invoke(null, new object[] { reader, table, rowIndex, columnIndex });
+                }
+                else
+                {
+                    MethodInfo methodinfo = typeof(ArmpFileReader).GetMethod("ReadType", BindingFlags.NonPublic | BindingFlags.Static);
+                    MethodInfo methodref = methodinfo.MakeGenericMethod(columnType);
+                    ReadTypeCache.Add(columnType, methodref);
+                    methodref.Invoke(null, new object[] { reader, table, rowIndex, columnIndex });
+                }
             }
         }
 
@@ -774,9 +787,18 @@ namespace LibARMP
 
                     else
                     {
-                        var methodinfo = typeof(ArmpFileReader).GetMethod("ReadType", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-                        var methodref = methodinfo.MakeGenericMethod(columnType);
-                        methodref.Invoke(null, new object[] { reader, table, rowIndex, columnIndex });
+                        if (ReadTypeCache.ContainsKey(columnType))
+                        {
+                            MethodInfo methodref = ReadTypeCache[columnType];
+                            methodref.Invoke(null, new object[] { reader, table, rowIndex, columnIndex });
+                        }
+                        else
+                        {
+                            MethodInfo methodinfo = typeof(ArmpFileReader).GetMethod("ReadType", BindingFlags.NonPublic | BindingFlags.Static);
+                            MethodInfo methodref = methodinfo.MakeGenericMethod(columnType);
+                            ReadTypeCache.Add(columnType, methodref);
+                            methodref.Invoke(null, new object[] { reader, table, rowIndex, columnIndex });
+                        }
                     }
                 }
 
