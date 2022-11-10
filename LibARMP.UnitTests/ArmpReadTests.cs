@@ -405,7 +405,7 @@ namespace LibARMP.UnitTests
         public void bool_v2AllTypesMode1()
         {
             ARMP armp = ArmpFileReader.ReadARMP(v2AllTypesMode1);
-            Assert.AreEqual(armp.MainTable.GetEntry(1).GetValueFromColumn("bool_"), (byte)0); //value
+            Assert.IsFalse((bool)armp.MainTable.GetEntry(1).GetValueFromColumn("bool_")); //value
         }
 
 

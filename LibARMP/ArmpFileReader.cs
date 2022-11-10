@@ -17,7 +17,7 @@ namespace LibARMP
         /// </summary>
         /// <param name="datastream">The armp file as DataStream.</param>
         /// <returns>An ARMP object.</returns>
-        public static ARMP ReadARMP(DataStream datastream)
+        public static ARMP ReadARMP (DataStream datastream)
         {
             var reader = new DataReader(datastream)
             {
@@ -92,7 +92,7 @@ namespace LibARMP
         /// </summary>
         /// <param name="stream">The armp file as stream.</param>
         /// <returns>An ARMP object.</returns>
-        public static ARMP ReadARMP(Stream stream)
+        public static ARMP ReadARMP (Stream stream)
         {
             using (var datastream = DataStreamFactory.FromStream(stream))
             {
@@ -132,6 +132,92 @@ namespace LibARMP
             if (version == 2) table.TableInfo.IsDragonEngineV2 = true;
 
             //Read general data
+
+            //Column names
+            List<string> columnNames = new List<string>();
+            if (table.TableInfo.HasColumnNames)
+            {
+                columnNames = Util.IterateStringList(reader, Util.IterateOffsetList(reader, table.TableInfo.ptrColumnNamesOffsetTable, table.TableInfo.ColumnCount));
+            }
+            else
+            {
+                //Fill with numbers
+                for (int c = 0; c < table.TableInfo.ColumnCount; c++)
+                {
+                    columnNames.Add(c.ToString());
+                }
+            }
+
+            //Column Data Types
+            List<Type> columnDataTypes = GetColumnDataTypes(reader, table.TableInfo.ptrColumnDataTypes, table.TableInfo.ColumnCount, version, false);
+
+            //Column Data Types Aux
+            List<List<int>> columnDataTypesAuxTable = new List<List<int>>();
+            List<Type> columnDataTypesAux = new List<Type>();
+            if (table.TableInfo.HasColumnDataTypesAux)
+            {
+                if (table.TableInfo.StorageMode == 1)
+                {
+                    columnDataTypesAuxTable = GetColumnDataTypesAuxTable(reader, table.TableInfo.ptrColumnDataTypesAux, table.TableInfo.ColumnCount);
+                    columnDataTypesAux = ColumnDataTypesAuxTableToColumnDataTypesAux(columnDataTypesAuxTable);
+                }
+                else
+                {
+                    columnDataTypesAux = GetColumnDataTypes(reader, table.TableInfo.ptrColumnDataTypesAux, table.TableInfo.ColumnCount, version, true);
+                }
+            }
+
+            //Column Validity
+            List<bool> columnValidity = new List<bool>();
+            if (table.TableInfo.HasColumnValidity) columnValidity = Util.IterateBooleanBitmask(reader, table.TableInfo.ptrColumnValidity, table.TableInfo.ColumnCount);
+            //Column Indices
+            List<int> columnIndices = new List<int>();
+            if (table.TableInfo.HasColumnIndices) columnIndices = Util.IterateArray<int>(reader, table.TableInfo.ptrColumnIndices, table.TableInfo.ColumnCount);
+            //Column Metadata
+            List<int> columnMetadata0x40 = new List<int>();
+            if (table.TableInfo.HasColumnMetadata) columnMetadata0x40 = Util.IterateArray<int>(reader, table.TableInfo.ptrColumnMetadata, table.TableInfo.ColumnCount);
+
+
+            //Create columns
+            for (int c = 0; c < table.TableInfo.ColumnCount; c++)
+            {
+                ArmpTableColumn column = new ArmpTableColumn(c, columnNames[c], columnDataTypes[c]);
+                
+                if (table.TableInfo.HasColumnDataTypesAux)
+                {
+                    //Use the aux type as main for v1. This is better than having to check for the correct type multiple times.
+                    if (version == 1)
+                    {
+                        column.ColumnType = columnDataTypesAux[c];
+                        column.ColumnTypeAux = columnDataTypes[c];
+                    }
+                    else
+                    {
+                        column.ColumnTypeAux = columnDataTypesAux[c];
+                    }
+
+                    if (table.TableInfo.StorageMode == 1)
+                    {
+                        column.Distance = columnDataTypesAuxTable[c][1];
+                        column.SpecialSize = columnDataTypesAuxTable[c][2];
+                    }
+                }
+
+                if (table.TableInfo.HasColumnValidity) column.IsValid = columnValidity[c];
+                if (table.TableInfo.HasColumnIndices) column.Index = columnIndices[c];
+                if (table.TableInfo.HasColumnMetadata) column.UnknownMetadata0x40 = columnMetadata0x40[c];
+
+                if (version == 2)
+                {
+                    if (DataTypes.TypesV2Specials.Contains(column.ColumnType)) column.IsSpecial = true;
+                    else column.IsSpecial = false;
+                }
+
+                table.Columns.Add(column);
+            }
+
+
+
             //Row names
             if (table.TableInfo.HasRowNames)
             {
@@ -147,53 +233,11 @@ namespace LibARMP
                 }
             }
 
-            //Column names
-            if (table.TableInfo.HasColumnNames)
-            {
-                table.ColumnNames = Util.IterateStringList(reader, Util.IterateOffsetList(reader, table.TableInfo.ptrColumnNamesOffsetTable, table.TableInfo.ColumnCount));
-            }
-            else
-            {
-                //Fill with numbers
-                table.ColumnNames = new List<string>();
-                for (int c = 0; c < table.TableInfo.ColumnCount; c++)
-                {
-                    table.ColumnNames.Add(c.ToString());
-                }
-            }
-
             //Text
             if (table.TableInfo.HasText) table.Text = Util.IterateStringList(reader, Util.IterateOffsetList(reader, table.TableInfo.ptrTextOffsetTable, table.TableInfo.TextCount));
-            //Column Data Types
-            table.ColumnDataTypes = GetColumnDataTypes(reader, table.TableInfo.ptrColumnDataTypes, table.TableInfo.ColumnCount, version, false);
-            //Column Data Types Aux
-            if (table.TableInfo.HasColumnDataTypesAux)
-            {
-                if (table.TableInfo.StorageMode == 1)
-                {
-                    table.ColumnDataTypesAuxTable = GetColumnDataTypesAuxTable(reader, table.TableInfo.ptrColumnDataTypesAux, table.TableInfo.ColumnCount);
-                    table.ColumnDataTypesAux = ColumnDataTypesAuxTableToColumnDataTypesAux(table.ColumnDataTypesAuxTable);
-                }
-                else
-                {
-                    table.ColumnDataTypesAux = GetColumnDataTypes(reader, table.TableInfo.ptrColumnDataTypesAux, table.TableInfo.ColumnCount, version, true);
-                }
-            }
 
-            // Special Column list (arrays/lists). Only v2
-            if (version == 2)
-            {
-                table.SpecialColumns = GetSpecialColumnList(table.ColumnDataTypes);
-            }
-
-            //Column Validity
-            if (table.TableInfo.HasColumnValidity) table.ColumnValidity = Util.IterateBooleanBitmask(reader, table.TableInfo.ptrColumnValidity, table.TableInfo.ColumnCount);
             //Row Indices
             if (table.TableInfo.HasRowIndices) table.RowIndices = Util.IterateArray<int>(reader, table.TableInfo.ptrRowIndices, table.TableInfo.RowCount);
-            //Column Indices
-            if (table.TableInfo.HasColumnIndices) table.ColumnIndices = Util.IterateArray<int>(reader, table.TableInfo.ptrColumnIndices, table.TableInfo.ColumnCount);
-            //Column Metadata
-            if (table.TableInfo.HasColumnMetadata) table.ColumnMetadata = Util.IterateArray<int>(reader, table.TableInfo.ptrColumnMetadata, table.TableInfo.ColumnCount);
 
             InitializeEntries(table);
             ReadEntryData(reader, table.TableInfo.ptrColumnContentOffsetTable, table.TableInfo.StorageMode, version, table);
@@ -210,11 +254,11 @@ namespace LibARMP
             {
                 if (version == 1) //Flags for each entry
                 {
-                    IterateEntryFlags(reader, table.TableInfo.ptrExtraFieldInfo, table.Entries);
+                    IterateEntryInfoFlags(reader, table.TableInfo.ptrExtraFieldInfo, table.Entries);
                 }
                 if (version == 2)
                 {
-                    //TODO
+                    ReadColumnInfo(reader, table.TableInfo.ptrExtraFieldInfo, table);
                 }
             }
 
@@ -240,7 +284,8 @@ namespace LibARMP
                     }
                 }
             }
-            
+
+            table.RefreshColumnNameCache();
             return table;
         }
 
@@ -253,7 +298,7 @@ namespace LibARMP
         /// <param name="ptrMainTable">The pointer to the main table.</param>
         /// <param name="version">The version number.</param>
         /// <returns>An ArmpTable object.</returns>
-        private static ArmpTableMain ReadTableMain(DataReader reader, long ptrMainTable, int version)
+        private static ArmpTableMain ReadTableMain (DataReader reader, long ptrMainTable, int version)
         {
             ArmpTableMain mainTable = new ArmpTableMain(ReadTable(reader, ptrMainTable, version));
             if (mainTable.TableInfo.HasSubTable) mainTable.SubTable = new ArmpTableSub(mainTable, ReadTable(reader, mainTable.TableInfo.ptrSubTable, version));
@@ -267,7 +312,7 @@ namespace LibARMP
         /// </summary>
         /// <param name="reader">The DataReader.</param>
         /// <returns>An ArmpTable object.</returns>
-        private static ArmpTable ReadTable(DataReader reader)
+        private static ArmpTable ReadTable (DataReader reader)
         {
             //TODO column metadata, text
             ArmpTable table = new ArmpTable();
@@ -275,6 +320,43 @@ namespace LibARMP
             table.TableInfo = GetARMPTableInfo(reader, true);
 
             //Read general data
+
+            //Column names
+            List<string> columnNames = new List<string>();
+            if (table.TableInfo.HasColumnNames)
+            {
+                columnNames = Util.IterateStringList(reader, Util.IterateOffsetList(reader, table.TableInfo.ptrColumnNamesOffsetTable, table.TableInfo.ColumnCount));
+            }
+            else
+            {
+                //Fill with numbers
+                for (int c = 0; c < table.TableInfo.ColumnCount; c++)
+                {
+                    columnNames.Add(c.ToString());
+                }
+            }
+
+            List<Type> columnDataTypes = new List<Type>();
+            //Column Data Types
+            columnDataTypes = GetColumnDataTypes(reader, table.TableInfo.ptrColumnDataTypes, table.TableInfo.ColumnCount);
+
+            //Column Metadata
+            List<int> columnMetadata = new List<int>();
+            if (table.TableInfo.HasColumnMetadata)
+            {
+                columnMetadata = Util.IterateArray<int>(reader, table.TableInfo.ptrColumnMetadata, table.TableInfo.ColumnCount);
+            }
+
+            //Create columns
+            for (int c = 0; c < table.TableInfo.ColumnCount; c++)
+            {
+                ArmpTableColumn column = new ArmpTableColumn(c, columnNames[c], columnDataTypes[c]);
+                if (table.TableInfo.HasColumnMetadata) column.UnknownMetadata0x40 = columnMetadata[c];
+
+                table.Columns.Add(column);
+            }
+
+
             //Row names
             if (table.TableInfo.HasRowNames)
             {
@@ -288,12 +370,6 @@ namespace LibARMP
                 {
                     table.RowNames.Add("");
                 }
-            }
-
-            //Column names
-            if (table.TableInfo.HasColumnNames)
-            {
-                table.ColumnNames = Util.IterateStringList(reader, Util.IterateOffsetList(reader, table.TableInfo.ptrColumnNamesOffsetTable, table.TableInfo.ColumnCount));
             }
 
             if (table.TableInfo.HasText)
@@ -313,9 +389,6 @@ namespace LibARMP
                 }
             }
 
-            //Column Data Types
-            table.ColumnDataTypes = GetColumnDataTypes(reader, table.TableInfo.ptrColumnDataTypes, table.TableInfo.ColumnCount);
-
             InitializeEntries(table);
             ReadEntryData(reader, table.TableInfo.ptrColumnContentOffsetTable, table);
 
@@ -327,12 +400,7 @@ namespace LibARMP
                 SetRowValidity(table.RowValidity, table.Entries);
             }
 
-            //Column Metadata
-            if (table.TableInfo.HasColumnMetadata)
-            {
-                table.ColumnMetadata = Util.IterateArray<int>(reader, table.TableInfo.ptrColumnMetadata, table.TableInfo.ColumnCount);
-            }
-
+            table.RefreshColumnNameCache();
             return table;
         }
 
@@ -343,7 +411,7 @@ namespace LibARMP
         /// </summary>
         /// <param name="reader">The DataReader.</param>
         /// <returns>An ArmpTableMain object.</returns>
-        private static ArmpTableMain ReadTableMainOE(DataReader reader)
+        private static ArmpTableMain ReadTableMainOE (DataReader reader)
         {
             ArmpTable table = ReadTable(reader);
             return new ArmpTableMain(table);
@@ -520,7 +588,7 @@ namespace LibARMP
         /// <param name="ptrDataTypes">The pointer to the column data type array.</param>
         /// <param name="amount">The amount of values in the array.</param>
         /// <returns>A types list.</returns>
-        private static List<Type> GetColumnDataTypes(DataReader reader, UInt32 ptrDataTypes, int amount)
+        private static List<Type> GetColumnDataTypes (DataReader reader, UInt32 ptrDataTypes, int amount)
         {
             List<Type> returnList = new List<Type>();
             IDictionary<int, Type> typesDictionary = new Dictionary<int, Type>();
@@ -573,7 +641,7 @@ namespace LibARMP
         private static void ReadType<T> (DataReader reader, ArmpTable table, int rowIndex, int columnIndex)
         {
             T value = reader.Read<T>();
-            table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
+            table.Entries[rowIndex].Data.Add(table.GetColumnName(columnIndex), value);
         }
 
 
@@ -592,7 +660,7 @@ namespace LibARMP
 
             if (storageMode == 0)
             {
-                for (int columnIndex = 0; columnIndex < table.TableInfo.ColumnCount; columnIndex++)
+                foreach (ArmpTableColumn column in table.Columns)
                 {
                     bool noData = false; //Only happens with boolean column types? Unsure. TODO: verify
 
@@ -600,43 +668,31 @@ namespace LibARMP
                     long nextPtr = reader.Stream.Position;
                     if (ptrData == 0xFFFFFFFF)
                     {
-                        noData = true;
+                        column.IsNoData = true;
 #if DEBUG
-                        Console.WriteLine(String.Format("No data column -- > {0}", table.ColumnNames[columnIndex]));
+                        Console.WriteLine(String.Format("No data column -- > {0}", column.Name));
 #endif
-                        table.NoDataColumns.Add(columnIndex);
                     }
                     else
                     {
                         reader.Stream.Seek(ptrData);
                     }
-                    
-
-                    Type columnType;
-                    if (version == 1)
-                    {
-                        columnType = table.ColumnDataTypesAux[columnIndex];
-                    }
-                    else //v2
-                    {
-                        columnType = table.ColumnDataTypes[columnIndex];
-                    }
 
                     if (!noData) //TODO this is a placeholder fix
                     {
 #if DEBUG
-                        Console.WriteLine(table.ColumnNames[columnIndex] + " ----> " + columnType);
+                        Console.WriteLine(column.Name + " ----> " + column.ColumnType);
 #endif
                         //Only storage mode 0
                         List<bool> booleanColumnDataTemp = new List<bool>();
-                        if (columnType == DataTypes.Types["boolean"])
+                        if (column.ColumnType == DataTypes.Types["boolean"])
                         {
                             booleanColumnDataTemp = Util.IterateBooleanBitmask(reader, (uint)reader.Stream.Position, table.TableInfo.RowCount);
                         }
 
                         for (int rowIndex = 0; rowIndex < table.TableInfo.RowCount; rowIndex++)
                         {
-                            ReadValue(reader, table, version, columnType, rowIndex, columnIndex, booleanColumnDataTemp);
+                            ReadValue(reader, table, version, rowIndex, column, booleanColumnDataTemp);
                         }
 
                     }
@@ -653,11 +709,10 @@ namespace LibARMP
                     int ptrData = reader.ReadInt32();
                     long nextPtr = reader.Stream.Position;
                                         
-                    for (int columnIndex = 0; columnIndex < table.TableInfo.ColumnCount; columnIndex++)
+                    foreach (ArmpTableColumn column in table.Columns)
                     {
-                        Type columnType = table.ColumnDataTypes[columnIndex];
-                        reader.Stream.Seek(ptrData + table.ColumnDataTypesAuxTable[columnIndex][1]);
-                        ReadValue(reader, table, version, columnType, rowIndex, columnIndex);
+                        reader.Stream.Seek(ptrData + column.Distance);
+                        ReadValue(reader, table, version, rowIndex, column);
                     }
 
                     reader.Stream.Seek(nextPtr);
@@ -677,69 +732,69 @@ namespace LibARMP
         /// <param name="rowIndex">The row index.</param>
         /// <param name="columnIndex">The column index.</param>
         /// <param name="booleanColumnDataTemp">(Optional) The boolean column data if its using storage mode 0.</param>
-        private static void ReadValue (DataReader reader, ArmpTable table, int version, Type columnType, int rowIndex, int columnIndex, List<bool> booleanColumnDataTemp = null)
+        private static void ReadValue (DataReader reader, ArmpTable table, int version, int rowIndex, ArmpTableColumn column, List<bool> booleanColumnDataTemp = null)
         {
-            if (columnType == DataTypes.Types["invalid"])
+            if (column.ColumnType == DataTypes.Types["invalid"])
             {
-                table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], null);
+                table.Entries[rowIndex].Data.Add(column.Name, null);
             }
 
-            else if (columnType == DataTypes.Types["boolean"])
+            else if (column.ColumnType == DataTypes.Types["boolean"])
             {
                 if (booleanColumnDataTemp != null)
                 {
                     bool value = booleanColumnDataTemp[rowIndex];
-                    table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
+                    table.Entries[rowIndex].Data.Add(column.Name, value);
                 }
                 else
                 {
                     byte value = reader.ReadByte();
                     bool boolValue = true;
                     if (value == 0) boolValue = false;
-                    table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], boolValue);
+                    table.Entries[rowIndex].Data.Add(column.Name, boolValue);
                 }
             }
 
-            else if (columnType == DataTypes.Types["string"])
+            else if (column.ColumnType == DataTypes.Types["string"])
             {
                 int index = reader.ReadInt32();
                 if (index != -1 && table.TableInfo.HasText) //Some files have valid string ids despite not having any text.
-                    table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], table.Text[index]);
+                    table.Entries[rowIndex].Data.Add(column.Name, table.Text[index]);
                 else
-                    table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], null);
+                    table.Entries[rowIndex].Data.Add(column.Name, null);
             }
 
-            else if (columnType == DataTypes.Types["table"])
+            else if (column.ColumnType == DataTypes.Types["table"])
             {
                 Int64 tablepointer = reader.ReadInt64();
                 Int64 currentpos = reader.Stream.Position;
                 if (tablepointer == 0 || tablepointer == -1) return;
                 ArmpTableMain tableValue = ReadTableMain(reader, tablepointer, version);
 
-                table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], tableValue);
+                table.Entries[rowIndex].Data.Add(column.Name, tableValue);
                 reader.Stream.Position = currentpos; //Reset position to the offset table
             }
 
-            else if (table.IsColumnSpecial(table.ColumnNames[columnIndex]))
+            else if (column.IsSpecial)
             {
 #if DEBUG
-                Console.WriteLine(table.ColumnNames[columnIndex] + " IS SPECIAL");
+                Console.WriteLine(column.Name + " IS SPECIAL");
 #endif
             }
 
             else
             {
-                if (ReadTypeCache.ContainsKey(columnType))
+                if (ReadTypeCache.ContainsKey(column.ColumnType))
                 {
-                    MethodInfo methodref = ReadTypeCache[columnType];
-                    methodref.Invoke(null, new object[] { reader, table, rowIndex, columnIndex });
+                    MethodInfo methodref = ReadTypeCache[column.ColumnType];
+                    methodref.Invoke(null, new object[] { reader, table, rowIndex, column.ID });
                 }
                 else
                 {
                     MethodInfo methodinfo = typeof(ArmpFileReader).GetMethod("ReadType", BindingFlags.NonPublic | BindingFlags.Static);
-                    MethodInfo methodref = methodinfo.MakeGenericMethod(columnType);
-                    ReadTypeCache.Add(columnType, methodref);
-                    methodref.Invoke(null, new object[] { reader, table, rowIndex, columnIndex });
+                    MethodInfo methodref = methodinfo.MakeGenericMethod(column.ColumnType);
+                    ReadTypeCache.Add(column.ColumnType, methodref);
+                    methodref.Invoke(null, new object[] { reader, table, rowIndex, column.ID });
                 }
             }
         }
@@ -757,16 +812,14 @@ namespace LibARMP
             //TODO
             reader.Stream.Seek(ptrOffsetTable);
 
-            for (int columnIndex = 0; columnIndex < table.TableInfo.ColumnCount; columnIndex++)
+            foreach (ArmpTableColumn column in table.Columns)
             {
                 uint ptrData = reader.ReadUInt32();
                 long nextPtr = reader.Stream.Position;
                 reader.Stream.Seek(ptrData);
 
-                Type columnType = table.ColumnDataTypes[columnIndex];
-
                 List<bool> booleanColumnDataTemp = new List<bool>();
-                if (columnType == DataTypes.Types["boolean"])
+                if (column.ColumnType == DataTypes.Types["boolean"])
                 {
                     booleanColumnDataTemp = Util.IterateBooleanBitmask(reader, (uint)reader.Stream.Position, table.TableInfo.RowCount);
                 }
@@ -774,35 +827,35 @@ namespace LibARMP
                 for (int rowIndex = 0; rowIndex < table.TableInfo.RowCount; rowIndex++)
                 {
                     //TODO make this a function
-                    if (columnType == DataTypes.Types["invalid"])
+                    if (column.ColumnType == DataTypes.Types["invalid"])
                     {
-                        table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], null);
+                        table.Entries[rowIndex].Data.Add(column.Name, null);
                     }
 
-                    else if (columnType == DataTypes.Types["boolean"])
+                    else if (column.ColumnType == DataTypes.Types["boolean"])
                     {
                         bool value = booleanColumnDataTemp[rowIndex];
-                        table.Entries[rowIndex].Data.Add(table.ColumnNames[columnIndex], value);
+                        table.Entries[rowIndex].Data.Add(column.Name, value);
                     }
 
                     else
                     {
-                        if (ReadTypeCache.ContainsKey(columnType))
+                        if (ReadTypeCache.ContainsKey(column.ColumnType))
                         {
-                            MethodInfo methodref = ReadTypeCache[columnType];
-                            methodref.Invoke(null, new object[] { reader, table, rowIndex, columnIndex });
+                            MethodInfo methodref = ReadTypeCache[column.ColumnType];
+                            methodref.Invoke(null, new object[] { reader, table, rowIndex, column.ID });
                         }
                         else
                         {
                             MethodInfo methodinfo = typeof(ArmpFileReader).GetMethod("ReadType", BindingFlags.NonPublic | BindingFlags.Static);
-                            MethodInfo methodref = methodinfo.MakeGenericMethod(columnType);
-                            ReadTypeCache.Add(columnType, methodref);
-                            methodref.Invoke(null, new object[] { reader, table, rowIndex, columnIndex });
+                            MethodInfo methodref = methodinfo.MakeGenericMethod(column.ColumnType);
+                            ReadTypeCache.Add(column.ColumnType, methodref);
+                            methodref.Invoke(null, new object[] { reader, table, rowIndex, column.ID });
                         }
                     }
                 }
 
-                    reader.Stream.Seek(nextPtr);
+                reader.Stream.Seek(nextPtr);
             }
         
         }
@@ -827,13 +880,13 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Reads the flags of every entry.
+        /// Reads the Entry Info Flags. (v1 only)
         /// </summary>
         /// <param name="reader">The DataReader.</param>
         /// <param name="ptrArray">The pointer to the array.</param>
         /// <param name="entries">The entry list.</param>
         /// <returns>A list.</returns>
-        private static void IterateEntryFlags (DataReader reader, UInt32 ptrArray, List<ArmpEntry> entries)
+        private static void IterateEntryInfoFlags (DataReader reader, UInt32 ptrArray, List<ArmpEntry> entries)
         {
             reader.Stream.Seek(ptrArray);
 
@@ -854,6 +907,19 @@ namespace LibARMP
                     iter++;
                 }
             }
+        }
+
+
+
+        /// <summary>
+        /// Reads the Column Info. (v2 only)
+        /// </summary>
+        /// <param name="reader">The DataReader.</param>
+        /// <param name="ptrEntryInfo">The pointer to the Entry Info section.</param>
+        /// <param name="entries">The entry list.</param>
+        private static void ReadColumnInfo (DataReader reader, UInt32 ptrEntryInfo, ArmpTable table)
+        {
+            //TODO
         }
 
 
@@ -889,7 +955,7 @@ namespace LibARMP
         /// </summary>
         /// <param name="columnDataTypesAuxTable">The Column Data Types Auxiliary Table.</param>
         /// <returns>A type list.</returns>
-        private static List<Type> ColumnDataTypesAuxTableToColumnDataTypesAux(List<List<int>> columnDataTypesAuxTable)
+        private static List<Type> ColumnDataTypesAuxTableToColumnDataTypesAux (List<List<int>> columnDataTypesAuxTable)
         {
             List<Type> typesList = new List<Type>();
 
@@ -909,7 +975,7 @@ namespace LibARMP
         /// </summary>
         /// <param name="columnDataTypes"></param>
         /// <returns></returns>
-        private static List<bool> GetSpecialColumnList(List<Type> columnDataTypes)
+        private static List<bool> GetSpecialColumnList (List<Type> columnDataTypes)
         {
             List<bool> returnList = new List<bool>();
 

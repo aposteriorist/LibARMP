@@ -1,0 +1,81 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace LibARMP
+{
+    [Serializable]
+    public class ArmpTableColumn
+    {
+        public ArmpTableColumn(int id)
+        {
+            this.ID = id;
+        }
+
+        public ArmpTableColumn(int id, string name, Type type) : this(id)
+        {
+            this.Name = name;
+            this.ColumnType = type;
+        }
+
+        /// <summary>
+        /// Gets or sets the column ID.
+        /// </summary>
+        public int ID { get; internal set; }
+
+        /// <summary>
+        /// Gets or sets the column name.
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the column type.
+        /// </summary>
+        public Type ColumnType { get; internal set; }
+
+        /// <summary>
+        /// Gets or sets the auxiliary column type.
+        /// </summary>
+        internal Type ColumnTypeAux { get; set; }
+
+        /// <summary>
+        /// Gets or sets the column index. Can be NULL
+        /// </summary>
+        public int Index { get; set; }
+
+        /// <summary>
+        /// Gets or sets if the column is valid. Can be NULL
+        /// </summary>
+        public bool? IsValid { get; set; }
+
+        /// <summary>
+        /// Gets or sets if the column contains no data despite being valid.
+        /// </summary>
+        public bool IsNoData { get; set; }
+
+        /// <summary>
+        /// Gets or sets if the column is special.
+        /// </summary>
+        public bool IsSpecial { get; internal set; }
+
+        /// <summary>
+        /// Amount of elements in the array if the column is special.
+        /// </summary>
+        internal int SpecialSize { get; set; }
+
+        /// <summary>
+        /// Distance between data if the table uses StorageMode 1.
+        /// </summary>
+        internal int Distance { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unknown metadata. TODO
+        /// </summary>
+        public int UnknownMetadata0x40 { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unknown metadata. TODO
+        /// </summary>
+        public int UnknownMetadata0x4C { get; set; }
+    }
+}

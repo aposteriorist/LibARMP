@@ -1,5 +1,4 @@
-﻿using LibARMP.Exceptions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -12,7 +11,7 @@ namespace LibARMP
 
         internal static Dictionary<Type, MethodInfo> WriteTypeCache = new Dictionary<Type, MethodInfo>();
 
-        private static void WriteARMP(ARMP armp, DataStream datastream)
+        private static void WriteARMP (ARMP armp, DataStream datastream)
         {
             var writer = new DataWriter(datastream)
             {
@@ -61,7 +60,7 @@ namespace LibARMP
         /// </summary>
         /// <param name="armp">The ARMP to write.</param>
         /// <param name="path">The destination file path.</param>
-        public static void WriteARMPToFile(ARMP armp, string path)
+        public static void WriteARMPToFile (ARMP armp, string path)
         {
             using (var datastream = DataStreamFactory.FromFile(path, FileOpenMode.Write))
             {
@@ -75,7 +74,7 @@ namespace LibARMP
         /// Writes an ARMP to a stream.
         /// </summary>
         /// <param name="armp">The ARMP to write.</param>
-        public static Stream WriteARMPToStream(ARMP armp)
+        public static Stream WriteARMPToStream (ARMP armp)
         {
             MemoryStream stream = new MemoryStream();
             DataStream tempds = DataStreamFactory.FromMemory();
@@ -90,7 +89,7 @@ namespace LibARMP
         /// Writes an ARMP to a byte array.
         /// </summary>
         /// <param name="armp"></param>
-        public static byte[] WriteARMPToArray(ARMP armp)
+        public static byte[] WriteARMPToArray (ARMP armp)
         {
             DataStream tempds = DataStreamFactory.FromMemory();
             WriteARMP(armp, tempds);
@@ -164,21 +163,21 @@ namespace LibARMP
             //Column Names and Count
             if (table.TableInfo.HasColumnNames)
             {
-                ptr = Util.WriteText(writer, table.ColumnNames);
+                ptr = Util.WriteText(writer, table.GetColumnNames());
                 writer.Stream.PushToPosition(baseOffset + 0x10);
-                writer.Write(table.ColumnNames.Count);
+                writer.Write(table.Columns.Count);
                 writer.Write(ptr);
                 writer.Stream.PopPosition();
             }
 
             //Column Types
             ptr = (int)writer.Stream.Position;
-            foreach (Type type in table.ColumnDataTypes)
+            foreach (ArmpTableColumn column in table.Columns)
             {
                 int typeID = -1;
-                if (type != null)
+                if (column.ColumnType != null)
                 {
-                    typeID = DataTypes.TypesOEReverse[type];
+                    typeID = DataTypes.TypesOEReverse[column.ColumnType];
                 }
                 writer.Write(typeID);
             }
@@ -190,9 +189,9 @@ namespace LibARMP
             if (table.TableInfo.HasColumnMetadata)
             {
                 ptr = (int)writer.Stream.Position;
-                foreach (int meta in table.ColumnMetadata)
+                foreach (ArmpTableColumn column in table.Columns)
                 {
-                    writer.Write(meta);
+                    writer.Write(column.UnknownMetadata0x40);
                 }
                 writer.Stream.PushToPosition(baseOffset + 0x24);
                 writer.Write(ptr);
@@ -205,11 +204,10 @@ namespace LibARMP
                 //Force an update of the text table.
 
                 //Get the columns of type string 
-                List<string> stringTypeColumns = new List<string>();
-                foreach (string column in table.ColumnNames)
+                List<ArmpTableColumn> stringTypeColumns = new List<ArmpTableColumn>();
+                foreach (ArmpTableColumn column in table.Columns)
                 {
-                    int columnIndex = table.ColumnNames.IndexOf(column);
-                    if (table.ColumnDataTypes[columnIndex] == DataTypes.Types["string"])
+                    if (column.ColumnType == DataTypes.Types["string"])
                     {
                         stringTypeColumns.Add(column);
                     }
@@ -218,9 +216,9 @@ namespace LibARMP
                 List<string> textList = new List<string>();
                 foreach (ArmpEntry entry in table.Entries)
                 {
-                    foreach (string column in stringTypeColumns)
+                    foreach (ArmpTableColumn column in stringTypeColumns)
                     {
-                        string str = (string)entry.GetValueFromColumn(column);
+                        string str = (string)entry.GetValueFromColumn(column.Name);
                         if (!textList.Contains(str) && str != null) textList.Add(str);
                     }
                 }
@@ -238,10 +236,9 @@ namespace LibARMP
 
             //Column Contents
             List<int> columnValueOffsets = new List<int>();
-            foreach (string column in table.ColumnNames)
+            foreach (ArmpTableColumn column in table.Columns)
             {
-                int columnIndex = table.ColumnNames.IndexOf(column);
-                if (table.ColumnValidity != null && table.ColumnValidity[columnIndex] != true)
+                if (column.IsValid != null && column.IsValid == false)
                 {
                     columnValueOffsets.Add(0);
                 }
@@ -251,11 +248,11 @@ namespace LibARMP
                     List<bool> boolList = new List<bool>(); //Init list in case it is a boolean column
                     foreach (ArmpEntry entry in table.Entries)
                     {
-                        if (table.ColumnDataTypes[columnIndex] == DataTypes.Types["string"])
+                        if (column.ColumnType == DataTypes.Types["string"])
                         {
-                            if (entry.GetValueFromColumn(column) != null)
+                            if (entry.GetValueFromColumn(column.Name) != null)
                             {
-                                int index = table.Text.IndexOf((string)entry.GetValueFromColumn(column));
+                                int index = table.Text.IndexOf((string)entry.GetValueFromColumn(column.Name));
                                 writer.WriteOfType<Int16>((Int16)index);
                             }
                             else
@@ -264,39 +261,39 @@ namespace LibARMP
                             }
                         }
 
-                        else if (table.ColumnDataTypes[columnIndex] == DataTypes.Types["boolean"])
+                        else if (column.ColumnType == DataTypes.Types["boolean"])
                         {
-                            boolList.Add((bool)entry.GetValueFromColumn(column));
+                            boolList.Add((bool)entry.GetValueFromColumn(column.Name));
                         }
 
-                        else if (table.ColumnDataTypes[columnIndex] == DataTypes.Types["uint8"])
+                        else if (column.ColumnType == DataTypes.Types["uint8"])
                         {
-                            writer.Write((byte)entry.GetValueFromColumn(column));
+                            writer.Write((byte)entry.GetValueFromColumn(column.Name));
                         }
 
-                        else if (table.ColumnDataTypes[columnIndex] == DataTypes.Types["int8"])
+                        else if (column.ColumnType == DataTypes.Types["int8"])
                         {
-                            writer.Write((sbyte)entry.GetValueFromColumn(column));
+                            writer.Write((sbyte)entry.GetValueFromColumn(column.Name));
                         }
 
-                        else if (table.ColumnDataTypes[columnIndex] == DataTypes.Types["uint16"])
+                        else if (column.ColumnType == DataTypes.Types["uint16"])
                         {
-                            writer.Write((UInt16)entry.GetValueFromColumn(column));
+                            writer.Write((UInt16)entry.GetValueFromColumn(column.Name));
                         }
 
-                        else if (table.ColumnDataTypes[columnIndex] == DataTypes.Types["int16"])
+                        else if (column.ColumnType == DataTypes.Types["int16"])
                         {
-                            writer.Write((Int16)entry.GetValueFromColumn(column));
+                            writer.Write((Int16)entry.GetValueFromColumn(column.Name));
                         }
 
-                        else if (table.ColumnDataTypes[columnIndex] == DataTypes.Types["uint32"])
+                        else if (column.ColumnType == DataTypes.Types["uint32"])
                         {
-                            writer.Write((UInt32)entry.GetValueFromColumn(column));
+                            writer.Write((UInt32)entry.GetValueFromColumn(column.Name));
                         }
 
-                        else if (table.ColumnDataTypes[columnIndex] == DataTypes.Types["int32"])
+                        else if (column.ColumnType == DataTypes.Types["int32"])
                         {
-                            writer.Write((Int32)entry.GetValueFromColumn(column));
+                            writer.Write((Int32)entry.GetValueFromColumn(column.Name));
                         }
 
                     }
@@ -387,7 +384,7 @@ namespace LibARMP
             //Row and column counts
             writer.Stream.PushToPosition(baseOffset);
             writer.Write(table.Entries.Count);
-            writer.Write(table.ColumnNames.Count);
+            writer.Write(table.Columns.Count);
 
             //Table ID and Storage Mode
             writer.Stream.Position = baseOffset + 0x20;
@@ -429,7 +426,10 @@ namespace LibARMP
             if (table.TableInfo.HasColumnValidity)
             {
                 ptr = (int)writer.Stream.Position;
-                Util.WriteBooleanBitmask(writer, table.ColumnValidity);
+                List<bool> columnValidity = new List<bool>();
+                foreach (ArmpTableColumn column in table.Columns)
+                    columnValidity.Add((bool)column.IsValid);
+                Util.WriteBooleanBitmask(writer, columnValidity);
                 writer.WritePadding(0x00, 0x8);
                 writer.Stream.PushToPosition(baseOffset + 0x38);
                 writer.Write(ptr);
@@ -465,7 +465,7 @@ namespace LibARMP
             //Column Names
             if (table.TableInfo.HasColumnNames)
             {
-                ptr = Util.WriteText(writer, table.ColumnNames);
+                ptr = Util.WriteText(writer, table.GetColumnNames());
                 writer.Stream.PushToPosition(baseOffset + 0x28);
                 writer.Write(ptr);
                 writer.Stream.PopPosition();
@@ -477,11 +477,10 @@ namespace LibARMP
                 //Force an update of the table text.
 
                 //Get the columns of type string 
-                List<string> stringTypeColumns = new List<string>();
-                foreach (string column in table.ColumnNames)
+                List<ArmpTableColumn> stringTypeColumns = new List<ArmpTableColumn>();
+                foreach (ArmpTableColumn column in table.Columns)
                 {
-                    int columnIndex = table.ColumnNames.IndexOf(column);
-                    if (table.GetColumnDataType(column) == DataTypes.Types["string"])
+                    if (column.ColumnType == DataTypes.Types["string"])
                     {
                         stringTypeColumns.Add(column);
                     }
@@ -490,9 +489,9 @@ namespace LibARMP
                 List<string> textList = new List<string>();
                 foreach (ArmpEntry entry in table.Entries)
                 {
-                    foreach (string column in stringTypeColumns)
+                    foreach (ArmpTableColumn column in stringTypeColumns)
                     {
-                        string str = (string)entry.GetValueFromColumn(column);
+                        string str = (string)entry.GetValueFromColumn(column.Name);
                         if (!textList.Contains(str) && str != null) textList.Add(str);
                     }
                 }
@@ -510,17 +509,29 @@ namespace LibARMP
 
             //Column Types
             ptr = (int)writer.Stream.Position;
-            IDictionary<Type, sbyte> typesReverse = DataTypes.TypesV1Reverse;
             if (table.TableInfo.IsDragonEngineV2)
-                typesReverse = DataTypes.TypesV2Reverse;
-            foreach (Type type in table.ColumnDataTypes)
             {
-                sbyte typeID = -1;
-                if (type != null)
+                foreach (ArmpTableColumn column in table.Columns)
                 {
-                    typeID = typesReverse[type];
+                    sbyte typeID = -1;
+                    if (column.ColumnType != null)
+                    {
+                        typeID = DataTypes.TypesV2Reverse[column.ColumnType];
+                    }
+                    writer.Write(typeID);
                 }
-                writer.Write(typeID);
+            }
+            else //V1. Write the aux types because they got swapped with main during read.
+            {
+                foreach (ArmpTableColumn column in table.Columns)
+                {
+                    sbyte typeID = -1;
+                    if (column.ColumnTypeAux != null)
+                    {
+                        typeID = DataTypes.TypesV1Reverse[column.ColumnTypeAux];
+                    }
+                    writer.Write(typeID);
+                }
             }
             writer.Stream.PushToPosition(baseOffset + 0x18);
             writer.Write(ptr);
@@ -539,12 +550,13 @@ namespace LibARMP
             if (!table.TableInfo.IsDragonEngineV2)
             {
                 ptr = (int)writer.Stream.Position;
-                foreach (Type type in table.ColumnDataTypesAux)
+                foreach (ArmpTableColumn column in table.Columns)
                 {
+                    //Write the main type because it got swapped with aux during read.
                     sbyte typeID = -1;
-                    if (type != null)
+                    if (column.ColumnType != null)
                     {
-                        typeID = DataTypes.TypesV1AuxReverse[type];
+                        typeID = DataTypes.TypesV1AuxReverse[column.ColumnType];
                     }
                     writer.Write(typeID);
                 }
@@ -558,22 +570,23 @@ namespace LibARMP
             if (table.TableInfo.StorageMode == 0)
             {
                 List<int> columnValueOffsets = new List<int>();
-                foreach (string column in table.GetColumnNames())
+                foreach (ArmpTableColumn column in table.Columns)
                 {
-                    int columnIndex = table.GetColumnIndex(column);
-                    if (table.NoDataColumns.Contains(columnIndex))
+                    if (column.IsNoData)
                     {
+#if DEBUG
                         Console.WriteLine("NO DATA!!!");
+#endif
                         columnValueOffsets.Add(-1);
                     }
-                    else if (table.ColumnValidity != null && table.ColumnValidity[columnIndex] != true)
+                    else if (table.TableInfo.HasColumnValidity && column.IsValid == false)
                     {
                         columnValueOffsets.Add(0);
                     }
                     else
                     {
 
-                        if (table.GetColumnDataType(column) == DataTypes.Types["table"])
+                        if (column.ColumnType == DataTypes.Types["table"])
                         {
                             writer.WritePadding(0x00, 0x8);
                         }
@@ -582,15 +595,15 @@ namespace LibARMP
                         List<ArmpTableMain> tableList = new List<ArmpTableMain>(); //Init list in case it is a table column
                         List<int> tableOffsetList = new List<int>(); //Init list in case it is a table column
 
-                        if (table.TableInfo.IsDragonEngineV2 && table.IsColumnSpecial(column)) continue;
+                        if (table.TableInfo.IsDragonEngineV2 && column.IsSpecial) continue;
 
                         foreach (ArmpEntry entry in table.Entries)
                         {
-                            if (table.GetColumnDataType(column) == DataTypes.Types["string"])
+                            if (column.ColumnType == DataTypes.Types["string"])
                             {
-                                if (entry.GetValueFromColumn(column) != null)
+                                if (entry.GetValueFromColumn(column.Name) != null)
                                 {
-                                    int index = table.Text.IndexOf((string)entry.GetValueFromColumn(column));
+                                    int index = table.Text.IndexOf((string)entry.GetValueFromColumn(column.Name));
                                     writer.Write(index);
                                 }
                                 else
@@ -599,16 +612,16 @@ namespace LibARMP
                                 }
                             }
 
-                            else if (table.GetColumnDataType(column) == DataTypes.Types["boolean"])
+                            else if (column.ColumnType == DataTypes.Types["boolean"])
                             {
-                                boolList.Add((bool)entry.GetValueFromColumn(column));
+                                boolList.Add((bool)entry.GetValueFromColumn(column.Name));
                             }
 
-                            else if (table.GetColumnDataType(column) == DataTypes.Types["table"])
+                            else if (column.ColumnType == DataTypes.Types["table"])
                             {
                                 try
                                 {
-                                    ulong tablePtr = tableValuePointers[(ArmpTableMain)entry.GetValueFromColumn(column)];
+                                    ulong tablePtr = tableValuePointers[(ArmpTableMain)entry.GetValueFromColumn(column.Name)];
                                     writer.Write(tablePtr);
                                 }
                                 catch
@@ -619,18 +632,18 @@ namespace LibARMP
 
                             else
                             {
-                                Type columnType = table.GetColumnDataType(column);
+                                Type columnType = column.ColumnType;
                                 if (WriteTypeCache.ContainsKey(columnType))
                                 {
                                     MethodInfo methodref = WriteTypeCache[columnType];
-                                    methodref.Invoke(null, new object[] { writer, entry.GetValueFromColumn(column) });
+                                    methodref.Invoke(null, new object[] { writer, entry.GetValueFromColumn(column.Name) });
                                 }
                                 else
                                 {
                                     MethodInfo methodinfo = typeof(ArmpFileWriter).GetMethod("WriteType", BindingFlags.NonPublic | BindingFlags.Static);
                                     MethodInfo methodref = methodinfo.MakeGenericMethod(columnType);
                                     WriteTypeCache.Add(columnType, methodref);
-                                    methodref.Invoke(null, new object[] { writer, entry.GetValueFromColumn(column) });
+                                    methodref.Invoke(null, new object[] { writer, entry.GetValueFromColumn(column.Name) });
                                 }
                             }
                         }
@@ -751,9 +764,9 @@ namespace LibARMP
             if (table.TableInfo.HasColumnIndices)
             {
                 ptr = (int)writer.Stream.Position;
-                foreach (int index in table.ColumnIndices)
+                foreach (ArmpTableColumn column in table.Columns)
                 {
-                    writer.Write(index);
+                    writer.Write(column.Index);
                 }
                 writer.Stream.PushToPosition(baseOffset + 0x34);
                 writer.Write(ptr);
@@ -764,16 +777,16 @@ namespace LibARMP
             if (table.TableInfo.HasColumnMetadata)
             {
                 ptr = (int)writer.Stream.Position;
-                foreach (int metadata in table.ColumnMetadata)
+                foreach (ArmpTableColumn column in table.Columns)
                 {
-                    writer.Write(metadata);
+                    writer.Write(column.UnknownMetadata0x40);
                 }
                 writer.Stream.PushToPosition(baseOffset + 0x40);
                 writer.Write(ptr);
                 writer.Stream.PopPosition();
             }
 
-            //Entry Flags (v1 only)
+            //Entry Info Flags (v1 only)
             if (table.TableInfo.HasExtraFieldInfo && !table.TableInfo.IsDragonEngineV2)
             {
                 ptr = (int)writer.Stream.Position;
@@ -847,7 +860,7 @@ namespace LibARMP
         /// </summary>
         /// <param name="writer">The DataWriter.</param>
         /// <param name="table">The ArmpTable.</param>
-        private static void WriteColumnDataTypesAuxTable(DataWriter writer, ArmpTable table)
+        private static void WriteColumnDataTypesAuxTable (DataWriter writer, ArmpTable table)
         {
             int distance = 0; //Distance from start
 

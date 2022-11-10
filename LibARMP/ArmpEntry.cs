@@ -1,8 +1,6 @@
 ﻿using LibARMP.Exceptions;
 using System;
 using System.Collections.Generic;
-using Yarhl.FileFormat;
-using Yarhl.IO;
 
 namespace LibARMP
 {   
@@ -58,19 +56,20 @@ namespace LibARMP
         public bool[] Flags { get; set; }
 
 
+
         /// <summary>
         /// Gets the value for the specified column.
         /// </summary>
-        /// <param name="column">The name of the column.</param>
-        public object GetValueFromColumn(string column)
+        /// <param name="columnName">The name of the column.</param>
+        public object GetValueFromColumn (string columnName)
         {
-            if (Data.ContainsKey(column))
+            if (Data.ContainsKey(columnName))
             {
-                return Data[column];
+                return Data[columnName];
             }
             else
             {
-                throw new ColumnNotFoundException("The column '"+column+"' does not exist.");
+                throw new ColumnNotFoundException($"The column '{columnName}' does not exist.");
             }
         }
 
@@ -79,7 +78,7 @@ namespace LibARMP
         /// Gets the value for the specified column.
         /// </summary>
         /// <param name="columnIndex">The column index.</param>
-        public object GetValueFromColumn(int columnIndex)
+        public object GetValueFromColumn (int columnIndex)
         {
             List<string> keys = new List<string>(Data.Keys);
 
@@ -89,7 +88,7 @@ namespace LibARMP
             }
             else
             {
-                throw new ColumnNotFoundException("A column with index '" + columnIndex + "' does not exist.");
+                throw new ColumnNotFoundException($"A column with index '{columnIndex}' does not exist.");
             }
         }
 
@@ -98,17 +97,17 @@ namespace LibARMP
         /// <summary>
         /// Sets the value for the specified column. NO TYPE CHECKS ARE PERFORMED
         /// </summary>
-        /// <param name="column">The column name.</param>
+        /// <param name="columnName">The column name.</param>
         /// <param name="value">The value to write.</param>
-        public void SetValueFromColumn (string column, object value)
+        public void SetValueFromColumn (string columnName, object value)
         {
-            if (Data.ContainsKey(column))
+            if (Data.ContainsKey(columnName))
             {
-                Data[column] = value;
+                Data[columnName] = value;
             }
             else
             {
-                throw new ColumnNotFoundException("The column '" + column + "' does not exist.");
+                throw new ColumnNotFoundException($"The column '{columnName}' does not exist.");
             }
         }
 
