@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.IO;
 
 namespace LibARMP
 {
@@ -31,5 +31,10 @@ namespace LibARMP
         /// Gets or sets the main table.
         /// </summary>
         public ArmpTableMain MainTable { get; set; }
+
+        /// <summary>
+        /// Original armp file for patching.
+        /// </summary>
+        internal MemoryStream File = new MemoryStream();
     }
 }

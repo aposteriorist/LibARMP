@@ -8,10 +8,11 @@ namespace LibARMP
     public class ArmpTable
     {
 
-        internal static Dictionary<string, ArmpTableColumn> ColumnNameCache = new Dictionary<string, ArmpTableColumn>();
+        internal Dictionary<string, ArmpTableColumn> ColumnNameCache { get; set; }
 
         public ArmpTable()
         {
+            ColumnNameCache = new Dictionary<string, ArmpTableColumn>();
             Entries = new List<ArmpEntry>();
             Columns = new List<ArmpTableColumn>();
             EmptyValues = new Dictionary<int, List<bool>>();
@@ -62,6 +63,11 @@ namespace LibARMP
         /// DEBUG: Boolean list (length = column count) to indicate if the offset in the empty values offset list was -1. The difference between 0 and -1 is unknown.
         /// </summary>
         internal List<bool> EmptyValuesIsNegativeOffset { get; set; }
+
+        /// <summary>
+        /// PLACEHOLDER: Edited values for patcher. [column:list of entry ids]
+        /// </summary>
+        internal Dictionary<string, List<int>> EditedValues = new Dictionary<string, List<int>>();
 
 
 
@@ -237,10 +243,10 @@ namespace LibARMP
         public List<string> GetColumnNamesByType (Type type)
         {
             List<string> returnList = new List<string>();
-            foreach (string column in GetColumnNames(true))
+            foreach (ArmpTableColumn column in Columns)
             {
-                if (GetColumnDataType(column) == type) 
-                    returnList.Add(column);
+                if (column.ColumnType == type)
+                    returnList.Add(column.Name);
             }
 
             return returnList;
@@ -551,13 +557,26 @@ namespace LibARMP
                 {
                     ArmpEntry entry = GetEntry(id);
                     entry.SetValueFromColumn(columnName, value);
+
+                    //PLACEHOLDER PATCHER CODE
+                    if (column.ColumnType != DataTypes.Types["string"])
+                    {
+                        if (!EditedValues.ContainsKey(column.Name))
+                        {
+                            EditedValues.Add(column.Name, new List<int>());
+                        }
+                        EditedValues[column.Name].Add(id);
+                    }
                 }
                 else
                 {
                     throw new Exception($"Type mismatch. Expected {column.ColumnType} and got {value.GetType()}.");
                 }
             }
-            throw new ColumnNotFoundException($"The column '{columnName}' does not exist.");
+            else
+            {
+                throw new ColumnNotFoundException($"The column '{columnName}' does not exist.");
+            }
         }
 
 

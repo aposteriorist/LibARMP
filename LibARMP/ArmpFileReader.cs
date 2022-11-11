@@ -64,6 +64,7 @@ namespace LibARMP
                 armp.MainTable = ReadTableMain(reader, ptrMainTable, armp.Version);
             }
 
+            datastream.WriteTo(armp.File);
             return armp;
         }
 
@@ -692,6 +693,7 @@ namespace LibARMP
 
                         for (int rowIndex = 0; rowIndex < table.TableInfo.RowCount; rowIndex++)
                         {
+                            table.GetEntry(rowIndex).ColumnValueOffsets.Add(column.Name, (int)reader.Stream.Position);
                             ReadValue(reader, table, version, rowIndex, column, booleanColumnDataTemp);
                         }
 
@@ -712,6 +714,7 @@ namespace LibARMP
                     foreach (ArmpTableColumn column in table.Columns)
                     {
                         reader.Stream.Seek(ptrData + column.Distance);
+                        table.GetEntry(rowIndex).ColumnValueOffsets.Add(column.Name, (int)reader.Stream.Position);
                         ReadValue(reader, table, version, rowIndex, column);
                     }
 

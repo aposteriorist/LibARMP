@@ -55,6 +55,11 @@ namespace LibARMP
         /// </summary>
         public bool[] Flags { get; set; }
 
+        /// <summary>
+        /// PLACEHOLDER: Offsets for column values used by the patcher.
+        /// </summary>
+        internal Dictionary<string, int> ColumnValueOffsets = new Dictionary<string, int>();
+
 
 
         /// <summary>
