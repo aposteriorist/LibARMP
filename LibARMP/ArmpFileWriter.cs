@@ -842,13 +842,50 @@ namespace LibARMP
             }
 
             // Column Data Types Aux (V2)
-            if (table.TableInfo.StorageMode == 1 && table.TableInfo.HasColumnDataTypesAux)
+            if (table.TableInfo.IsDragonEngineV2 && table.TableInfo.HasColumnDataTypesAux)
             {
                 writer.WritePadding(0x00, 0x10);
                 ptr = (int)writer.Stream.Position;
                 WriteColumnDataTypesAuxTable(writer, table);
 
                 writer.Stream.PushToPosition(baseOffset + 0x48);
+                writer.Write(ptr);
+                writer.Stream.PopPosition();
+            }
+
+            // Column Unknown Metadata 0x4C
+            if (table.TableInfo.IsDragonEngineV2 && table.TableInfo.HasExtraFieldInfo)
+            {
+                List<int> offsets = new List<int>();
+                foreach (ArmpTableColumn column in table.Columns)
+                {
+                    if (column.IsSpecial && column.SpecialSize > 0)
+                    {
+                        offsets.Add((int)writer.Stream.Position);
+                        foreach (ArmpTableColumn child in column.Children)
+                        {
+                            writer.Write(child.UnknownMetadata0x4C);
+                        }
+                    }
+                }
+                offsets.Add((int)writer.Stream.Position);
+                writer.Write(0);
+                writer.WritePadding(0x00, 0x8);
+
+                ptr = (int)writer.Stream.Position;
+
+                foreach (ArmpTableColumn column in table.Columns)
+                {
+                    writer.Write(column.SpecialSize);
+                    writer.Write(offsets[0]);
+                    writer.WriteTimes(0x00, 0x18);
+                    if (column.IsSpecial && column.SpecialSize > 0)
+                    {
+                        offsets.RemoveAt(0);
+                    }
+                }
+
+                writer.Stream.PushToPosition(baseOffset + 0x4C);
                 writer.Write(ptr);
                 writer.Stream.PopPosition();
             }

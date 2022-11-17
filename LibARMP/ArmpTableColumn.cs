@@ -10,6 +10,7 @@ namespace LibARMP
         public ArmpTableColumn(int id)
         {
             this.ID = id;
+            Children = new List<ArmpTableColumn>();
         }
 
         public ArmpTableColumn(int id, string name, Type type) : this(id)
@@ -77,5 +78,15 @@ namespace LibARMP
         /// Gets or sets the unknown metadata. TODO
         /// </summary>
         public int UnknownMetadata0x4C { get; set; }
+
+        /// <summary>
+        /// Gets or sets the column's children. Only used if the column is special. (v2)
+        /// </summary>
+        internal List<ArmpTableColumn> Children { get; set; }
+
+        /// <summary>
+        /// Gets or sets the column's parent. Only used if the column is child of a special. (v2)
+        /// </summary>
+        internal ArmpTableColumn Parent { get; set; }
     }
 }

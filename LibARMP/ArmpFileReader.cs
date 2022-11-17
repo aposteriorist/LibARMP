@@ -157,7 +157,7 @@ namespace LibARMP
             List<Type> columnDataTypesAux = new List<Type>();
             if (table.TableInfo.HasColumnDataTypesAux)
             {
-                if (table.TableInfo.StorageMode == 1)
+                if (version == 2)
                 {
                     columnDataTypesAuxTable = GetColumnDataTypesAuxTable(reader, table.TableInfo.ptrColumnDataTypesAux, table.TableInfo.ColumnCount);
                     columnDataTypesAux = ColumnDataTypesAuxTableToColumnDataTypesAux(columnDataTypesAuxTable);
@@ -192,13 +192,9 @@ namespace LibARMP
                         column.ColumnType = columnDataTypesAux[c];
                         column.ColumnTypeAux = columnDataTypes[c];
                     }
-                    else
+                    else //v2
                     {
                         column.ColumnTypeAux = columnDataTypesAux[c];
-                    }
-
-                    if (table.TableInfo.StorageMode == 1)
-                    {
                         column.Distance = columnDataTypesAuxTable[c][1];
                         column.SpecialSize = columnDataTypesAuxTable[c][2];
                     }
@@ -215,6 +211,28 @@ namespace LibARMP
                 }
 
                 table.Columns.Add(column);
+            }
+
+
+            //Assign special columns' children
+            if (version == 2)
+            {
+                foreach (ArmpTableColumn column in table.Columns)
+                {
+                    if (column.IsSpecial)
+                    {
+                        string substring = $"{column.Name}[";
+                        foreach (ArmpTableColumn column2 in table.Columns)
+                        {
+                            if (column2.IsSpecial) continue;
+                            if (column2.Name.Contains(substring))
+                            {
+                                column.Children.Add(column2);
+                                column2.Parent = column;
+                            }
+                        }
+                    }
+                }
             }
 
 
@@ -259,7 +277,7 @@ namespace LibARMP
                 }
                 if (version == 2)
                 {
-                    ReadColumnInfo(reader, table.TableInfo.ptrExtraFieldInfo, table);
+                    ReadColumnUnknownMetadata0x4C(reader, table.TableInfo.ptrExtraFieldInfo, table);
                 }
             }
 
@@ -915,14 +933,34 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Reads the Column Info. (v2 only)
+        /// Reads the additional Column Metadata. (v2 only)
         /// </summary>
         /// <param name="reader">The DataReader.</param>
         /// <param name="ptrEntryInfo">The pointer to the Entry Info section.</param>
         /// <param name="entries">The entry list.</param>
-        private static void ReadColumnInfo (DataReader reader, UInt32 ptrEntryInfo, ArmpTable table)
+        private static void ReadColumnUnknownMetadata0x4C (DataReader reader, UInt32 ptrEntryInfo, ArmpTable table)
         {
-            //TODO
+            reader.Stream.Seek(ptrEntryInfo);
+
+            for (int i = 0; i<table.Columns.Count; i++)
+            {
+                int size = reader.ReadInt32();
+                int ptrMetadata = reader.ReadInt32();
+                reader.ReadBytes(0x18); //Padding
+
+                if (size > 0)
+                {
+                    ArmpTableColumn column = table.Columns[i];
+                    reader.Stream.PushToPosition(ptrMetadata);
+
+                    foreach (ArmpTableColumn child in column.Children)
+                    {
+                        child.UnknownMetadata0x4C = reader.ReadInt32();
+                    }
+
+                    reader.Stream.PopPosition();
+                }
+            }
         }
 
 
