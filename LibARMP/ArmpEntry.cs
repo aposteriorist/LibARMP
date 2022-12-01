@@ -56,6 +56,11 @@ namespace LibARMP
         public bool[] Flags { get; set; }
 
         /// <summary>
+        /// The ArmpTable this entry belongs to.
+        /// </summary>
+        internal ArmpTable ParentTable { get; set; }
+
+        /// <summary>
         /// PLACEHOLDER: Offsets for column values used by the patcher.
         /// </summary>
         internal Dictionary<string, int> ColumnValueOffsets = new Dictionary<string, int>();
@@ -74,7 +79,7 @@ namespace LibARMP
             }
             else
             {
-                throw new ColumnNotFoundException($"The column '{columnName}' does not exist.");
+                throw new ColumnNotFoundException($"The column '{columnName}' does not exist or has no data.");
             }
         }
 
@@ -93,28 +98,91 @@ namespace LibARMP
             }
             else
             {
-                throw new ColumnNotFoundException($"A column with index '{columnIndex}' does not exist.");
+                throw new ColumnNotFoundException($"A column with index '{columnIndex}' does not exist or has no data.");
             }
         }
 
 
+        /// <summary>
+        /// Gets the value for the specified column.
+        /// </summary>
+        /// <param name="column">The ArmpTableColumn.</param>
+        public object GetValueFromColumn (ArmpTableColumn column)
+        {
+            return GetValueFromColumn(column.Name);
+        }
+
 
         /// <summary>
-        /// Sets the value for the specified column. NO TYPE CHECKS ARE PERFORMED
+        /// Gets the value for the specified column.
+        /// </summary>
+        /// <param name="columnName">The name of the column.</param>
+        public T GetValueFromColumn<T> (string columnName)
+        {
+            object result = GetValueFromColumn(columnName);
+            try
+            {
+                return (T)result;
+            }
+            catch
+            {
+                Type paramType = typeof(T);
+                throw new Exception($"Cannot convert from {result.GetType()} to {paramType}.");
+            }
+        }
+
+
+        /// <summary>
+        /// Gets the value for the specified column.
+        /// </summary>
+        /// <param name="columnIndex">The column index.</param>
+        public T GetValueFromColumn<T> (int columnIndex)
+        {
+            object result = GetValueFromColumn(columnIndex);
+            try
+            {
+                return (T)result;
+            }
+            catch
+            {
+                Type paramType = typeof(T);
+                throw new Exception($"Cannot convert from {result.GetType()} to {paramType}");
+            }
+        }
+
+
+        /// <summary>
+        /// Gets the value for the specified column.
+        /// </summary>
+        /// <param name="column">The ArmpTableColumn.</param>
+        public T GetValueFromColumn<T> (ArmpTableColumn column)
+        {
+            object result = GetValueFromColumn(column.Name);
+            try
+            {
+                return (T)result;
+            }
+            catch
+            {
+                Type paramType = typeof(T);
+                throw new Exception($"Cannot convert from {result.GetType()} to {paramType}.");
+            }
+        }
+
+
+        /// <summary>
+        /// Sets the value for the specified column.
         /// </summary>
         /// <param name="columnName">The column name.</param>
         /// <param name="value">The value to write.</param>
         public void SetValueFromColumn (string columnName, object value)
         {
-            if (Data.ContainsKey(columnName))
-            {
-                Data[columnName] = value;
-            }
-            else
-            {
-                throw new ColumnNotFoundException($"The column '{columnName}' does not exist.");
-            }
-        }
+            Type targetType = ParentTable.GetColumn(columnName).ColumnType;
 
+            if (targetType != value.GetType())
+                throw new Exception($"Type mismatch. Expected {targetType} and got {value.GetType()}.");
+
+            Data[columnName] = value;
+        }
     }
 }

@@ -1,19 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace LibARMP
 {
     [Serializable]
     public class ArmpTableColumn
     {
-        public ArmpTableColumn(int id)
+        internal ArmpTableColumn(int id)
         {
             this.ID = id;
             Children = new List<ArmpTableColumn>();
         }
 
-        public ArmpTableColumn(int id, string name, Type type) : this(id)
+        internal ArmpTableColumn(int id, string name, Type type) : this(id)
         {
             this.Name = name;
             this.ColumnType = type;
@@ -27,7 +26,7 @@ namespace LibARMP
         /// <summary>
         /// Gets or sets the column name.
         /// </summary>
-        public string Name { get; set; }
+        public string Name { get; internal set; }
 
         /// <summary>
         /// Gets or sets the column type.
@@ -52,7 +51,7 @@ namespace LibARMP
         /// <summary>
         /// Gets or sets if the column contains no data despite being valid.
         /// </summary>
-        public bool IsNoData { get; set; }
+        internal bool IsNoData { get; set; }
 
         /// <summary>
         /// Gets or sets if the column is special.

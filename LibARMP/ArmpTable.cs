@@ -150,35 +150,77 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Gets the row names.
+        /// Gets all entry names.
         /// </summary>
         /// <returns>A string list.</returns>
-        public List<string> GetRowNames()
+        public List<string> GetEntryNames()
         {
-            if (RowNames == null)
-                throw new Exception("There are no row names in this table.");
+            if (!TableInfo.HasRowNames)
+                throw new Exception("There are no entry names in this table.");
 
-            return RowNames;
+            List<string> returnList = new List<string>();
+            foreach (ArmpEntry entry in Entries)
+            {
+                returnList.Add(entry.Name);
+            }
+
+            return returnList;
         }
 
 
         /// <summary>
-        /// Gets the name of a specific row.
+        /// Gets the name of a specific entry.
         /// </summary>
-        /// <param name="id">The ID of the row.</param>
+        /// <param name="id">The entry ID.</param>
         /// <returns>A string.</returns>
-        public string GetRowName (int id)
+        public string GetEntryName (int id)
         {
-            if (RowNames == null)
-                throw new Exception("There are no row names in this table.");
+            if (!TableInfo.HasRowNames)
+                throw new Exception("There are no entry names in this table.");
 
             try
             {
-                return RowNames[id];
+                return Entries[id].Name;
             }
             catch
             {
-                throw new Exception($"No row name with ID {id}");
+                throw new Exception($"No entry with ID {id}");
+            }
+        }
+
+
+        /// <summary>
+        /// Gets a specific column in the table.
+        /// </summary>
+        /// <param name="id">The column ID.</param>
+        /// <returns>An ArmpTableColumn.</returns>
+        public ArmpTableColumn GetColumn (int id)
+        {
+            try
+            {
+                return Columns[id];
+            }
+            catch
+            {
+                throw new Exception($"No column with ID {id} in this table.");
+            }
+        }
+
+
+        /// <summary>
+        /// Gets a specific column in the table.
+        /// </summary>
+        /// <param name="columnName">The column name.</param>
+        /// <returns>An ArmpTableColumn.</returns>
+        public ArmpTableColumn GetColumn(string columnName)
+        {
+            try
+            {
+                return ColumnNameCache[columnName];
+            }
+            catch
+            {
+                throw new Exception($"No column with name '{columnName}' in this table.");
             }
         }
 
@@ -186,7 +228,7 @@ namespace LibARMP
         /// <summary>
         /// Gets the column names.
         /// </summary>
-        /// <param name="includeSpecials">Include special columns? (Array data types)</param>
+        /// <param name="includeSpecials">Include special columns? (Array data types. These columns do not contain data)</param>
         /// <returns>A string list.</returns>
         public List<string> GetColumnNames (bool includeSpecials = true)
         {

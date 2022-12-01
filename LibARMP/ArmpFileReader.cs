@@ -637,11 +637,13 @@ namespace LibARMP
                 if (!table.TableInfo.HasRowIndices)
                 {
                     ArmpEntry entry = new ArmpEntry(i, table.RowNames[i]);
+                    entry.ParentTable = table;
                     table.Entries.Add(entry);
                 }
                 else
                 {
                     ArmpEntry entry = new ArmpEntry(i, table.RowNames[i], table.RowIndices[i]);
+                    entry.ParentTable = table;
                     table.Entries.Add(entry);
                 }
             }
