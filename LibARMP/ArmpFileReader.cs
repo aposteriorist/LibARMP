@@ -237,35 +237,35 @@ namespace LibARMP
 
 
 
-            //Row names
-            if (table.TableInfo.HasRowNames)
+            //Entry names
+            if (table.TableInfo.HasEntryNames)
             {
-                table.RowNames = Util.IterateStringList(reader, Util.IterateOffsetList(reader, table.TableInfo.ptrRowNamesOffsetTable, table.TableInfo.RowCount));
+                table.EntryNames = Util.IterateStringList(reader, Util.IterateOffsetList(reader, table.TableInfo.ptrEntryNamesOffsetTable, table.TableInfo.EntryCount));
             }
             else
             {
                 //Fill with blanks
-                table.RowNames = new List<string>();
-                for (int r = 0; r < table.TableInfo.RowCount; r++)
+                table.EntryNames = new List<string>();
+                for (int r = 0; r < table.TableInfo.EntryCount; r++)
                 {
-                    table.RowNames.Add("");
+                    table.EntryNames.Add("");
                 }
             }
 
             //Text
             if (table.TableInfo.HasText) table.Text = Util.IterateStringList(reader, Util.IterateOffsetList(reader, table.TableInfo.ptrTextOffsetTable, table.TableInfo.TextCount));
 
-            //Row Indices
-            if (table.TableInfo.HasRowIndices) table.RowIndices = Util.IterateArray<int>(reader, table.TableInfo.ptrRowIndices, table.TableInfo.RowCount);
+            //Entry Indices
+            if (table.TableInfo.HasEntryIndices) table.EntryIndices = Util.IterateArray<int>(reader, table.TableInfo.ptrEntryIndices, table.TableInfo.EntryCount);
 
             InitializeEntries(table);
             ReadEntryData(reader, table.TableInfo.ptrColumnContentOffsetTable, table.TableInfo.StorageMode, version, table);
 
-            //Row Validity
-            if (table.TableInfo.HasRowValidity)
+            //Entry Validity
+            if (table.TableInfo.HasEntryValidity)
             {
-                table.RowValidity = Util.IterateBooleanBitmask(reader, table.TableInfo.ptrRowValidity, table.TableInfo.RowCount);
-                SetRowValidity(table.RowValidity, table.Entries);
+                table.EntryValidity = Util.IterateBooleanBitmask(reader, table.TableInfo.ptrEntryValidity, table.TableInfo.EntryCount);
+                SetEntryValidity(table.EntryValidity, table.Entries);
             }
 
             //Extra Field Info
@@ -299,7 +299,7 @@ namespace LibARMP
                         table.EmptyValuesIsNegativeOffset.Add(false);
                         if (offset == 0) continue;
 
-                        table.EmptyValues.Add(columnIndex, Util.IterateBooleanBitmask(reader, offset, table.TableInfo.RowCount));
+                        table.EmptyValues.Add(columnIndex, Util.IterateBooleanBitmask(reader, offset, table.TableInfo.EntryCount));
                     }
                 }
             }
@@ -376,18 +376,18 @@ namespace LibARMP
             }
 
 
-            //Row names
-            if (table.TableInfo.HasRowNames)
+            //Entry names
+            if (table.TableInfo.HasEntryNames)
             {
-                table.RowNames = Util.IterateStringList(reader, Util.IterateOffsetList(reader, table.TableInfo.ptrRowNamesOffsetTable, table.TableInfo.RowCount));
+                table.EntryNames = Util.IterateStringList(reader, Util.IterateOffsetList(reader, table.TableInfo.ptrEntryNamesOffsetTable, table.TableInfo.EntryCount));
             }
             else
             {
                 //Fill with blanks
-                table.RowNames = new List<string>();
-                for (int r = 0; r < table.TableInfo.RowCount; r++)
+                table.EntryNames = new List<string>();
+                for (int r = 0; r < table.TableInfo.EntryCount; r++)
                 {
-                    table.RowNames.Add("");
+                    table.EntryNames.Add("");
                 }
             }
 
@@ -411,12 +411,12 @@ namespace LibARMP
             InitializeEntries(table);
             ReadEntryData(reader, table.TableInfo.ptrColumnContentOffsetTable, table);
 
-            //Row Validity
-            if (table.TableInfo.HasRowValidity)
+            //Entry Validity
+            if (table.TableInfo.HasEntryValidity)
             {
                 //TODO Ishin
-                table.RowValidity = Util.IterateBooleanBitmask(reader, table.TableInfo.ptrRowValidity, table.TableInfo.RowCount);
-                SetRowValidity(table.RowValidity, table.Entries);
+                table.EntryValidity = Util.IterateBooleanBitmask(reader, table.TableInfo.ptrEntryValidity, table.TableInfo.EntryCount);
+                SetEntryValidity(table.EntryValidity, table.Entries);
             }
 
             table.RefreshColumnNameCache();
@@ -449,20 +449,20 @@ namespace LibARMP
             //Old Engine
             if (IsOldEngine)
             {
-                armpTableInfo.RowCount = reader.ReadInt32();
+                armpTableInfo.EntryCount = reader.ReadInt32();
                 //Ishin check
                 uint check = reader.ReadUInt32();
                 if (check > 0)
                 {
                     armpTableInfo.IsIshin = true;
-                    armpTableInfo.ptrRowValidity = check;
+                    armpTableInfo.ptrEntryValidity = check;
                 }
                 else
                 {
                     armpTableInfo.IsOldEngine = true;
                 }
-                armpTableInfo.ptrRowNamesOffsetTable = reader.ReadUInt32();
-                if (armpTableInfo.IsOldEngine) armpTableInfo.ptrRowValidity = reader.ReadUInt32();
+                armpTableInfo.ptrEntryNamesOffsetTable = reader.ReadUInt32();
+                if (armpTableInfo.IsOldEngine) armpTableInfo.ptrEntryValidity = reader.ReadUInt32();
                 else reader.ReadBytes(0x4);
                 armpTableInfo.ColumnCount = reader.ReadInt32();
                 armpTableInfo.ptrColumnNamesOffsetTable = reader.ReadUInt32();
@@ -475,17 +475,17 @@ namespace LibARMP
 
                 //Set flags
                 if (armpTableInfo.TextCount > 0) armpTableInfo.HasText = true;
-                if (armpTableInfo.ptrRowNamesOffsetTable > 0 && armpTableInfo.ptrRowNamesOffsetTable < 0xFFFFFFFF) armpTableInfo.HasRowNames = true;
+                if (armpTableInfo.ptrEntryNamesOffsetTable > 0 && armpTableInfo.ptrEntryNamesOffsetTable < 0xFFFFFFFF) armpTableInfo.HasEntryNames = true;
                 if (armpTableInfo.ptrColumnNamesOffsetTable > 0 && armpTableInfo.ptrColumnNamesOffsetTable < 0xFFFFFFFF) armpTableInfo.HasColumnNames = true;
-                if (armpTableInfo.ptrRowValidity > 0 && armpTableInfo.ptrRowValidity < 0xFFFFFFFF) armpTableInfo.HasRowValidity = true;
+                if (armpTableInfo.ptrEntryValidity > 0 && armpTableInfo.ptrEntryValidity < 0xFFFFFFFF) armpTableInfo.HasEntryValidity = true;
                 if (armpTableInfo.ptrColumnMetadata > 0 && armpTableInfo.ptrColumnMetadata < 0xFFFFFFFF) armpTableInfo.HasColumnMetadata = true;
 
 #if DEBUG
-                Console.WriteLine("Row Count: " + armpTableInfo.RowCount);
+                Console.WriteLine("Entry Count: " + armpTableInfo.EntryCount);
                 Console.WriteLine("Column Count: " + armpTableInfo.ColumnCount);
                 Console.WriteLine("Text Count: " + armpTableInfo.TextCount);
-                Console.WriteLine("Pointer to Row Names Offset Table: " + armpTableInfo.ptrRowNamesOffsetTable);
-                Console.WriteLine("Pointer to Row Validity: " + armpTableInfo.ptrRowValidity);
+                Console.WriteLine("Pointer to Entry Names Offset Table: " + armpTableInfo.ptrEntryNamesOffsetTable);
+                Console.WriteLine("Pointer to Entry Validity: " + armpTableInfo.ptrEntryValidity);
                 Console.WriteLine("Pointer to Column Data Types: " + armpTableInfo.ptrColumnDataTypes);
                 Console.WriteLine("Pointer to Column Content Offset Table: " + armpTableInfo.ptrColumnContentOffsetTable);
                 Console.WriteLine("Pointer to Text Offset Table: " + armpTableInfo.ptrTextOffsetTable);
@@ -498,12 +498,12 @@ namespace LibARMP
             else
             {
                 armpTableInfo.ptrMainTable = (uint)reader.Stream.Position; //DEBUG
-                armpTableInfo.RowCount = reader.ReadInt32();
+                armpTableInfo.EntryCount = reader.ReadInt32();
                 armpTableInfo.ColumnCount = reader.ReadInt32();
                 armpTableInfo.TextCount = reader.ReadInt32();
-                armpTableInfo.RowValidator = reader.ReadInt32();
-                armpTableInfo.ptrRowNamesOffsetTable = reader.ReadUInt32();
-                armpTableInfo.ptrRowValidity = reader.ReadUInt32();
+                armpTableInfo.EntryValidator = reader.ReadInt32();
+                armpTableInfo.ptrEntryNamesOffsetTable = reader.ReadUInt32();
+                armpTableInfo.ptrEntryValidity = reader.ReadUInt32();
                 armpTableInfo.ptrColumnDataTypes = reader.ReadUInt32();
                 armpTableInfo.ptrColumnContentOffsetTable = reader.ReadUInt32();
                 armpTableInfo.TableID = reader.ReadInt24();
@@ -511,7 +511,7 @@ namespace LibARMP
                 armpTableInfo.ptrTextOffsetTable = reader.ReadUInt32();
                 armpTableInfo.ptrColumnNamesOffsetTable = reader.ReadUInt32();
                 armpTableInfo.ColumnValidator = reader.ReadInt32();
-                armpTableInfo.ptrRowIndices = reader.ReadUInt32();
+                armpTableInfo.ptrEntryIndices = reader.ReadUInt32();
                 armpTableInfo.ptrColumnIndices = reader.ReadUInt32();
                 armpTableInfo.ptrColumnValidity = reader.ReadUInt32();
                 armpTableInfo.ptrSubTable = reader.ReadUInt32();
@@ -524,12 +524,12 @@ namespace LibARMP
                 //Set flags
                 if (armpTableInfo.TextCount > 0) armpTableInfo.HasText = true;
                 if (armpTableInfo.ptrSubTable > 0 && armpTableInfo.ptrSubTable < 0xFFFFFFFF) armpTableInfo.HasSubTable = true;
-                if (armpTableInfo.ptrRowNamesOffsetTable > 0 && armpTableInfo.ptrRowNamesOffsetTable < 0xFFFFFFFF) armpTableInfo.HasRowNames = true;
+                if (armpTableInfo.ptrEntryNamesOffsetTable > 0 && armpTableInfo.ptrEntryNamesOffsetTable < 0xFFFFFFFF) armpTableInfo.HasEntryNames = true;
                 if (armpTableInfo.ptrColumnNamesOffsetTable > 0 && armpTableInfo.ptrColumnNamesOffsetTable < 0xFFFFFFFF) armpTableInfo.HasColumnNames = true;
                 if (armpTableInfo.ptrColumnDataTypesAux > 0 && armpTableInfo.ptrColumnDataTypesAux < 0xFFFFFFFF) armpTableInfo.HasColumnDataTypesAux = true;
-                if (armpTableInfo.ptrRowValidity > 0 && armpTableInfo.ptrRowValidity < 0xFFFFFFFF) armpTableInfo.HasRowValidity = true;
+                if (armpTableInfo.ptrEntryValidity > 0 && armpTableInfo.ptrEntryValidity < 0xFFFFFFFF) armpTableInfo.HasEntryValidity = true;
                 if (armpTableInfo.ptrColumnValidity > 0 && armpTableInfo.ptrColumnValidity < 0xFFFFFFFF) armpTableInfo.HasColumnValidity = true;
-                if (armpTableInfo.ptrRowIndices > 0 && armpTableInfo.ptrRowIndices < 0xFFFFFFFF) armpTableInfo.HasRowIndices = true;
+                if (armpTableInfo.ptrEntryIndices > 0 && armpTableInfo.ptrEntryIndices < 0xFFFFFFFF) armpTableInfo.HasEntryIndices = true;
                 if (armpTableInfo.ptrColumnIndices > 0 && armpTableInfo.ptrColumnIndices < 0xFFFFFFFF) armpTableInfo.HasColumnIndices = true;
                 if (armpTableInfo.ptrEmptyValuesOffsetTable > 0 && armpTableInfo.ptrEmptyValuesOffsetTable < 0xFFFFFFFF) armpTableInfo.HasEmptyValues = true;
                 if (armpTableInfo.ptrColumnMetadata > 0 && armpTableInfo.ptrColumnMetadata < 0xFFFFFFFF) armpTableInfo.HasColumnMetadata = true;
@@ -537,12 +537,12 @@ namespace LibARMP
 
 
 #if DEBUG
-                Console.WriteLine("Row Count: " + armpTableInfo.RowCount);
+                Console.WriteLine("Entry Count: " + armpTableInfo.EntryCount);
                 Console.WriteLine("Column Count: " + armpTableInfo.ColumnCount);
                 Console.WriteLine("Text Count: " + armpTableInfo.TextCount);
-                Console.WriteLine("Row Validator: " + armpTableInfo.RowValidator);
-                Console.WriteLine("Pointer to Row Names Offset Table: " + armpTableInfo.ptrRowNamesOffsetTable);
-                Console.WriteLine("Pointer to Row Validity: " + armpTableInfo.ptrRowValidity);
+                Console.WriteLine("Entry Validator: " + armpTableInfo.EntryValidator);
+                Console.WriteLine("Pointer to Entry Names Offset Table: " + armpTableInfo.ptrEntryNamesOffsetTable);
+                Console.WriteLine("Pointer to Entry Validity: " + armpTableInfo.ptrEntryValidity);
                 Console.WriteLine("Pointer to Column Data Types: " + armpTableInfo.ptrColumnDataTypes);
                 Console.WriteLine("Pointer to Column Content Offset Table: " + armpTableInfo.ptrColumnContentOffsetTable);
                 Console.WriteLine("Table ID: " + armpTableInfo.TableID);
@@ -550,7 +550,7 @@ namespace LibARMP
                 Console.WriteLine("Pointer to Text Offset Table: " + armpTableInfo.ptrTextOffsetTable);
                 Console.WriteLine("Pointer to Column Names Offset Table: " + armpTableInfo.ptrColumnNamesOffsetTable);
                 Console.WriteLine("Column Validator: " + armpTableInfo.ColumnValidator);
-                Console.WriteLine("Pointer to Row Indices: " + armpTableInfo.ptrRowIndices);
+                Console.WriteLine("Pointer to Entry Indices: " + armpTableInfo.ptrEntryIndices);
                 Console.WriteLine("Pointer to Column Indices: " + armpTableInfo.ptrColumnIndices);
                 Console.WriteLine("Pointer to Column Validity: " + armpTableInfo.ptrColumnValidity);
                 Console.WriteLine("Pointer to SubTable: " + armpTableInfo.ptrSubTable);
@@ -632,17 +632,17 @@ namespace LibARMP
         /// <param name="table">The ArmpTable.</param>
         private static void InitializeEntries (ArmpTable table)
         {
-            for (int i=0; i<table.TableInfo.RowCount; i++)
+            for (int i=0; i<table.TableInfo.EntryCount; i++)
             {
-                if (!table.TableInfo.HasRowIndices)
+                if (!table.TableInfo.HasEntryIndices)
                 {
-                    ArmpEntry entry = new ArmpEntry(i, table.RowNames[i]);
+                    ArmpEntry entry = new ArmpEntry(i, table.EntryNames[i]);
                     entry.ParentTable = table;
                     table.Entries.Add(entry);
                 }
                 else
                 {
-                    ArmpEntry entry = new ArmpEntry(i, table.RowNames[i], table.RowIndices[i]);
+                    ArmpEntry entry = new ArmpEntry(i, table.EntryNames[i], table.EntryIndices[i]);
                     entry.ParentTable = table;
                     table.Entries.Add(entry);
                 }
@@ -657,12 +657,12 @@ namespace LibARMP
         /// <typeparam name="T">The type to read.</typeparam>
         /// <param name="reader">The DataReader.</param>
         /// <param name="table">The ArmpTable to store the read value.</param>
-        /// <param name="rowIndex">Row to insert the value into.</param>
+        /// <param name="entryIndex">Entry to insert the value into.</param>
         /// <param name="columnIndex">Column to insert the value into.</param>
-        private static void ReadType<T> (DataReader reader, ArmpTable table, int rowIndex, int columnIndex)
+        private static void ReadType<T> (DataReader reader, ArmpTable table, int entryIndex, int columnIndex)
         {
             T value = reader.Read<T>();
-            table.Entries[rowIndex].Data.Add(table.GetColumnName(columnIndex), value);
+            table.Entries[entryIndex].Data.Add(table.GetColumnName(columnIndex), value);
         }
 
 
@@ -672,7 +672,7 @@ namespace LibARMP
         /// </summary>
         /// <param name="reader">The DataReader.</param>
         /// <param name="ptrOffsetTable">The pointer to the offset table.</param>
-        /// <param name="storageMode">Storage mode used (0 = per column, 1 = per row).</param>
+        /// <param name="storageMode">Storage mode used (0 = per column, 1 = per entry).</param>
         /// <param name="version">Version of the format.</param>
         /// <param name="table">The table where the data will be added to.</param>
         private static void ReadEntryData (DataReader reader, UInt32 ptrOffsetTable, int storageMode, int version, ArmpTable table)
@@ -708,13 +708,13 @@ namespace LibARMP
                         List<bool> booleanColumnDataTemp = new List<bool>();
                         if (column.ColumnType == DataTypes.Types["boolean"])
                         {
-                            booleanColumnDataTemp = Util.IterateBooleanBitmask(reader, (uint)reader.Stream.Position, table.TableInfo.RowCount);
+                            booleanColumnDataTemp = Util.IterateBooleanBitmask(reader, (uint)reader.Stream.Position, table.TableInfo.EntryCount);
                         }
 
-                        for (int rowIndex = 0; rowIndex < table.TableInfo.RowCount; rowIndex++)
+                        for (int entryIndex = 0; entryIndex < table.TableInfo.EntryCount; entryIndex++)
                         {
-                            table.GetEntry(rowIndex).ColumnValueOffsets.Add(column.Name, (int)reader.Stream.Position);
-                            ReadValue(reader, table, version, rowIndex, column, booleanColumnDataTemp);
+                            table.GetEntry(entryIndex).ColumnValueOffsets.Add(column.Name, (int)reader.Stream.Position);
+                            ReadValue(reader, table, version, entryIndex, column, booleanColumnDataTemp);
                         }
 
                     }
@@ -726,7 +726,7 @@ namespace LibARMP
 
             else if (storageMode == 1)
             {
-                for (int rowIndex = 0; rowIndex < table.TableInfo.RowCount; rowIndex++)
+                for (int entryIndex = 0; entryIndex < table.TableInfo.EntryCount; entryIndex++)
                 {
                     int ptrData = reader.ReadInt32();
                     long nextPtr = reader.Stream.Position;
@@ -734,8 +734,8 @@ namespace LibARMP
                     foreach (ArmpTableColumn column in table.Columns)
                     {
                         reader.Stream.Seek(ptrData + column.Distance);
-                        table.GetEntry(rowIndex).ColumnValueOffsets.Add(column.Name, (int)reader.Stream.Position);
-                        ReadValue(reader, table, version, rowIndex, column);
+                        table.GetEntry(entryIndex).ColumnValueOffsets.Add(column.Name, (int)reader.Stream.Position);
+                        ReadValue(reader, table, version, entryIndex, column);
                     }
 
                     reader.Stream.Seek(nextPtr);
@@ -746,35 +746,35 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Reads a value corresponding to a row and column.
+        /// Reads a value corresponding to an entry and column.
         /// </summary>
         /// <param name="reader">The DataReader.</param>
         /// <param name="table">ArmpTable to save the data to.</param>
         /// <param name="version">armp version.</param>
         /// <param name="columnType">The type of the column to read.</param>
-        /// <param name="rowIndex">The row index.</param>
+        /// <param name="entryIndex">The entry index.</param>
         /// <param name="columnIndex">The column index.</param>
         /// <param name="booleanColumnDataTemp">(Optional) The boolean column data if its using storage mode 0.</param>
-        private static void ReadValue (DataReader reader, ArmpTable table, int version, int rowIndex, ArmpTableColumn column, List<bool> booleanColumnDataTemp = null)
+        private static void ReadValue (DataReader reader, ArmpTable table, int version, int entryIndex, ArmpTableColumn column, List<bool> booleanColumnDataTemp = null)
         {
             if (column.ColumnType == DataTypes.Types["invalid"])
             {
-                table.Entries[rowIndex].Data.Add(column.Name, null);
+                table.Entries[entryIndex].Data.Add(column.Name, null);
             }
 
             else if (column.ColumnType == DataTypes.Types["boolean"])
             {
                 if (booleanColumnDataTemp != null)
                 {
-                    bool value = booleanColumnDataTemp[rowIndex];
-                    table.Entries[rowIndex].Data.Add(column.Name, value);
+                    bool value = booleanColumnDataTemp[entryIndex];
+                    table.Entries[entryIndex].Data.Add(column.Name, value);
                 }
                 else
                 {
                     byte value = reader.ReadByte();
                     bool boolValue = true;
                     if (value == 0) boolValue = false;
-                    table.Entries[rowIndex].Data.Add(column.Name, boolValue);
+                    table.Entries[entryIndex].Data.Add(column.Name, boolValue);
                 }
             }
 
@@ -782,9 +782,9 @@ namespace LibARMP
             {
                 int index = reader.ReadInt32();
                 if (index != -1 && table.TableInfo.HasText) //Some files have valid string ids despite not having any text.
-                    table.Entries[rowIndex].Data.Add(column.Name, table.Text[index]);
+                    table.Entries[entryIndex].Data.Add(column.Name, table.Text[index]);
                 else
-                    table.Entries[rowIndex].Data.Add(column.Name, null);
+                    table.Entries[entryIndex].Data.Add(column.Name, null);
             }
 
             else if (column.ColumnType == DataTypes.Types["table"])
@@ -794,7 +794,7 @@ namespace LibARMP
                 if (tablepointer == 0 || tablepointer == -1) return;
                 ArmpTableMain tableValue = ReadTableMain(reader, tablepointer, version);
 
-                table.Entries[rowIndex].Data.Add(column.Name, tableValue);
+                table.Entries[entryIndex].Data.Add(column.Name, tableValue);
                 reader.Stream.Position = currentpos; //Reset position to the offset table
             }
 
@@ -810,14 +810,14 @@ namespace LibARMP
                 if (ReadTypeCache.ContainsKey(column.ColumnType))
                 {
                     MethodInfo methodref = ReadTypeCache[column.ColumnType];
-                    methodref.Invoke(null, new object[] { reader, table, rowIndex, column.ID });
+                    methodref.Invoke(null, new object[] { reader, table, entryIndex, column.ID });
                 }
                 else
                 {
                     MethodInfo methodinfo = typeof(ArmpFileReader).GetMethod("ReadType", BindingFlags.NonPublic | BindingFlags.Static);
                     MethodInfo methodref = methodinfo.MakeGenericMethod(column.ColumnType);
                     ReadTypeCache.Add(column.ColumnType, methodref);
-                    methodref.Invoke(null, new object[] { reader, table, rowIndex, column.ID });
+                    methodref.Invoke(null, new object[] { reader, table, entryIndex, column.ID });
                 }
             }
         }
@@ -844,21 +844,21 @@ namespace LibARMP
                 List<bool> booleanColumnDataTemp = new List<bool>();
                 if (column.ColumnType == DataTypes.Types["boolean"])
                 {
-                    booleanColumnDataTemp = Util.IterateBooleanBitmask(reader, (uint)reader.Stream.Position, table.TableInfo.RowCount);
+                    booleanColumnDataTemp = Util.IterateBooleanBitmask(reader, (uint)reader.Stream.Position, table.TableInfo.EntryCount);
                 }
 
-                for (int rowIndex = 0; rowIndex < table.TableInfo.RowCount; rowIndex++)
+                for (int entryIndex = 0; entryIndex < table.TableInfo.EntryCount; entryIndex++)
                 {
                     //TODO make this a function
                     if (column.ColumnType == DataTypes.Types["invalid"])
                     {
-                        table.Entries[rowIndex].Data.Add(column.Name, null);
+                        table.Entries[entryIndex].Data.Add(column.Name, null);
                     }
 
                     else if (column.ColumnType == DataTypes.Types["boolean"])
                     {
-                        bool value = booleanColumnDataTemp[rowIndex];
-                        table.Entries[rowIndex].Data.Add(column.Name, value);
+                        bool value = booleanColumnDataTemp[entryIndex];
+                        table.Entries[entryIndex].Data.Add(column.Name, value);
                     }
 
                     else
@@ -866,14 +866,14 @@ namespace LibARMP
                         if (ReadTypeCache.ContainsKey(column.ColumnType))
                         {
                             MethodInfo methodref = ReadTypeCache[column.ColumnType];
-                            methodref.Invoke(null, new object[] { reader, table, rowIndex, column.ID });
+                            methodref.Invoke(null, new object[] { reader, table, entryIndex, column.ID });
                         }
                         else
                         {
                             MethodInfo methodinfo = typeof(ArmpFileReader).GetMethod("ReadType", BindingFlags.NonPublic | BindingFlags.Static);
                             MethodInfo methodref = methodinfo.MakeGenericMethod(column.ColumnType);
                             ReadTypeCache.Add(column.ColumnType, methodref);
-                            methodref.Invoke(null, new object[] { reader, table, rowIndex, column.ID });
+                            methodref.Invoke(null, new object[] { reader, table, entryIndex, column.ID });
                         }
                     }
                 }
@@ -888,12 +888,12 @@ namespace LibARMP
         /// <summary>
         /// Sets the "Valid" flag for a list of entries.
         /// </summary>
-        /// <param name="rowValidity">The validity list.</param>
+        /// <param name="entryValidity">The validity list.</param>
         /// <param name="entries">The entry list to update.</param>
-        private static void SetRowValidity (List<bool> rowValidity, List<ArmpEntry> entries)
+        private static void SetEntryValidity (List<bool> entryValidity, List<ArmpEntry> entries)
         {
             int iter = 0;
-            foreach(bool validity in rowValidity)
+            foreach(bool validity in entryValidity)
             {
                 entries[iter].IsValid = validity;
                 iter++;

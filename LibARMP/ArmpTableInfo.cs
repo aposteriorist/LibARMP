@@ -9,22 +9,22 @@ namespace LibARMP
         public ArmpTableInfo ()
         {
             //General Info
-            this.RowCount = 0;
+            this.EntryCount = 0;
             this.ColumnCount = 0;
             this.TextCount = 0;
-            this.RowValidator = 0;
+            this.EntryValidator = 0;
             this.ColumnValidator = 0;
             this.TableID = 0;
             this.StorageMode = 0;
 
             //Pointers
-            this.ptrRowNamesOffsetTable = 0;
-            this.ptrRowValidity = 0;
+            this.ptrEntryNamesOffsetTable = 0;
+            this.ptrEntryValidity = 0;
             this.ptrColumnDataTypes = 0;
             this.ptrColumnContentOffsetTable = 0;
             this.ptrTextOffsetTable = 0;
             this.ptrColumnNamesOffsetTable = 0;
-            this.ptrRowIndices = 0;
+            this.ptrEntryIndices = 0;
             this.ptrColumnIndices = 0;
             this.ptrColumnValidity = 0;
             this.ptrSubTable = 0;
@@ -36,12 +36,12 @@ namespace LibARMP
             //Flags
             this.HasText = false;
             this.HasSubTable = false;
-            this.HasRowNames = false;
+            this.HasEntryNames = false;
             this.HasColumnNames = false;
             this.HasColumnDataTypesAux = false;
-            this.HasRowValidity = false;
+            this.HasEntryValidity = false;
             this.HasColumnValidity = false;
-            this.HasRowIndices = false;
+            this.HasEntryIndices = false;
             this.HasColumnIndices = false;
             this.HasExtraFieldInfo = false;
 
@@ -55,9 +55,9 @@ namespace LibARMP
         //General Info
 
         /// <summary>
-        /// Gets or sets the number of rows.
+        /// Gets or sets the number of entries.
         /// </summary>
-        public Int32 RowCount { get; set; }
+        public Int32 EntryCount { get; set; }
 
         /// <summary>
         /// Gets or sets the number of columns.
@@ -70,9 +70,9 @@ namespace LibARMP
         public Int32 TextCount { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating the validity of rows. (DRAGON ENGINE ONLY)
+        /// Gets or sets a value indicating the validity of entries. (DRAGON ENGINE ONLY)
         /// </summary>
-        public Int32 RowValidator { get; set; }
+        public Int32 EntryValidator { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating the validity of columns. (DRAGON ENGINE ONLY)
@@ -102,12 +102,12 @@ namespace LibARMP
         /// <summary>
         /// Gets or sets the pointer to the String Offset Table.
         /// </summary>
-        internal UInt32 ptrRowNamesOffsetTable { get; set; }
+        internal UInt32 ptrEntryNamesOffsetTable { get; set; }
 
         /// <summary>
-        /// Gets or sets the pointer to the Row Validity bitmask.
+        /// Gets or sets the pointer to the Entry Validity bitmask.
         /// </summary>
-        internal UInt32 ptrRowValidity { get; set; }
+        internal UInt32 ptrEntryValidity { get; set; }
 
         /// <summary>
         /// Gets or sets the pointer to the Column Data Types.
@@ -130,9 +130,9 @@ namespace LibARMP
         internal UInt32 ptrColumnNamesOffsetTable { get; set; }
 
         /// <summary>
-        /// Gets or sets the pointer to the Row Indices int array. (DRAGON ENGINE ONLY)
+        /// Gets or sets the pointer to the Entry Indices int array. (DRAGON ENGINE ONLY)
         /// </summary>
-        internal UInt32 ptrRowIndices { get; set; }
+        internal UInt32 ptrEntryIndices { get; set; }
 
         /// <summary>
         /// Gets or sets the pointer to the Column Indices int array. (DRAGON ENGINE ONLY)
@@ -184,9 +184,9 @@ namespace LibARMP
         public bool HasSubTable { get; set; }
 
         /// <summary>
-        /// Gets or sets the boolean indicating if the table has row names.
+        /// Gets or sets the boolean indicating if the table has entry names.
         /// </summary>
-        public bool HasRowNames { get; set; }
+        public bool HasEntryNames { get; set; }
 
         /// <summary>
         /// Gets or sets the boolean indicating if the table has column names.
@@ -199,9 +199,9 @@ namespace LibARMP
         public bool HasColumnDataTypesAux { get; set; }
 
         /// <summary>
-        /// Gets or sets the boolean indicating if the table has validity flags for rows. (DRAGON ENGINE ONLY)
+        /// Gets or sets the boolean indicating if the table has validity flags for entries. (DRAGON ENGINE ONLY)
         /// </summary>
-        public bool HasRowValidity { get; set; }
+        public bool HasEntryValidity { get; set; }
 
         /// <summary>
         /// Gets or sets the boolean indicating if the table has validity flags for columns. (DRAGON ENGINE ONLY)
@@ -209,9 +209,9 @@ namespace LibARMP
         public bool HasColumnValidity { get; set; }
 
         /// <summary>
-        /// Gets or sets the boolean indicating if the table has row indices. (DRAGON ENGINE ONLY)
+        /// Gets or sets the boolean indicating if the table has entry indices. (DRAGON ENGINE ONLY)
         /// </summary>
-        public bool HasRowIndices { get; set; }
+        public bool HasEntryIndices { get; set; }
 
         /// <summary>
         /// Gets or sets the boolean indicating if the table has column indices. (DRAGON ENGINE ONLY)

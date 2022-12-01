@@ -127,34 +127,34 @@ namespace LibARMP
             writer.Stream.PopPosition();
 
             int ptr = 0;
-            //Row Validity
-            if (table.TableInfo.HasRowValidity)
+            //Entry Validity
+            if (table.TableInfo.HasEntryValidity)
             {
                 //TODO Ishin
-                List<bool> rowValidity = new List<bool>();
+                List<bool> entryValidity = new List<bool>();
                 foreach (ArmpEntry entry in table.Entries)
                 {
-                    rowValidity.Add(entry.IsValid);
+                    entryValidity.Add(entry.IsValid);
                 }
-                table.RowValidity = rowValidity;
+                table.EntryValidity = entryValidity;
                 ptr = (int)writer.Stream.Position;
-                Util.WriteBooleanBitmask(writer, table.RowValidity);
+                Util.WriteBooleanBitmask(writer, table.EntryValidity);
                 writer.WritePadding(0x00, 8);
                 writer.Stream.PushToPosition(baseOffset + 0xC);
                 writer.Write(ptr);
                 writer.Stream.PopPosition();
             }
 
-            //Row Names
-            if (table.TableInfo.HasRowNames)
+            //Entry Names
+            if (table.TableInfo.HasEntryNames)
             {
-                List<string> rowNames = new List<string>();
+                List<string> entryNames = new List<string>();
                 foreach (ArmpEntry entry in table.Entries)
                 {
-                    rowNames.Add(entry.Name);
+                    entryNames.Add(entry.Name);
                 }
-                table.RowNames = rowNames;
-                ptr = Util.WriteText(writer, table.RowNames);
+                table.EntryNames = entryNames;
+                ptr = Util.WriteText(writer, table.EntryNames);
                 writer.Stream.PushToPosition(baseOffset + 0x8);
                 writer.Write(ptr);
                 writer.Stream.PopPosition();
@@ -381,7 +381,7 @@ namespace LibARMP
             long baseOffset = writer.Stream.Position;
             writer.WriteTimes(0x00, 0x50); //Placeholder table
 
-            //Row and column counts
+            //Entry and column counts
             writer.Stream.PushToPosition(baseOffset);
             writer.Write(table.Entries.Count);
             writer.Write(table.Columns.Count);
@@ -394,17 +394,17 @@ namespace LibARMP
             writer.Stream.PopPosition();
 
             int ptr = 0;
-            //Row Validity
-            if (table.TableInfo.HasRowValidity)
+            //Entry Validity
+            if (table.TableInfo.HasEntryValidity)
             {
-                List<bool> rowValidity = new List<bool>();
+                List<bool> entryValidity = new List<bool>();
                 foreach (ArmpEntry entry in table.Entries)
                 {
-                    rowValidity.Add(entry.IsValid);
+                    entryValidity.Add(entry.IsValid);
                 }
-                table.RowValidity = rowValidity;
+                table.EntryValidity = entryValidity;
                 ptr = (int)writer.Stream.Position;
-                Util.WriteBooleanBitmask(writer, table.RowValidity);
+                Util.WriteBooleanBitmask(writer, table.EntryValidity);
                 writer.WritePadding(0x00, 0x4);
                 writer.Stream.PushToPosition(baseOffset + 0x14);
                 writer.Write(ptr);
@@ -417,9 +417,9 @@ namespace LibARMP
                 writer.Stream.PopPosition();
             }
 
-            //Row Validator
+            //Entry Validator
             writer.Stream.PushToPosition(baseOffset + 0xC);
-            writer.Write(table.TableInfo.RowValidator);
+            writer.Write(table.TableInfo.EntryValidator);
             writer.Stream.PopPosition();
 
             //Column Validity
@@ -447,16 +447,16 @@ namespace LibARMP
             writer.Write(table.TableInfo.ColumnValidator);
             writer.Stream.PopPosition();
 
-            //Row Names
-            if (table.TableInfo.HasRowNames)
+            //Entry Names
+            if (table.TableInfo.HasEntryNames)
             {
-                List<string> rowNames = new List<string>();
+                List<string> entryNames = new List<string>();
                 foreach (ArmpEntry entry in table.Entries)
                 {
-                    rowNames.Add(entry.Name);
+                    entryNames.Add(entry.Name);
                 }
-                table.RowNames = rowNames;
-                ptr = Util.WriteText(writer, table.RowNames);
+                table.EntryNames = entryNames;
+                ptr = Util.WriteText(writer, table.EntryNames);
                 writer.Stream.PushToPosition(baseOffset + 0x10);
                 writer.Write(ptr);
                 writer.Stream.PopPosition();
@@ -746,8 +746,8 @@ namespace LibARMP
 
 
 
-            //Row Indices
-            if (table.TableInfo.HasRowIndices)
+            //Entry Indices
+            if (table.TableInfo.HasEntryIndices)
             {
                 ptr = (int)writer.Stream.Position;
 

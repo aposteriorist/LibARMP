@@ -27,7 +27,7 @@ namespace LibARMP
         /// <summary>
         /// Entry names.
         /// </summary>
-        internal List<string> RowNames { get; set; }
+        internal List<string> EntryNames { get; set; }
 
         /// <summary>
         /// Text.
@@ -35,14 +35,14 @@ namespace LibARMP
         internal List<string> Text { get; set; }
 
         /// <summary>
-        /// Row validity.
+        /// Entry validity. 
         /// </summary>
-        internal List<bool> RowValidity { get; set; }
+        internal List<bool> EntryValidity { get; set; }
 
         /// <summary>
-        /// Row indices.
+        /// Entry indices.
         /// </summary>
-        internal List<int> RowIndices { get; set; }
+        internal List<int> EntryIndices { get; set; }
 
         /// <summary>
         /// Columns.
@@ -55,7 +55,7 @@ namespace LibARMP
         internal List<ArmpEntry> Entries { get; set; }
 
         /// <summary>
-        /// Values marked as empty for specific columns (despite actually having a value) [column index, list<bool> (length = row count)]
+        /// Values marked as empty for specific columns (despite actually having a value) [column index, list<bool> (length = entry count)]
         /// </summary>
         internal Dictionary<int, List<bool>> EmptyValues { get; set; }
 
@@ -155,7 +155,7 @@ namespace LibARMP
         /// <returns>A string list.</returns>
         public List<string> GetEntryNames()
         {
-            if (!TableInfo.HasRowNames)
+            if (!TableInfo.HasEntryNames)
                 throw new Exception("There are no entry names in this table.");
 
             List<string> returnList = new List<string>();
@@ -175,7 +175,7 @@ namespace LibARMP
         /// <returns>A string.</returns>
         public string GetEntryName (int id)
         {
-            if (!TableInfo.HasRowNames)
+            if (!TableInfo.HasEntryNames)
                 throw new Exception("There are no entry names in this table.");
 
             try
@@ -541,7 +541,7 @@ namespace LibARMP
         public void AddEntry (ArmpEntry entry)
         {
             int id = Entries.Count;
-            if (entry.Name != null) RowNames.Add(entry.Name);
+            if (entry.Name != null) EntryNames.Add(entry.Name);
             entry.ID = id;
             entry.Index = id;
             Entries.Add(entry);
