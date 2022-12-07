@@ -579,7 +579,7 @@ namespace LibARMP
         private static List<Type> GetColumnDataTypes (DataReader reader, UInt32 ptrDataTypes, int amount, int version, bool isAuxiliary)
         {
             List<Type> returnList = new List<Type>();
-            IDictionary<sbyte, Type> typesDictionary = new Dictionary<sbyte, Type>();
+            IDictionary<sbyte, DataTypes.ArmpType> typesDictionary = new Dictionary<sbyte, DataTypes.ArmpType>();
 
             reader.Stream.Seek(ptrDataTypes);
 
@@ -593,7 +593,7 @@ namespace LibARMP
             for (int i = 0; i < amount; i++)
             {
                 sbyte id = reader.ReadSByte();
-                returnList.Add(typesDictionary[id]);
+                returnList.Add(DataTypes.Types[typesDictionary[id]]);
             }
 
             return returnList;
@@ -636,13 +636,13 @@ namespace LibARMP
             {
                 if (!table.TableInfo.HasEntryIndices)
                 {
-                    ArmpEntry entry = new ArmpEntry(i, table.EntryNames[i]);
+                    ArmpEntry entry = new ArmpEntry(table, i, table.EntryNames[i]);
                     entry.ParentTable = table;
                     table.Entries.Add(entry);
                 }
                 else
                 {
-                    ArmpEntry entry = new ArmpEntry(i, table.EntryNames[i], table.EntryIndices[i]);
+                    ArmpEntry entry = new ArmpEntry(table, i, table.EntryNames[i], table.EntryIndices[i]);
                     entry.ParentTable = table;
                     table.Entries.Add(entry);
                 }
@@ -706,7 +706,7 @@ namespace LibARMP
 #endif
                         //Only storage mode 0
                         List<bool> booleanColumnDataTemp = new List<bool>();
-                        if (column.ColumnType == DataTypes.Types["boolean"])
+                        if (column.ColumnType == DataTypes.Types[DataTypes.ArmpType.Boolean])
                         {
                             booleanColumnDataTemp = Util.IterateBooleanBitmask(reader, (uint)reader.Stream.Position, table.TableInfo.EntryCount);
                         }
@@ -751,18 +751,16 @@ namespace LibARMP
         /// <param name="reader">The DataReader.</param>
         /// <param name="table">ArmpTable to save the data to.</param>
         /// <param name="version">armp version.</param>
-        /// <param name="columnType">The type of the column to read.</param>
         /// <param name="entryIndex">The entry index.</param>
-        /// <param name="columnIndex">The column index.</param>
         /// <param name="booleanColumnDataTemp">(Optional) The boolean column data if its using storage mode 0.</param>
         private static void ReadValue (DataReader reader, ArmpTable table, int version, int entryIndex, ArmpTableColumn column, List<bool> booleanColumnDataTemp = null)
         {
-            if (column.ColumnType == DataTypes.Types["invalid"])
+            if (column.ColumnType == DataTypes.Types[DataTypes.ArmpType.Invalid])
             {
                 table.Entries[entryIndex].Data.Add(column.Name, null);
             }
 
-            else if (column.ColumnType == DataTypes.Types["boolean"])
+            else if (column.ColumnType == DataTypes.Types[DataTypes.ArmpType.Boolean])
             {
                 if (booleanColumnDataTemp != null)
                 {
@@ -778,7 +776,7 @@ namespace LibARMP
                 }
             }
 
-            else if (column.ColumnType == DataTypes.Types["string"])
+            else if (column.ColumnType == DataTypes.Types[DataTypes.ArmpType.String])
             {
                 int index = reader.ReadInt32();
                 if (index != -1 && table.TableInfo.HasText) //Some files have valid string ids despite not having any text.
@@ -787,7 +785,7 @@ namespace LibARMP
                     table.Entries[entryIndex].Data.Add(column.Name, null);
             }
 
-            else if (column.ColumnType == DataTypes.Types["table"])
+            else if (column.ColumnType == DataTypes.Types[DataTypes.ArmpType.Table])
             {
                 Int64 tablepointer = reader.ReadInt64();
                 Int64 currentpos = reader.Stream.Position;
@@ -842,7 +840,7 @@ namespace LibARMP
                 reader.Stream.Seek(ptrData);
 
                 List<bool> booleanColumnDataTemp = new List<bool>();
-                if (column.ColumnType == DataTypes.Types["boolean"])
+                if (column.ColumnType == DataTypes.Types[DataTypes.ArmpType.Boolean])
                 {
                     booleanColumnDataTemp = Util.IterateBooleanBitmask(reader, (uint)reader.Stream.Position, table.TableInfo.EntryCount);
                 }
@@ -850,12 +848,12 @@ namespace LibARMP
                 for (int entryIndex = 0; entryIndex < table.TableInfo.EntryCount; entryIndex++)
                 {
                     //TODO make this a function
-                    if (column.ColumnType == DataTypes.Types["invalid"])
+                    if (column.ColumnType == DataTypes.Types[DataTypes.ArmpType.Invalid])
                     {
                         table.Entries[entryIndex].Data.Add(column.Name, null);
                     }
 
-                    else if (column.ColumnType == DataTypes.Types["boolean"])
+                    else if (column.ColumnType == DataTypes.Types[DataTypes.ArmpType.Boolean])
                     {
                         bool value = booleanColumnDataTemp[entryIndex];
                         table.Entries[entryIndex].Data.Add(column.Name, value);
@@ -1004,7 +1002,7 @@ namespace LibARMP
 
             for (int i = 0; i < columnDataTypesAuxTable.Count; i++)
             {
-                Type type = DataTypes.TypesV2Aux[Convert.ToSByte(columnDataTypesAuxTable[i][0])];
+                Type type = DataTypes.IdToType(Convert.ToSByte(columnDataTypesAuxTable[i][0]), true, 2);
                 typesList.Add(type);
             }
 

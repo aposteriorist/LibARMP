@@ -535,17 +535,26 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Adds an entry to the end of the table.
+        /// Creates and adds a new entry to the end of the table.
         /// </summary>
-        /// <param name="entry">The entry to add.</param>
-        public void AddEntry (ArmpEntry entry)
+        /// <param name="name">The new entry name.</param>
+        public ArmpEntry AddEntry (string name = "")
         {
             int id = Entries.Count;
-            if (entry.Name != null) EntryNames.Add(entry.Name);
-            entry.ID = id;
-            entry.Index = id;
+            ArmpEntry entry = new ArmpEntry(this, id, name);
+            entry.SetDefaultColumnContent();
+
+            if (TableInfo.HasEntryIndices)
+                entry.Index = id;
+
+            if (TableInfo.HasEntryValidity)
+                entry.IsValid = true;
+
+            if (TableInfo.HasExtraFieldInfo && !TableInfo.IsDragonEngineV2)
+                entry.Flags = new bool[8] { false, false, false, false, false, false, false, false };
+
             Entries.Add(entry);
-            //TODO create additional entry related data
+            return entry;
         }
 
 
@@ -601,7 +610,7 @@ namespace LibARMP
                     entry.SetValueFromColumn(columnName, value);
 
                     //PLACEHOLDER PATCHER CODE
-                    if (column.ColumnType != DataTypes.Types["string"])
+                    if (column.ColumnType != DataTypes.Types[DataTypes.ArmpType.String])
                     {
                         if (!EditedValues.ContainsKey(column.Name))
                         {

@@ -8,18 +8,19 @@ namespace LibARMP
     public class ArmpEntry
     {
 
-        public ArmpEntry()
+        internal ArmpEntry(ArmpTable parentTable)
         {
             Data = new Dictionary<string, object>();
+            ParentTable = parentTable;
         }
 
-        public ArmpEntry(int id, string name) : this()
+        internal ArmpEntry(ArmpTable parentTable, int id, string name) : this(parentTable)
         {
             ID = id;
             Name = name;
         }
 
-        public ArmpEntry(int id, string name, int index) : this(id, name)
+        internal ArmpEntry(ArmpTable parentTable, int id, string name, int index) : this(parentTable, id, name)
         {
             Index = index;
         }
@@ -65,6 +66,26 @@ namespace LibARMP
         /// </summary>
         internal Dictionary<string, int> ColumnValueOffsets = new Dictionary<string, int>();
 
+
+
+        /// <summary>
+        /// Sets the values for all columns to their default.
+        /// </summary>
+        internal void SetDefaultColumnContent()
+        {
+            foreach (ArmpTableColumn column in ParentTable.Columns)
+            {
+                if (!column.IsSpecial)
+                {
+                    Type type = column.ColumnType;
+                    if (type != null)
+                    {
+                        object value = DataTypes.DefaultValues[DataTypes.TypesReverse[type]];
+                        SetValueFromColumn(column.Name, value);
+                    }
+                }
+            }
+        }
 
 
         /// <summary>
@@ -178,6 +199,9 @@ namespace LibARMP
         public void SetValueFromColumn (string columnName, object value)
         {
             Type targetType = ParentTable.GetColumn(columnName).ColumnType;
+
+            if (value == null)
+                return;
 
             if (targetType != value.GetType())
                 throw new Exception($"Type mismatch. Expected {targetType} and got {value.GetType()}.");

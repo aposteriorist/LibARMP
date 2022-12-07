@@ -207,7 +207,7 @@ namespace LibARMP
                 List<ArmpTableColumn> stringTypeColumns = new List<ArmpTableColumn>();
                 foreach (ArmpTableColumn column in table.Columns)
                 {
-                    if (column.ColumnType == DataTypes.Types["string"])
+                    if (column.ColumnType == DataTypes.Types[DataTypes.ArmpType.String])
                     {
                         stringTypeColumns.Add(column);
                     }
@@ -248,7 +248,7 @@ namespace LibARMP
                     List<bool> boolList = new List<bool>(); //Init list in case it is a boolean column
                     foreach (ArmpEntry entry in table.Entries)
                     {
-                        if (column.ColumnType == DataTypes.Types["string"])
+                        if (column.ColumnType == DataTypes.Types[DataTypes.ArmpType.String])
                         {
                             if (entry.GetValueFromColumn(column.Name) != null)
                             {
@@ -261,37 +261,37 @@ namespace LibARMP
                             }
                         }
 
-                        else if (column.ColumnType == DataTypes.Types["boolean"])
+                        else if (column.ColumnType == DataTypes.Types[DataTypes.ArmpType.Boolean])
                         {
                             boolList.Add((bool)entry.GetValueFromColumn(column.Name));
                         }
 
-                        else if (column.ColumnType == DataTypes.Types["uint8"])
+                        else if (column.ColumnType == DataTypes.Types[DataTypes.ArmpType.UInt8])
                         {
                             writer.Write((byte)entry.GetValueFromColumn(column.Name));
                         }
 
-                        else if (column.ColumnType == DataTypes.Types["int8"])
+                        else if (column.ColumnType == DataTypes.Types[DataTypes.ArmpType.Int8])
                         {
                             writer.Write((sbyte)entry.GetValueFromColumn(column.Name));
                         }
 
-                        else if (column.ColumnType == DataTypes.Types["uint16"])
+                        else if (column.ColumnType == DataTypes.Types[DataTypes.ArmpType.UInt16])
                         {
                             writer.Write((UInt16)entry.GetValueFromColumn(column.Name));
                         }
 
-                        else if (column.ColumnType == DataTypes.Types["int16"])
+                        else if (column.ColumnType == DataTypes.Types[DataTypes.ArmpType.Int16])
                         {
                             writer.Write((Int16)entry.GetValueFromColumn(column.Name));
                         }
 
-                        else if (column.ColumnType == DataTypes.Types["uint32"])
+                        else if (column.ColumnType == DataTypes.Types[DataTypes.ArmpType.UInt32])
                         {
                             writer.Write((UInt32)entry.GetValueFromColumn(column.Name));
                         }
 
-                        else if (column.ColumnType == DataTypes.Types["int32"])
+                        else if (column.ColumnType == DataTypes.Types[DataTypes.ArmpType.Int32])
                         {
                             writer.Write((Int32)entry.GetValueFromColumn(column.Name));
                         }
@@ -327,7 +327,7 @@ namespace LibARMP
         /// <returns>The pointer to the table.</returns>
         private static uint WriteTableRecursive (DataWriter writer, ArmpTable table)
         {
-            List<string> tableColumns = table.GetColumnNamesByType(DataTypes.Types["table"]);
+            List<string> tableColumns = table.GetColumnNamesByType(DataTypes.Types[DataTypes.ArmpType.Table]);
             Dictionary<ArmpTable, uint> tablePointers = new Dictionary<ArmpTable, uint>();
 
             if (tableColumns.Count > 0)
@@ -480,7 +480,7 @@ namespace LibARMP
                 List<ArmpTableColumn> stringTypeColumns = new List<ArmpTableColumn>();
                 foreach (ArmpTableColumn column in table.Columns)
                 {
-                    if (column.ColumnType == DataTypes.Types["string"])
+                    if (column.ColumnType == DataTypes.Types[DataTypes.ArmpType.String])
                     {
                         stringTypeColumns.Add(column);
                     }
@@ -516,7 +516,7 @@ namespace LibARMP
                     sbyte typeID = -1;
                     if (column.ColumnType != null)
                     {
-                        typeID = DataTypes.TypesV2Reverse[column.ColumnType];
+                        typeID = DataTypes.TypeToId(column.ColumnType, false, 2);
                     }
                     writer.Write(typeID);
                 }
@@ -528,7 +528,7 @@ namespace LibARMP
                     sbyte typeID = -1;
                     if (column.ColumnTypeAux != null)
                     {
-                        typeID = DataTypes.TypesV1Reverse[column.ColumnTypeAux];
+                        typeID = DataTypes.TypeToId(column.ColumnTypeAux, false, 1);
                     }
                     writer.Write(typeID);
                 }
@@ -556,7 +556,7 @@ namespace LibARMP
                     sbyte typeID = -1;
                     if (column.ColumnType != null)
                     {
-                        typeID = DataTypes.TypesV1AuxReverse[column.ColumnType];
+                        typeID = DataTypes.TypeToId(column.ColumnType, true, 1);
                     }
                     writer.Write(typeID);
                 }
@@ -586,7 +586,7 @@ namespace LibARMP
                     else
                     {
 
-                        if (column.ColumnType == DataTypes.Types["table"])
+                        if (column.ColumnType == DataTypes.Types[DataTypes.ArmpType.Table])
                         {
                             writer.WritePadding(0x00, 0x8);
                         }
@@ -599,7 +599,7 @@ namespace LibARMP
 
                         foreach (ArmpEntry entry in table.Entries)
                         {
-                            if (column.ColumnType == DataTypes.Types["string"])
+                            if (column.ColumnType == DataTypes.Types[DataTypes.ArmpType.String])
                             {
                                 if (entry.GetValueFromColumn(column.Name) != null)
                                 {
@@ -612,12 +612,12 @@ namespace LibARMP
                                 }
                             }
 
-                            else if (column.ColumnType == DataTypes.Types["boolean"])
+                            else if (column.ColumnType == DataTypes.Types[DataTypes.ArmpType.Boolean])
                             {
                                 boolList.Add((bool)entry.GetValueFromColumn(column.Name));
                             }
 
-                            else if (column.ColumnType == DataTypes.Types["table"])
+                            else if (column.ColumnType == DataTypes.Types[DataTypes.ArmpType.Table])
                             {
                                 try
                                 {
@@ -682,7 +682,7 @@ namespace LibARMP
                         {
                             Type columnType = table.GetColumnDataType(columnName);
 
-                            if (columnType == DataTypes.Types["string"])
+                            if (columnType == DataTypes.Types[DataTypes.ArmpType.String])
                             {
                                 if (entry.GetValueFromColumn(columnName) != null)
                                 {
@@ -695,13 +695,13 @@ namespace LibARMP
                                 }
                             }
 
-                            else if (columnType == DataTypes.Types["boolean"])
+                            else if (columnType == DataTypes.Types[DataTypes.ArmpType.Boolean])
                             {
                                 bool val = (bool)entry.GetValueFromColumn(columnName);
                                 writer.Write(Convert.ToByte(val));
                             }
 
-                            else if (columnType == DataTypes.Types["table"])
+                            else if (columnType == DataTypes.Types[DataTypes.ArmpType.Table])
                             {
                                 try
                                 {
@@ -906,7 +906,7 @@ namespace LibARMP
                 Type type = table.GetColumnDataType(column);
                 sbyte typeID = -1;
                 if (type != null)
-                    typeID = DataTypes.TypesV2Reverse[type];
+                    typeID = DataTypes.TypeToId(type, false, 2);
 
                 int size = 0;
                 if (table.IsColumnSpecial(column))

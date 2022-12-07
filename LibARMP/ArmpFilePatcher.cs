@@ -91,7 +91,7 @@ namespace LibARMP
                     }
                 }
 
-                if (column.ColumnType == DataTypes.Types["table"])
+                if (column.ColumnType == DataTypes.Types[DataTypes.ArmpType.Table])
                 {
                     foreach (ArmpEntry entry in table.GetAllEntries())
                     {

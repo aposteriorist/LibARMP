@@ -5,231 +5,341 @@ namespace LibARMP
 {
     internal class DataTypes
     {
-        //TODO add v2 types here
-        internal static IDictionary<string, Type> Types = new Dictionary<string, Type>
+        /// <summary>
+        /// Supported file types.
+        /// </summary>
+        internal enum ArmpType
         {
-            { "invalid", null }, // Invalid
-            { "uint8", typeof(byte) }, // uint8
-            { "uint16", typeof(UInt16) }, // uint16
-            { "uint32", typeof(UInt32) }, // uint32
-            { "uint64", typeof(UInt64) }, // uint64
-            { "int8", typeof(sbyte) }, // int8
-            { "int16", typeof(Int16) }, // int16
-            { "int32", typeof(Int32) }, // int32
-            { "int64", typeof(Int64) }, // int64
-            { "float32", typeof(float) }, // float32
-            { "float64", typeof(double) }, // float64
-            { "boolean", typeof(bool) }, // boolean
-            { "string", typeof(string) }, // string
-            { "table", typeof(ArmpTableMain) }, // Table
-            { "uint8_array", typeof(List<byte>) }, // uint8 array
-            { "uint16_array", typeof(List<UInt16>) }, // uint16 array
-            { "uint32_array", typeof(List<UInt32>) }, // uint32 array
-            { "uint64_array", typeof(List<UInt64>) }, // uint64 array
-            { "int8_array", typeof(List<sbyte>) }, // int8 array
-            { "int16_array", typeof(List<Int16>) }, // int16 array
-            { "int32_array", typeof(List<Int32>) }, // int32 array
-            { "int64_array", typeof(List<Int64>) }, // int64 array
-            { "string_array", typeof(List<string>) }, // string array
-            { "table_array", typeof(List<ArmpTableMain>) }, // table array
-            { "float32_array", typeof(List<float>) }, // float32 array
-            { "float64_array", typeof(List<double>) }, // float64 array
-            { "vf128_array", typeof(float[]) }, // VF128
-            { "bool_array", typeof(List<bool>) }, // bool array
+            Invalid,
+            UInt8,
+            UInt16,
+            UInt32,
+            UInt64,
+            Int8,
+            Int16,
+            Int32,
+            Int64,
+            Float32,
+            Float64,
+            Boolean,
+            String,
+            Table,
+            UInt8_Array,
+            UInt16_Array,
+            UInt32_Array,
+            UInt64_Array,
+            Int8_Array,
+            Int16_Array,
+            Int32_Array,
+            Int64_Array,
+            String_Array,
+            Table_Array,
+            Float32_Array,
+            Float64_Array,
+            VF128,
+            Boolean_Array,
+        }
+
+
+        /// <summary>
+        /// ARMP types to C# types.
+        /// </summary>
+        internal static IDictionary<ArmpType, Type> Types = new Dictionary<ArmpType, Type>
+        {
+            { ArmpType.Invalid, null }, // Invalid
+            { ArmpType.UInt8, typeof(byte) }, // uint8
+            { ArmpType.UInt16, typeof(UInt16) }, // uint16
+            { ArmpType.UInt32, typeof(UInt32) }, // uint32
+            { ArmpType.UInt64, typeof(UInt64) }, // uint64
+            { ArmpType.Int8, typeof(sbyte) }, // int8
+            { ArmpType.Int16, typeof(Int16) }, // int16
+            { ArmpType.Int32, typeof(Int32) }, // int32
+            { ArmpType.Int64, typeof(Int64) }, // int64
+            { ArmpType.Float32, typeof(float) }, // float32
+            { ArmpType.Float64, typeof(double) }, // float64
+            { ArmpType.Boolean, typeof(bool) }, // boolean
+            { ArmpType.String, typeof(string) }, // string
+            { ArmpType.Table, typeof(ArmpTableMain) }, // Table
+            { ArmpType.UInt8_Array, typeof(List<byte>) }, // uint8 array
+            { ArmpType.UInt16_Array, typeof(List<UInt16>) }, // uint16 array
+            { ArmpType.UInt32_Array, typeof(List<UInt32>) }, // uint32 array
+            { ArmpType.UInt64_Array, typeof(List<UInt64>) }, // uint64 array
+            { ArmpType.Int8_Array, typeof(List<sbyte>) }, // int8 array
+            { ArmpType.Int16_Array, typeof(List<Int16>) }, // int16 array
+            { ArmpType.Int32_Array, typeof(List<Int32>) }, // int32 array
+            { ArmpType.Int64_Array, typeof(List<Int64>) }, // int64 array
+            { ArmpType.String_Array, typeof(List<string>) }, // string array
+            { ArmpType.Table_Array, typeof(List<ArmpTableMain>) }, // table array
+            { ArmpType.Float32_Array, typeof(List<float>) }, // float32 array
+            { ArmpType.Float64_Array, typeof(List<double>) }, // float64 array
+            { ArmpType.VF128, typeof(float[]) }, // VF128
+            { ArmpType.Boolean_Array, typeof(List<bool>) }, // bool array
+        };
+
+
+        /// <summary>
+        /// C# types to ARMP types.
+        /// </summary>
+        internal static IDictionary<Type, ArmpType> TypesReverse = new Dictionary<Type, ArmpType>
+        {
+            //{ null, ArmpType.Invalid }, // Invalid
+            { typeof(byte), ArmpType.UInt8 }, // uint8
+            { typeof(UInt16) , ArmpType.UInt16 }, // uint16
+            { typeof(UInt32) , ArmpType.UInt32 }, // uint32
+            { typeof(UInt64) , ArmpType.UInt64 }, // uint64
+            { typeof(sbyte) , ArmpType.Int8 }, // int8
+            { typeof(Int16) , ArmpType.Int16 }, // int16
+            { typeof(Int32) , ArmpType.Int32 }, // int32
+            { typeof(Int64) , ArmpType.Int64 }, // int64
+            { typeof(float) , ArmpType.Float32 }, // float32
+            { typeof(double) , ArmpType.Float64 }, // float64
+            { typeof(bool) , ArmpType.Boolean }, // boolean
+            { typeof(string) , ArmpType.String }, // string
+            { typeof(ArmpTableMain) , ArmpType.Table }, // Table
+            { typeof(List < byte >) , ArmpType.UInt8_Array }, // uint8 array
+            { typeof(List < UInt16 >) , ArmpType.UInt16_Array }, // uint16 array
+            { typeof(List < UInt32 >) , ArmpType.UInt32_Array }, // uint32 array
+            { typeof(List < UInt64 >) , ArmpType.UInt64_Array }, // uint64 array
+            { typeof(List < sbyte >) , ArmpType.Int8_Array }, // int8 array
+            { typeof(List < Int16 >) , ArmpType.Int16_Array }, // int16 array
+            { typeof(List < Int32 >) , ArmpType.Int32_Array }, // int32 array
+            { typeof(List < Int64 >) , ArmpType.Int64_Array }, // int64 array
+            { typeof(List < string >) , ArmpType.String_Array }, // string array
+            { typeof(List < ArmpTableMain >) , ArmpType.Table_Array }, // table array
+            { typeof(List < float >) , ArmpType.Float32_Array }, // float32 array
+            { typeof(List < double >) , ArmpType.Float64_Array }, // float64 array
+            { typeof(float[]) , ArmpType.VF128 }, // VF128
+            { typeof(List < bool >) , ArmpType.Boolean_Array }, // bool array
+        };
+
+
+        /// <summary>
+        /// Default values for armp types.
+        /// </summary>
+        internal static IDictionary<ArmpType, object> DefaultValues = new Dictionary<ArmpType, object>()
+        {
+            { ArmpType.Invalid, null },
+            { ArmpType.UInt8, (byte) 0 },
+            { ArmpType.UInt16, (UInt16) 0 },
+            { ArmpType.UInt32, (UInt32) 0 },
+            { ArmpType.UInt64, (UInt64) 0 },
+            { ArmpType.Int8, (sbyte) 0 },
+            { ArmpType.Int16, (Int16) 0 },
+            { ArmpType.Int32, (Int32) 0 },
+            { ArmpType.Int64, (Int64) 0 },
+            { ArmpType.Float32, (float) 0 },
+            { ArmpType.Float64, (double) 0 },
+            { ArmpType.Boolean, false },
+            { ArmpType.String, "" },
+            { ArmpType.Table, null },
+            { ArmpType.UInt8_Array, null },
+            { ArmpType.UInt16_Array, null },
+            { ArmpType.UInt32_Array, null },
+            { ArmpType.UInt64_Array, null },
+            { ArmpType.Int8_Array, null },
+            { ArmpType.Int16_Array, null },
+            { ArmpType.Int32_Array, null },
+            { ArmpType.Int64_Array, null },
+            { ArmpType.String_Array, null },
+            { ArmpType.Table_Array, null },
+            { ArmpType.Float32_Array, null },
+            { ArmpType.Float64_Array, null },
+            { ArmpType.VF128, null },
+            { ArmpType.Boolean_Array, null },
         };
 
 
         /// <summary>
         /// Types for version 1.
         /// </summary>
-        internal static IDictionary<sbyte, Type> TypesV1 = new Dictionary<sbyte, Type>
+        internal static IDictionary<sbyte, ArmpType> TypesV1 = new Dictionary<sbyte, ArmpType>
         {
-            { -1, null }, // Invalid
-            { 2, typeof(byte) }, // uint8
-            { 1, typeof(UInt16) }, // uint16
-            { 0, typeof(UInt32) }, // uint32
-            { 8, typeof(UInt64) }, // uint64
-            { 5, typeof(sbyte) }, // int8
-            { 4, typeof(Int16) }, // int16
-            { 3, typeof(Int32) }, // int32
-            { 10, typeof(Int64) }, // int64
-            { 7, typeof(float) }, // float32
-            { 6, typeof(bool) }, // boolean
-            //{ 0, typeof(string) }, // string
-            { 9, typeof(ArmpTableMain) } // Table
+            { -1, ArmpType.Invalid }, // Invalid
+            { 2, ArmpType.UInt8 }, // uint8
+            { 1, ArmpType.UInt16 }, // uint16
+            { 0, ArmpType.UInt32 }, // uint32
+            { 8, ArmpType.UInt64 }, // uint64
+            { 5, ArmpType.Int8 }, // int8
+            { 4, ArmpType.Int16 }, // int16
+            { 3, ArmpType.Int32 }, // int32
+            { 10, ArmpType.Int64 }, // int64
+            { 7, ArmpType.Float32 }, // float32
+            { 6, ArmpType.Boolean }, // boolean
+            //{ 0, ArmpTypes.String }, // string
+            { 9, ArmpType.Table } // Table
         };
 
 
         /// <summary>
         /// Types for version 1. Reverse table for writes.
         /// </summary>
-        internal static IDictionary<Type, sbyte> TypesV1Reverse = new Dictionary<Type, sbyte>
+        internal static IDictionary<ArmpType, sbyte> TypesV1Reverse = new Dictionary<ArmpType, sbyte>
         {
-            //{ null, -1 }, // Invalid
-            { typeof(byte), 2 }, // uint8
-            { typeof(UInt16), 1 }, // uint16
-            { typeof(UInt32), 0 }, // uint32
-            { typeof(UInt64), 8 }, // uint64
-            { typeof(sbyte), 5 }, // int8
-            { typeof(Int16), 4 }, // int16
-            { typeof(Int32), 3 }, // int32
-            { typeof(Int64), 10 }, // int64
-            { typeof(float), 7 }, // float32
-            { typeof(bool), 6 }, // boolean
-            { typeof(string), 0 }, // string
-            { typeof(ArmpTableMain), 9 } // Table
+            { ArmpType.Invalid, -1 }, // Invalid
+            { ArmpType.UInt8, 2 }, // uint8
+            { ArmpType.UInt16, 1 }, // uint16
+            { ArmpType.UInt32, 0 }, // uint32
+            { ArmpType.UInt64, 8 }, // uint64
+            { ArmpType.Int8, 5 }, // int8
+            { ArmpType.Int16, 4 }, // int16
+            { ArmpType.Int32, 3 }, // int32
+            { ArmpType.Int64, 10 }, // int64
+            { ArmpType.Float32, 7 }, // float32
+            { ArmpType.Boolean, 6 }, // boolean
+            { ArmpType.String, 0 }, // string
+            { ArmpType.Table, 9 } // Table
         };
 
 
         /// <summary>
         /// Types for version 1 (auxiliary table).
         /// </summary>
-        internal static IDictionary<sbyte, Type> TypesV1Aux = new Dictionary<sbyte, Type>
+        internal static IDictionary<sbyte, ArmpType> TypesV1Aux = new Dictionary<sbyte, ArmpType>
         {
-            { -1, null }, // Invalid
-            { 0, typeof(byte) }, // uint8
-            { 1, typeof(UInt16) }, // uint16
-            { 2, typeof(UInt32) }, // uint32
-            { 3, typeof(UInt64) }, // uint64
-            { 4, typeof(sbyte) }, // int8
-            { 5, typeof(Int16) }, // int16
-            { 6, typeof(Int32) }, // int32
-            { 7, typeof(Int64) }, // int64
-            { 9, typeof(float) }, // float32
-            { 11, typeof(bool) }, // boolean
-            { 12, typeof(string) }, // string
-            { 13, typeof(ArmpTableMain) } // Table
+            { -1, ArmpType.Invalid }, // Invalid
+            { 0, ArmpType.UInt8 }, // uint8
+            { 1, ArmpType.UInt16 }, // uint16
+            { 2, ArmpType.UInt32 }, // uint32
+            { 3, ArmpType.UInt64 }, // uint64
+            { 4, ArmpType.Int8 }, // int8
+            { 5, ArmpType.Int16 }, // int16
+            { 6, ArmpType.Int32 }, // int32
+            { 7, ArmpType.Int64 }, // int64
+            { 9, ArmpType.Float32 }, // float32
+            { 11, ArmpType.Boolean }, // boolean
+            { 12, ArmpType.String }, // string
+            { 13, ArmpType.Table } // Table
         };
 
 
         /// <summary>
         /// Types for version 1 (auxiliary table). Reverse table for writes.
         /// </summary>
-        internal static IDictionary<Type, sbyte> TypesV1AuxReverse = new Dictionary<Type, sbyte>
+        internal static IDictionary<ArmpType, sbyte> TypesV1AuxReverse = new Dictionary<ArmpType, sbyte>
         {
-            //{ null, -1 }, // Invalid
-            { typeof(byte), 0 }, // uint8
-            { typeof(UInt16), 1 }, // uint16
-            { typeof(UInt32), 2 }, // uint32
-            { typeof(UInt64), 3 }, // uint64
-            { typeof(sbyte), 4 }, // int8
-            { typeof(Int16), 5 }, // int16
-            { typeof(Int32), 6 }, // int32
-            { typeof(Int64), 7 }, // int64
-            { typeof(float), 9 }, // float32
-            { typeof(bool), 11 }, // boolean
-            { typeof(string), 12 }, // string
-            { typeof(ArmpTableMain), 13 } // Table
+            { ArmpType.Invalid, -1 }, // Invalid
+            { ArmpType.UInt8, 0 }, // uint8
+            { ArmpType.UInt16, 1 }, // uint16
+            { ArmpType.UInt32, 2 }, // uint32
+            { ArmpType.UInt64, 3 }, // uint64
+            { ArmpType.Int8, 4 }, // int8
+            { ArmpType.Int16, 5 }, // int16
+            { ArmpType.Int32, 6 }, // int32
+            { ArmpType.Int64, 7 }, // int64
+            { ArmpType.Float32, 9 }, // float32
+            { ArmpType.Boolean, 11 }, // boolean
+            { ArmpType.String, 12 }, // string
+            { ArmpType.Table, 13 } // Table
         };
 
 
         /// <summary>
         /// Types for version 2.
         /// </summary>
-        internal static IDictionary<sbyte, Type> TypesV2 = new Dictionary<sbyte, Type>
+        internal static IDictionary<sbyte, ArmpType> TypesV2 = new Dictionary<sbyte, ArmpType>
         {
-            { -1, null }, // Invalid
-            { 2, typeof(byte) }, // uint8
-            { 1, typeof(UInt16) }, // uint16
-            { 0, typeof(UInt32) }, // uint32
-            { 8, typeof(UInt64) }, // uint64
-            { 5, typeof(sbyte) }, // int8
-            { 4, typeof(Int16) }, // int16
-            { 3, typeof(Int32) }, // int32
-            { 10, typeof(Int64) }, // int64
-            { 7, typeof(float) }, // float32
-            { 11, typeof(double) }, // float64
-            { 6, typeof(bool) }, // boolean
-            { 13, typeof(string) }, // string
-            { 9, typeof(ArmpTableMain) }, // Table
-            { 14, typeof(List<byte>) }, // uint8 array
-            { 15, typeof(List<UInt16>) }, // uint16 array
-            { 16, typeof(List<UInt32>) }, // uint32 array
-            { 17, typeof(List<UInt64>) }, // uint64 array
-            { 18, typeof(List<sbyte>) }, // int8 array
-            { 19, typeof(List<Int16>) }, // int16 array
-            { 20, typeof(List<Int32>) }, // int32 array
-            { 21, typeof(List<Int64>) }, // int64 array
-            { 22, typeof(List<string>) }, // string array
-            { 23, typeof(List<ArmpTableMain>) }, // table array
-            { 25, typeof(List<float>) }, // float32 array
-            { 26, typeof(List<double>) }, // float64 array
-            { 27, typeof(float[]) }, // VF128
-            { 29, typeof(List<bool>) }, // bool array
+            { -1, ArmpType.Invalid }, // Invalid
+            { 2, ArmpType.UInt8 }, // uint8
+            { 1, ArmpType.UInt16 }, // uint16
+            { 0, ArmpType.UInt32 }, // uint32
+            { 8, ArmpType.UInt64 }, // uint64
+            { 5, ArmpType.Int8 }, // int8
+            { 4, ArmpType.Int16 }, // int16
+            { 3, ArmpType.Int32 }, // int32
+            { 10, ArmpType.Int64 }, // int64
+            { 7, ArmpType.Float32 }, // float32
+            { 11, ArmpType.Float64 }, // float64
+            { 6, ArmpType.Boolean }, // boolean
+            { 13, ArmpType.String }, // string
+            { 9, ArmpType.Table }, // Table
+            { 14, ArmpType.UInt8_Array }, // uint8 array
+            { 15, ArmpType.UInt16_Array }, // uint16 array
+            { 16, ArmpType.UInt32_Array }, // uint32 array
+            { 17, ArmpType.UInt64_Array }, // uint64 array
+            { 18, ArmpType.Int8_Array }, // int8 array
+            { 19, ArmpType.Int16_Array }, // int16 array
+            { 20, ArmpType.Int32_Array }, // int32 array
+            { 21, ArmpType.Int64_Array }, // int64 array
+            { 22, ArmpType.String_Array }, // string array
+            { 23, ArmpType.Table_Array }, // table array
+            { 25, ArmpType.Float32_Array }, // float32 array
+            { 26, ArmpType.Float64_Array }, // float64 array
+            { 27, ArmpType.VF128 }, // VF128
+            { 29, ArmpType.Boolean_Array }, // bool array
         };
 
 
         /// <summary>
         /// Types for version 2. Reverse table for writes.
         /// </summary>
-        internal static IDictionary<Type, sbyte> TypesV2Reverse = new Dictionary<Type, sbyte>
+        internal static IDictionary<ArmpType, sbyte> TypesV2Reverse = new Dictionary<ArmpType, sbyte>
         {
-            //{ null, -1 }, // Invalid
-            { typeof(byte), 2 }, // uint8
-            { typeof(UInt16), 1 }, // uint16
-            { typeof(UInt32), 0 }, // uint32
-            { typeof(UInt64), 8 }, // uint64
-            { typeof(sbyte), 5 }, // int8
-            { typeof(Int16), 4 }, // int16
-            { typeof(Int32), 3 }, // int32
-            { typeof(Int64), 10 }, // int64
-            { typeof(float), 7 }, // float32
-            { typeof(double), 11 }, // float64
-            { typeof(bool), 6 }, // boolean
-            { typeof(string), 13 }, // string
-            { typeof(ArmpTableMain), 9 }, // Table
-            { typeof(List<byte>), 14 }, // uint8 array
-            { typeof(List<UInt16>), 15 }, // uint16 array
-            { typeof(List<UInt32>), 16 }, // uint32 array
-            { typeof(List<UInt64>), 17 }, // uint64 array
-            { typeof(List<sbyte>), 18 }, // int8 array
-            { typeof(List<Int16>), 19 }, // int16 array
-            { typeof(List<Int32>), 20 }, // int32 array
-            { typeof(List<Int64>), 21 }, // int64 array
-            { typeof(List<string>), 22 }, // string array
-            { typeof(List<ArmpTableMain>), 23 }, // table array
-            { typeof(List<float>), 25 }, // float32 array
-            { typeof(List<double>), 26 }, // float64 array
-            { typeof(float[]), 27 }, // VF128
-            { typeof(List<bool>), 29 }, // bool array
+            { ArmpType.Invalid, -1 }, // Invalid
+            { ArmpType.UInt8, 2 }, // uint8
+            { ArmpType.UInt16, 1 }, // uint16
+            { ArmpType.UInt32, 0 }, // uint32
+            { ArmpType.UInt64, 8 }, // uint64
+            { ArmpType.Int8, 5 }, // int8
+            { ArmpType.Int16, 4 }, // int16
+            { ArmpType.Int32, 3 }, // int32
+            { ArmpType.Int64, 10 }, // int64
+            { ArmpType.Float32, 7 }, // float32
+            { ArmpType.Float64, 11 }, // float64
+            { ArmpType.Boolean, 6 }, // boolean
+            { ArmpType.String, 13 }, // string
+            { ArmpType.Table, 9 }, // Table
+            { ArmpType.UInt8_Array, 14 }, // uint8 array
+            { ArmpType.UInt16_Array, 15 }, // uint16 array
+            { ArmpType.UInt32_Array, 16 }, // uint32 array
+            { ArmpType.UInt64_Array, 17 }, // uint64 array
+            { ArmpType.Int8_Array, 18 }, // int8 array
+            { ArmpType.Int16_Array, 19 }, // int16 array
+            { ArmpType.Int32_Array, 20 }, // int32 array
+            { ArmpType.Int64_Array, 21 }, // int64 array
+            { ArmpType.String_Array, 22 }, // string array
+            { ArmpType.Table_Array, 23 }, // table array
+            { ArmpType.Float32_Array, 25 }, // float32 array
+            { ArmpType.Float64_Array, 26 }, // float64 array
+            { ArmpType.VF128, 27 }, // VF128
+            { ArmpType.Boolean_Array, 29 }, // bool array
         };
 
 
         /// <summary>
         /// Types for version 2. (auxiliary table)
         /// </summary>
-        internal static IDictionary<sbyte, Type> TypesV2Aux = new Dictionary<sbyte, Type>
+        internal static IDictionary<sbyte, ArmpType> TypesV2Aux = new Dictionary<sbyte, ArmpType>
         {
-            { -1, null }, // Invalid
-            { 0, null }, // Invalid
-            { 4, typeof(byte) }, // uint8
-            { 3, typeof(UInt16) }, // uint16
-            { 2, typeof(UInt32) }, // uint32
-            { 1, typeof(UInt64) }, // uint64
-            { 8, typeof(sbyte) }, // int8
-            { 7, typeof(Int16) }, // int16
-            { 6, typeof(Int32) }, // int32
-            { 5, typeof(Int64) }, // int64
-            { 10, typeof(float) }, // float32
-            { 9, typeof(double) }, // float64
+            { -1, ArmpType.Invalid }, // Invalid
+            { 0, ArmpType.Invalid }, // Invalid
+            { 4, ArmpType.UInt8 }, // uint8
+            { 3, ArmpType.UInt16 }, // uint16
+            { 2, ArmpType.UInt32 }, // uint32
+            { 1, ArmpType.UInt64 }, // uint64
+            { 8, ArmpType.Int8 }, // int8
+            { 7, ArmpType.Int16 }, // int16
+            { 6, ArmpType.Int32 }, // int32
+            { 5, ArmpType.Int64 }, // int64
+            { 10, ArmpType.Float32 }, // float32
+            { 9, ArmpType.Float64 }, // float64
             //Note: booleans are stored as uint8
-            //{ 4, typeof(bool) }, // boolean
-            { 12, typeof(string) }, // string
-            { 13, typeof(ArmpTableMain) }, // Table
-            { 14, typeof(List<byte>) }, // uint8 array
-            { 15, typeof(List<UInt16>) }, // uint16 array
-            { 16, typeof(List<UInt32>) }, // uint32 array
-            { 17, typeof(List<UInt64>) }, // uint64 array
-            { 18, typeof(List<sbyte>) }, // int8 array
-            { 19, typeof(List<Int16>) }, // int16 array
-            { 20, typeof(List<Int32>) }, // int32 array
-            { 21, typeof(List<Int64>) }, // int64 array
-            { 25, typeof(List<string>) }, // string array
-            { 26, typeof(List<ArmpTableMain>) }, // table array
-            { 23, typeof(List<float>) }, // float32 array
-            { 24, typeof(List<double>) }, // float64 array
-            { 27, typeof(float[]) }, // VF128
-            { 29, typeof(List<bool>) }, // bool array
+            //{ 4, ArmpTypes.Boolean }, // boolean
+            { 12, ArmpType.String }, // string
+            { 13, ArmpType.Table }, // Table
+            { 14, ArmpType.UInt8_Array }, // uint8 array
+            { 15, ArmpType.UInt16_Array }, // uint16 array
+            { 16, ArmpType.UInt32_Array }, // uint32 array
+            { 17, ArmpType.UInt64_Array }, // uint64 array
+            { 18, ArmpType.Int8_Array }, // int8 array
+            { 19, ArmpType.Int16_Array }, // int16 array
+            { 20, ArmpType.Int32_Array }, // int32 array
+            { 21, ArmpType.Int64_Array }, // int64 array
+            { 25, ArmpType.String_Array }, // string array
+            { 26, ArmpType.Table_Array }, // table array
+            { 23, ArmpType.Float32_Array }, // float32 array
+            { 24, ArmpType.Float64_Array }, // float64 array
+            { 27, ArmpType.VF128 }, // VF128
+            { 29, ArmpType.Boolean_Array }, // bool array
         };
 
 
@@ -319,7 +429,7 @@ namespace LibARMP
             { 23, 0x0 }, // table array
             { 25, 0x0 }, // float32 array
             { 26, 0x0 }, // float64 array
-            { 27, 0x0 }, // VF128 ?? TODO
+            { 27, 0x0 }, // VF128
             { 29, 0x0 }, // bool array
         };
 
@@ -358,5 +468,63 @@ namespace LibARMP
             { typeof(string), 1 }, // string (indices as int16)
             //{ typeof(??), 8 }, // ??
         };
+
+
+
+        internal static ArmpType IdToArmpType (sbyte id, bool isAux = false , int version = 2)
+        {
+            if (version == 1)
+            {
+                if (isAux)
+                    return TypesV1Aux[id];
+                else
+                    return TypesV1[id];
+            }
+            else
+            {
+                if (isAux)
+                    return TypesV2Aux[id];
+                else
+                    return TypesV2[id];
+            }
+        }
+
+
+        internal static Type IdToType (sbyte id, bool isAux = false, int version = 2)
+        {
+            if (version == 1)
+            {
+                if (isAux)
+                    return Types[TypesV1Aux[id]];
+                else
+                    return Types[TypesV1[id]];
+            }
+            else
+            {
+                if (isAux)
+                    return Types[TypesV2Aux[id]];
+                else
+                    return Types[TypesV2[id]];
+            }
+        }
+
+
+        internal static sbyte TypeToId (Type type, bool isAux = false, int version = 2)
+        {
+            if (version == 1)
+            {
+                if (isAux)
+                    return TypesV1AuxReverse[TypesReverse[type]];
+                else
+                    return TypesV1Reverse[TypesReverse[type]];
+            }
+            else
+            {
+                if (isAux)
+                    return TypeIDsV2Aux[TypesV2Reverse[TypesReverse[type]]];
+                else
+                    return TypesV2Reverse[TypesReverse[type]];
+            }
+        }
     }
 }

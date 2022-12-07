@@ -276,5 +276,22 @@ namespace LibARMP.UnitTests
             entries = armp.MainTable.SearchByValue("u64_array[0]", (UInt64)0);
             Assert.AreEqual(3, entries.Count);
         }
+
+
+        [TestMethod]
+        public void ArmpTable_AddEntry()
+        {
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode0);
+            armp.MainTable.AddEntry("test_entry");
+            byte[] stream = ArmpFileWriter.WriteARMPToArray(armp);
+            ARMP armp_new = ArmpFileReader.ReadARMP(stream);
+            ArmpEntry entry = armp_new.MainTable.GetEntry("test_entry");
+            Assert.AreEqual(4, entry.ID);
+            Assert.AreEqual((byte) 0, entry.GetValueFromColumn<byte>("u8_"));
+            Assert.AreEqual((UInt16) 0, entry.GetValueFromColumn<UInt16>("u16_"));
+            Assert.AreEqual((UInt32) 0, entry.GetValueFromColumn<UInt32>("u32_"));
+            Assert.AreEqual((UInt64) 0, entry.GetValueFromColumn<UInt64>("u64_"));
+            Assert.AreEqual((float) 0, entry.GetValueFromColumn<float>("f32_"));
+        }
     }
 }
