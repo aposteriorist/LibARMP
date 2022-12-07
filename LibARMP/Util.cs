@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -230,5 +229,39 @@ namespace LibARMP
             return array;
         }
 
+
+        /// <summary>
+        /// Push the current position into a stack and move to a new one, write the specified 32-bit signed value,
+        /// pop the last position in the stack and move to it.
+        /// </summary>
+        /// <param name="dw">The DataWriter.</param>
+        /// <param name="val">32-bits signed value.</param>
+        /// <param name="shift">Distance to move position.</param>
+        /// <param name="mode">Mode to move position.</param>
+        internal static void PushWritePop(this DataWriter dw, int val, long shift, SeekMode mode = SeekMode.Start)
+        {
+            dw.Stream.PushToPosition(shift, mode);
+            dw.Write(val);
+            dw.Stream.PopPosition();
+        }
+
+
+        /// <summary>
+        /// Push the current position into a stack and move to a new one, write the specified 32-bit signed values,
+        /// pop the last position in the stack and move to it.
+        /// </summary>
+        /// <param name="dw">The DataWriter.</param>
+        /// <param name="vals">32-bits signed value array.</param>
+        /// <param name="shift">Distance to move position.</param>
+        /// <param name="mode">Mode to move position.</param>
+        internal static void PushWritePop(this DataWriter dw, int[] vals, long shift, SeekMode mode = SeekMode.Start)
+        {
+            dw.Stream.PushToPosition(shift, mode);
+            foreach (int val in vals)
+            {
+                dw.Write(val);
+            }
+            dw.Stream.PopPosition();
+        }
     }
 }

@@ -140,9 +140,7 @@ namespace LibARMP
                 ptr = (int)writer.Stream.Position;
                 Util.WriteBooleanBitmask(writer, table.EntryValidity);
                 writer.WritePadding(0x00, 8);
-                writer.Stream.PushToPosition(baseOffset + 0xC);
-                writer.Write(ptr);
-                writer.Stream.PopPosition();
+                writer.PushWritePop(ptr, baseOffset + 0xC);
             }
 
             //Entry Names
@@ -155,19 +153,14 @@ namespace LibARMP
                 }
                 table.EntryNames = entryNames;
                 ptr = Util.WriteText(writer, table.EntryNames);
-                writer.Stream.PushToPosition(baseOffset + 0x8);
-                writer.Write(ptr);
-                writer.Stream.PopPosition();
+                writer.PushWritePop(ptr, baseOffset + 0x8);
             }
 
             //Column Names and Count
             if (table.TableInfo.HasColumnNames)
             {
                 ptr = Util.WriteText(writer, table.GetColumnNames());
-                writer.Stream.PushToPosition(baseOffset + 0x10);
-                writer.Write(table.Columns.Count);
-                writer.Write(ptr);
-                writer.Stream.PopPosition();
+                writer.PushWritePop(new int[] { table.Columns.Count, ptr }, baseOffset + 0x10);
             }
 
             //Column Types
@@ -181,9 +174,7 @@ namespace LibARMP
                 }
                 writer.Write(typeID);
             }
-            writer.Stream.PushToPosition(baseOffset + 0x18);
-            writer.Write(ptr);
-            writer.Stream.PopPosition();
+            writer.PushWritePop(ptr, baseOffset + 0x18);
 
             //Column Metadata
             if (table.TableInfo.HasColumnMetadata)
@@ -193,9 +184,7 @@ namespace LibARMP
                 {
                     writer.Write(column.UnknownMetadata0x40);
                 }
-                writer.Stream.PushToPosition(baseOffset + 0x24);
-                writer.Write(ptr);
-                writer.Stream.PopPosition();
+                writer.PushWritePop(ptr, baseOffset + 0x24);
             }
 
             //Text
@@ -225,13 +214,9 @@ namespace LibARMP
                 table.Text = textList;
 
                 ptr = Util.WriteText(writer, table.Text);
-                writer.Stream.PushToPosition(baseOffset + 0x28);
-                writer.Write(ptr);
-                writer.Stream.PopPosition();
+                writer.PushWritePop(ptr, baseOffset + 0x28);
                 //Text count
-                writer.Stream.PushToPosition(baseOffset + 0x2C);
-                writer.Write(table.Text.Count);
-                writer.Stream.PopPosition();
+                writer.PushWritePop(table.Text.Count, baseOffset + 0x2C);
             }
 
             //Column Contents
@@ -312,9 +297,7 @@ namespace LibARMP
                 writer.Write(offset);
             }
 
-            writer.Stream.PushToPosition(baseOffset + 0x1C);
-            writer.Write(ptrColumnOffsetTable);
-            writer.Stream.PopPosition();
+            writer.PushWritePop(ptrColumnOffsetTable, baseOffset + 0x1C);
         }
 
 
@@ -406,21 +389,15 @@ namespace LibARMP
                 ptr = (int)writer.Stream.Position;
                 Util.WriteBooleanBitmask(writer, table.EntryValidity);
                 writer.WritePadding(0x00, 0x4);
-                writer.Stream.PushToPosition(baseOffset + 0x14);
-                writer.Write(ptr);
-                writer.Stream.PopPosition();
+                writer.PushWritePop(ptr, baseOffset + 0x14);
             }
             else
             {
-                writer.Stream.PushToPosition(baseOffset + 0x14);
-                writer.Write(-1);
-                writer.Stream.PopPosition();
+                writer.PushWritePop(-1, baseOffset + 0x14);
             }
 
             //Entry Validator
-            writer.Stream.PushToPosition(baseOffset + 0xC);
-            writer.Write(table.TableInfo.EntryValidator);
-            writer.Stream.PopPosition();
+            writer.PushWritePop(table.TableInfo.EntryValidator, baseOffset + 0xC);
 
             //Column Validity
             if (table.TableInfo.HasColumnValidity)
@@ -431,21 +408,15 @@ namespace LibARMP
                     columnValidity.Add((bool)column.IsValid);
                 Util.WriteBooleanBitmask(writer, columnValidity);
                 writer.WritePadding(0x00, 0x8);
-                writer.Stream.PushToPosition(baseOffset + 0x38);
-                writer.Write(ptr);
-                writer.Stream.PopPosition();
+                writer.PushWritePop(ptr, baseOffset + 0x38);
             }
             else
             {
-                writer.Stream.PushToPosition(baseOffset + 0x38);
-                writer.Write(-1);
-                writer.Stream.PopPosition();
+                writer.PushWritePop(-1, baseOffset + 0x38);
             }
 
             //Column Validator
-            writer.Stream.PushToPosition(baseOffset + 0x2C);
-            writer.Write(table.TableInfo.ColumnValidator);
-            writer.Stream.PopPosition();
+            writer.PushWritePop(table.TableInfo.ColumnValidator, baseOffset + 0x2C);
 
             //Entry Names
             if (table.TableInfo.HasEntryNames)
@@ -457,18 +428,14 @@ namespace LibARMP
                 }
                 table.EntryNames = entryNames;
                 ptr = Util.WriteText(writer, table.EntryNames);
-                writer.Stream.PushToPosition(baseOffset + 0x10);
-                writer.Write(ptr);
-                writer.Stream.PopPosition();
+                writer.PushWritePop(ptr, baseOffset + 0x10);
             }
 
             //Column Names
             if (table.TableInfo.HasColumnNames)
             {
                 ptr = Util.WriteText(writer, table.GetColumnNames());
-                writer.Stream.PushToPosition(baseOffset + 0x28);
-                writer.Write(ptr);
-                writer.Stream.PopPosition();
+                writer.PushWritePop(ptr, baseOffset + 0x28);
             }
 
             //Text
@@ -498,13 +465,9 @@ namespace LibARMP
                 table.Text = textList;
 
                 ptr = Util.WriteText(writer, table.Text);
-                writer.Stream.PushToPosition(baseOffset + 0x24);
-                writer.Write(ptr);
-                writer.Stream.PopPosition();
+                writer.PushWritePop(ptr, baseOffset + 0x24);
                 //Text count
-                writer.Stream.PushToPosition(baseOffset + 0x8);
-                writer.Write(table.Text.Count);
-                writer.Stream.PopPosition();
+                writer.PushWritePop(table.Text.Count, baseOffset + 0x8);
             }
 
             //Column Types
@@ -533,17 +496,13 @@ namespace LibARMP
                     writer.Write(typeID);
                 }
             }
-            writer.Stream.PushToPosition(baseOffset + 0x18);
-            writer.Write(ptr);
-            writer.Stream.PopPosition();
+            writer.PushWritePop(ptr, baseOffset + 0x18);
             writer.WritePadding(0x00, 0x8);
 
             //Set the text ptr to column types if there is no text
             if (!table.TableInfo.HasText)
             {
-                writer.Stream.PushToPosition(baseOffset + 0x24);
-                writer.Write(ptr);
-                writer.Stream.PopPosition();
+                writer.PushWritePop(ptr, baseOffset + 0x24);
             }
 
             //Column Types Aux (V1)
@@ -560,9 +519,7 @@ namespace LibARMP
                     }
                     writer.Write(typeID);
                 }
-                writer.Stream.PushToPosition(baseOffset + 0x48);
-                writer.Write(ptr);
-                writer.Stream.PopPosition();
+                writer.PushWritePop(ptr, baseOffset + 0x48);
             }
 
 
@@ -663,9 +620,7 @@ namespace LibARMP
                     writer.Write(offset);
                 }
 
-                writer.Stream.PushToPosition(baseOffset + 0x1C);
-                writer.Write(ptrColumnOffsetTable);
-                writer.Stream.PopPosition();
+                writer.PushWritePop(ptrColumnOffsetTable, baseOffset + 0x1C);
             }
 
 
@@ -739,9 +694,7 @@ namespace LibARMP
                     writer.Write(offset);
                 }
 
-                writer.Stream.PushToPosition(baseOffset + 0x1C);
-                writer.Write(ptrColumnOffsetTable);
-                writer.Stream.PopPosition();
+                writer.PushWritePop(ptrColumnOffsetTable, baseOffset + 0x1C);
             }
 
 
@@ -755,9 +708,7 @@ namespace LibARMP
                 {
                     writer.Write(entry.Index);
                 }
-                writer.Stream.PushToPosition(baseOffset + 0x30);
-                writer.Write(ptr);
-                writer.Stream.PopPosition();
+                writer.PushWritePop(ptr, baseOffset + 0x30);
             }
 
             //Column Indices
@@ -768,9 +719,7 @@ namespace LibARMP
                 {
                     writer.Write(column.Index);
                 }
-                writer.Stream.PushToPosition(baseOffset + 0x34);
-                writer.Write(ptr);
-                writer.Stream.PopPosition();
+                writer.PushWritePop(ptr, baseOffset + 0x34);
             }
 
             //Column Metadata
@@ -781,9 +730,7 @@ namespace LibARMP
                 {
                     writer.Write(column.UnknownMetadata0x40);
                 }
-                writer.Stream.PushToPosition(baseOffset + 0x40);
-                writer.Write(ptr);
-                writer.Stream.PopPosition();
+                writer.PushWritePop(ptr, baseOffset + 0x40);
             }
 
             //Entry Info Flags (v1 only)
@@ -800,9 +747,7 @@ namespace LibARMP
                     byte value = Convert.ToByte(Util.ReverseString(bitstring), 2);
                     writer.Write(value);
                 }
-                writer.Stream.PushToPosition(baseOffset + 0x4C);
-                writer.Write(ptr);
-                writer.Stream.PopPosition();
+                writer.PushWritePop(ptr, baseOffset + 0x4C);
             }
 
             //Empty Values
@@ -836,9 +781,7 @@ namespace LibARMP
                     }
                 }
 
-                writer.Stream.PushToPosition(baseOffset + 0x44);
-                writer.Write(ptr);
-                writer.Stream.PopPosition();
+                writer.PushWritePop(ptr, baseOffset + 0x44);
             }
 
             // Column Data Types Aux (V2)
@@ -848,9 +791,7 @@ namespace LibARMP
                 ptr = (int)writer.Stream.Position;
                 WriteColumnDataTypesAuxTable(writer, table);
 
-                writer.Stream.PushToPosition(baseOffset + 0x48);
-                writer.Write(ptr);
-                writer.Stream.PopPosition();
+                writer.PushWritePop(ptr, baseOffset + 0x48);
             }
 
             // Column Unknown Metadata 0x4C
@@ -885,9 +826,7 @@ namespace LibARMP
                     }
                 }
 
-                writer.Stream.PushToPosition(baseOffset + 0x4C);
-                writer.Write(ptr);
-                writer.Stream.PopPosition();
+                writer.PushWritePop(ptr, baseOffset + 0x4C);
             }
         }
 
