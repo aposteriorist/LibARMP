@@ -469,10 +469,57 @@ namespace LibARMP
         }
 
 
-        public void SetColumnValidity (string column, bool validity)
+        /// <summary>
+        /// Make a column valid/invalid. All entry values of a valid column made invalid will be lost.
+        /// All entry values of an invalid column made valid will be set to their defaults.
+        /// </summary>
+        /// <param name="column">The ArmpTableColumn.</param>
+        /// <param name="isValid">The new column validity.</param>
+        public void SetColumnValidity (ArmpTableColumn column, bool isValid)
         {
-            //TODO: Makes a column valid/invalid. Clear all the values if invalid, fill with default values if valid.
-            throw new NotImplementedException();
+            if (TableInfo.HasColumnValidity)
+            {
+                if (isValid) //Set all values to default
+                {
+                    foreach(ArmpEntry entry in Entries)
+                    {
+                        entry.SetDefaultColumnContent(column.Name);
+                    }
+                    column.IsValid = true;
+                }
+                else //Remove all values
+                {
+                    foreach (ArmpEntry entry in Entries)
+                    {
+                        entry.RemoveColumnContent(column.Name);
+                    }
+                    column.IsValid = false;
+                }
+            }
+            else
+            {
+                throw new Exception("This table has no column validity.");
+            }
+        }
+
+
+        /// <summary>
+        /// Make a column valid/invalid. All entry values of a valid column made invalid will be lost.
+        /// All entry values of an invalid column made valid will be set to their defaults.
+        /// </summary>
+        /// <param name="columnName">The column name.</param>
+        /// <param name="isValid">The new column validity.</param>
+        public void SetColumnValidity (string columnName, bool isValid)
+        {
+            try
+            {
+                ArmpTableColumn column = ColumnNameCache[columnName];
+                SetColumnValidity(column, isValid);
+            }
+            catch 
+            {
+                throw new Exception($"The column '{columnName}' does not exist in this table.");
+            }
         }
 
 

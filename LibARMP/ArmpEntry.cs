@@ -69,22 +69,78 @@ namespace LibARMP
 
 
         /// <summary>
+        /// Sets the value for the column to default.
+        /// </summary>
+        /// <param name="column">The ArmpTableColumn.</param>
+        internal void SetDefaultColumnContent (ArmpTableColumn column)
+        {
+            if (!column.IsSpecial)
+            {
+                Type type = column.ColumnType;
+                if (type != null)
+                {
+                    object value = DataTypes.DefaultValues[DataTypes.TypesReverse[type]];
+                    SetValueFromColumn(column.Name, value);
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Sets the value for the column to default.
+        /// </summary>
+        /// <param name="columnName">The column name.</param>
+        internal void SetDefaultColumnContent (string columnName)
+        {
+            try
+            {
+                ArmpTableColumn column = ParentTable.ColumnNameCache[columnName];
+                SetDefaultColumnContent(column);
+            }
+            catch
+            {
+                throw new Exception($"The column '{columnName}' does not exist in this table.");
+            }
+        }
+
+
+        /// <summary>
         /// Sets the values for all columns to their default.
         /// </summary>
         internal void SetDefaultColumnContent()
         {
             foreach (ArmpTableColumn column in ParentTable.Columns)
             {
-                if (!column.IsSpecial)
-                {
-                    Type type = column.ColumnType;
-                    if (type != null)
-                    {
-                        object value = DataTypes.DefaultValues[DataTypes.TypesReverse[type]];
-                        SetValueFromColumn(column.Name, value);
-                    }
-                }
+                SetDefaultColumnContent(column);
             }
+        }
+
+
+        /// <summary>
+        /// Removes the contents of the specified column.
+        /// </summary>
+        /// <returns>A boolean indicating if the operation completed successfully.</returns>
+        internal bool RemoveColumnContent (string columnName)
+        {
+            try
+            {
+                Data.Remove(columnName);
+                return true;
+            }
+            catch 
+            {
+                return false;
+            }
+        }
+
+
+        /// <summary>
+        /// Removes the contents of the specified column.
+        /// </summary>
+        /// <returns>A boolean indicating if the operation completed successfully.</returns>
+        internal bool RemoveColumnContent (ArmpTableColumn column)
+        {
+            return RemoveColumnContent(column.Name);
         }
 
 

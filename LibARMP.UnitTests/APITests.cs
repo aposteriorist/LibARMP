@@ -246,6 +246,27 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
+        public void ArmpTable_SetColumnValidity()
+        {
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode0);
+            armp.MainTable.SetColumnValidity("s32_", false);
+            ArmpTableColumn column = armp.MainTable.GetColumn("string");
+            armp.MainTable.SetColumnValidity(column, false);
+            armp.MainTable.SetColumnValidity(column, true);
+            armp.MainTable.GetEntry(2).SetValueFromColumn("string", "test_string");
+            byte[] buffer = ArmpFileWriter.WriteARMPToArray(armp);
+            ARMP armp_new = ArmpFileReader.ReadARMP(buffer);
+            Assert.IsFalse((bool)armp_new.MainTable.GetColumn("s32_").IsValid);
+            string result = armp.MainTable.GetEntry(2).GetValueFromColumn<string>("string");
+            string result2 = armp.MainTable.GetEntry(1).GetValueFromColumn<string>("string");
+            Assert.IsTrue((bool)armp_new.MainTable.GetColumn("string").IsValid);
+            Assert.AreEqual("test_string", result);
+            Assert.AreEqual("", result2);
+            
+        }
+
+
+        [TestMethod]
         public void ArmpTable_IsColumnSpecial()
         {
             ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode0);
