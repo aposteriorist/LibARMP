@@ -10,7 +10,7 @@ namespace LibARMP
 
         internal Dictionary<string, ArmpTableColumn> ColumnNameCache { get; set; }
 
-        public ArmpTable()
+        internal ArmpTable()
         {
             ColumnNameCache = new Dictionary<string, ArmpTableColumn>();
             Entries = new List<ArmpEntry>();
@@ -20,9 +20,9 @@ namespace LibARMP
         }
 
         /// <summary>
-        /// Pointers, flags and general information.
+        /// Flags and general information.
         /// </summary>
-        public ArmpTableInfo TableInfo { get; set; }
+        public ArmpTableInfo TableInfo { get; internal set; }
 
         /// <summary>
         /// Entry names.

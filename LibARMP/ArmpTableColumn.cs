@@ -19,17 +19,17 @@ namespace LibARMP
         }
 
         /// <summary>
-        /// Gets or sets the column ID.
+        /// Gets the column ID.
         /// </summary>
         public int ID { get; internal set; }
 
         /// <summary>
-        /// Gets or sets the column name.
+        /// Gets the column name.
         /// </summary>
         public string Name { get; internal set; }
 
         /// <summary>
-        /// Gets or sets the column type.
+        /// Gets the column type.
         /// </summary>
         public Type ColumnType { get; internal set; }
 
@@ -54,7 +54,7 @@ namespace LibARMP
         internal bool IsNoData { get; set; }
 
         /// <summary>
-        /// Gets or sets if the column is special.
+        /// Gets if the column is special.
         /// </summary>
         public bool IsSpecial { get; internal set; }
 

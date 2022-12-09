@@ -27,9 +27,9 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Gets or sets the entry ID.
+        /// Gets the entry ID.
         /// </summary>
-        public int ID { get; set; }
+        public int ID { get; internal set; }
 
         /// <summary>
         /// Gets or sets the entry name.
@@ -39,7 +39,7 @@ namespace LibARMP
         /// <summary>
         /// Data per column. (column, value)
         /// </summary>
-        public IDictionary<string, object> Data { get; set; }
+        internal IDictionary<string, object> Data { get; set; }
 
         /// <summary>
         /// Gets or sets the entry index. Can be NULL

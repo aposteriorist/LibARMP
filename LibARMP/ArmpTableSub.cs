@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
 
 namespace LibARMP
 {
     [Serializable]
     public class ArmpTableSub : ArmpTable
     {
-        public ArmpTableSub(ArmpTableMain parentTable) : base()
+        internal ArmpTableSub(ArmpTableMain parentTable) : base()
         {
             this.ParentTable = parentTable;
         }
@@ -19,7 +17,7 @@ namespace LibARMP
         /// </summary>
         /// <param name="parentTable">The parent ArmpTableMain.</param>
         /// <param name="armpTable">The source ArmpTable object.</param>
-        public ArmpTableSub(ArmpTableMain parentTable, ArmpTable armpTable) : this(parentTable)
+        internal ArmpTableSub(ArmpTableMain parentTable, ArmpTable armpTable) : this(parentTable)
         {
             var srcProperties = armpTable.GetType().GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
             var dstProperties = this.GetType().GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
@@ -41,6 +39,6 @@ namespace LibARMP
         /// <summary>
         /// The parent table of this subtable (indexer).
         /// </summary>
-        public ArmpTableMain ParentTable { get; set; }
+        public ArmpTableMain ParentTable { get; internal set; }
     }
 }

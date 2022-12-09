@@ -6,7 +6,7 @@ namespace LibARMP
     public class ArmpTableInfo
     {
 
-        public ArmpTableInfo ()
+        internal ArmpTableInfo ()
         {
             //General Info
             this.EntryCount = 0;
@@ -55,39 +55,39 @@ namespace LibARMP
         //General Info
 
         /// <summary>
-        /// Gets or sets the number of entries.
+        /// Gets the number of entries.
         /// </summary>
-        public Int32 EntryCount { get; set; }
+        public Int32 EntryCount { get; internal set; }
 
         /// <summary>
-        /// Gets or sets the number of columns.
+        /// Gets the number of columns.
         /// </summary>
-        public Int32 ColumnCount { get; set; }
+        public Int32 ColumnCount { get; internal set; }
 
         /// <summary>
-        /// Gets or sets the number of strings (field values).
+        /// Gets the number of strings.
         /// </summary>
-        public Int32 TextCount { get; set; }
+        public Int32 TextCount { get; internal set; }
 
         /// <summary>
-        /// Gets or sets a value indicating the validity of entries. (DRAGON ENGINE ONLY)
+        /// Gets a value indicating the validity of entries. (DRAGON ENGINE ONLY)
         /// </summary>
-        public Int32 EntryValidator { get; set; }
+        public Int32 EntryValidator { get; internal set; }
 
         /// <summary>
-        /// Gets or sets a value indicating the validity of columns. (DRAGON ENGINE ONLY)
+        /// Gets a value indicating the validity of columns. (DRAGON ENGINE ONLY)
         /// </summary>
-        public Int32 ColumnValidator { get; set; }
+        public Int32 ColumnValidator { get; internal set; }
 
         /// <summary>
-        /// Gets or sets the table ID (Int24). (DRAGON ENGINE ONLY)
+        /// Gets the table ID (Int24). (DRAGON ENGINE ONLY)
         /// </summary>
-        public Int32 TableID { get; set; }
+        public Int32 TableID { get; internal set; }
 
         /// <summary>
-        /// Gets or sets the storage Mode (only used in version 2). (DRAGON ENGINE ONLY)
+        /// Gets the storage Mode (only used in version 2). (DRAGON ENGINE ONLY)
         /// </summary>
-        public byte StorageMode { get; set; }
+        public byte StorageMode { get; internal set; }
 
 
 
@@ -97,7 +97,7 @@ namespace LibARMP
         /// <summary>
         /// Gets or sets the pointer to the Main Table. DEBUG
         /// </summary>
-        public UInt32 ptrMainTable { get; set; }
+        internal UInt32 ptrMainTable { get; set; }
 
         /// <summary>
         /// Gets or sets the pointer to the String Offset Table.
@@ -174,82 +174,82 @@ namespace LibARMP
         //Flags
 
         /// <summary>
-        /// Gets or sets the boolean indicating if the table has text.
+        /// Gets a boolean indicating if the table has text.
         /// </summary>
-        public bool HasText { get; set; }
+        public bool HasText { get; internal set; }
 
         /// <summary>
-        /// Gets or sets the boolean indicating if the table has a SubTable. (DRAGON ENGINE ONLY)
+        /// Gets a boolean indicating if the table has a SubTable. (DRAGON ENGINE ONLY)
         /// </summary>
-        public bool HasSubTable { get; set; }
+        public bool HasSubTable { get; internal set; }
 
         /// <summary>
-        /// Gets or sets the boolean indicating if the table has entry names.
+        /// Gets a boolean indicating if the table has entry names.
         /// </summary>
-        public bool HasEntryNames { get; set; }
+        public bool HasEntryNames { get; internal set; }
 
         /// <summary>
-        /// Gets or sets the boolean indicating if the table has column names.
+        /// Gets a boolean indicating if the table has column names.
         /// </summary>
-        public bool HasColumnNames { get; set; }
+        public bool HasColumnNames { get; internal set; }
 
         /// <summary>
         /// Gets or sets the boolean indicating if the table has an auxiliary column data types list. (DRAGON ENGINE ONLY)
         /// </summary>
-        public bool HasColumnDataTypesAux { get; set; }
+        internal bool HasColumnDataTypesAux { get; set; }
 
         /// <summary>
-        /// Gets or sets the boolean indicating if the table has validity flags for entries. (DRAGON ENGINE ONLY)
+        /// Gets a boolean indicating if the table has validity flags for entries. (DRAGON ENGINE ONLY)
         /// </summary>
-        public bool HasEntryValidity { get; set; }
+        public bool HasEntryValidity { get; internal set; }
 
         /// <summary>
-        /// Gets or sets the boolean indicating if the table has validity flags for columns. (DRAGON ENGINE ONLY)
+        /// Gets a boolean indicating if the table has validity flags for columns. (DRAGON ENGINE ONLY)
         /// </summary>
-        public bool HasColumnValidity { get; set; }
+        public bool HasColumnValidity { get; internal set; }
 
         /// <summary>
-        /// Gets or sets the boolean indicating if the table has entry indices. (DRAGON ENGINE ONLY)
+        /// Gets a boolean indicating if the table has entry indices. (DRAGON ENGINE ONLY)
         /// </summary>
-        public bool HasEntryIndices { get; set; }
+        public bool HasEntryIndices { get; internal set; }
 
         /// <summary>
-        /// Gets or sets the boolean indicating if the table has column indices. (DRAGON ENGINE ONLY)
+        /// Gets a boolean indicating if the table has column indices. (DRAGON ENGINE ONLY)
         /// </summary>
-        public bool HasColumnIndices { get; set; }
+        public bool HasColumnIndices { get; internal set; }
 
         /// <summary>
         /// Gets or sets the boolean indicating if the table has an Empty Values Table. (DRAGON ENGINE ONLY)
         /// </summary>
-        public bool HasEmptyValues { get; set; }
+        internal bool HasEmptyValues { get; set; }
 
         /// <summary>
-        /// Gets or sets the boolean indicating if the table has additional field info (varies between format versions). (DRAGON ENGINE ONLY)
+        /// Gets a boolean indicating if the table has additional field info (varies between format versions). (DRAGON ENGINE ONLY)
         /// </summary>
-        public bool HasExtraFieldInfo { get; set; }
+        public bool HasExtraFieldInfo { get; internal set; }
 
         /// <summary>
-        /// Gets or sets the boolean indicating if the table has column metadata.
+        /// Gets a boolean indicating if the table has column metadata.
         /// </summary>
-        public bool HasColumnMetadata { get; set; }
+        public bool HasColumnMetadata { get; internal set; }
 
 
 
-        //Extra Data
+        //Version Data
 
         /// <summary>
-        /// Gets or sets the boolean indicating if the table uses the Old Engine (0-K1-FOTNS) version.
+        /// Gets a boolean indicating if the table uses the Old Engine (0-K1-FOTNS) version.
         /// </summary>
-        public bool IsOldEngine { get; set; }
+        public bool IsOldEngine { get; internal set; }
 
         /// <summary>
-        /// Gets or sets the boolean indicating if the table uses the Old Engine (Ishin) version.
+        /// Gets a boolean indicating if the table uses the Old Engine (Ishin) version.
         /// </summary>
-        public bool IsIshin { get; set; }
+        public bool IsIshin { get; internal set; }
 
         /// <summary>
-        /// Gets or sets the boolean indicating if the table uses the Dragon Engine version 2.
+        /// Gets a boolean indicating if the table uses the Dragon Engine version 2.
         /// </summary>
-        public bool IsDragonEngineV2 { get; set; }
+        public bool IsDragonEngineV2 { get; internal set; }
     }
 }

@@ -6,31 +6,31 @@ namespace LibARMP
     public class ARMP
     {
 
-        public ARMP ()
+        internal ARMP ()
         {
 
         }
 
 
         /// <summary>
-        /// Gets or sets the version number.
+        /// Gets the version number.
         /// </summary>
-        public Int16 Version { get; set; }
+        public Int16 Version { get; internal set; }
 
         /// <summary>
-        /// Gets or sets the revision number.
+        /// Gets the revision number.
         /// </summary>
-        public Int16 Revision { get; set; }
+        public Int16 Revision { get; internal set; }
 
         /// <summary>
-        /// Is it using the Old Engine version of the format? (it shares the same version and revision numbers with DE).
+        /// Is it using the Old Engine version of the format? (it shares the same version and revision numbers with Dragon Engine v1).
         /// </summary>
-        public bool IsOldEngine { get; set; }
+        public bool IsOldEngine { get; internal set; }
 
         /// <summary>
-        /// Gets or sets the main table.
+        /// Gets the main table.
         /// </summary>
-        public ArmpTableMain MainTable { get; set; }
+        public ArmpTableMain MainTable { get; internal set; }
 
         /// <summary>
         /// Original armp file for patching.
