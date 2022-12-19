@@ -12,6 +12,15 @@ namespace LibARMP
         {
             Data = new Dictionary<string, object>();
             ParentTable = parentTable;
+
+            if (ParentTable.TableInfo.HasEntryIndices)
+                Index = ID;
+
+            if (ParentTable.TableInfo.HasEntryValidity)
+                IsValid = true;
+
+            if (ParentTable.TableInfo.HasExtraFieldInfo && !ParentTable.TableInfo.IsDragonEngineV2)
+                Flags = new bool[8] { false, false, false, false, false, false, false, false };
         }
 
         internal ArmpEntry(ArmpTable parentTable, int id, string name) : this(parentTable)

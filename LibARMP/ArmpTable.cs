@@ -590,30 +590,37 @@ namespace LibARMP
             int id = Entries.Count;
             ArmpEntry entry = new ArmpEntry(this, id, name);
             entry.SetDefaultColumnContent();
-
-            if (TableInfo.HasEntryIndices)
-                entry.Index = id;
-
-            if (TableInfo.HasEntryValidity)
-                entry.IsValid = true;
-
-            if (TableInfo.HasExtraFieldInfo && !TableInfo.IsDragonEngineV2)
-                entry.Flags = new bool[8] { false, false, false, false, false, false, false, false };
-
             Entries.Add(entry);
             return entry;
         }
 
 
         /// <summary>
-        /// Inserts an entry into the table at the specified index. NOT IMPLEMENTED
+        /// Creates and inserts a new entry at the specified index.
         /// </summary>
-        /// <param name="entry">The entry to add.</param>
-        /// <param name="id">Place in which the entry will be inserted.</param>
-        public void InsertEntry (ArmpEntry entry, int id)
+        /// <param name="id">The new entry ID.</param>
+        /// <param name="name">The new entry name.</param>
+        public ArmpEntry InsertEntry (int id, string name = "")
         {
-            //TODO
-            throw new NotImplementedException();
+            if (id <= Entries.Count)
+            {
+                ArmpEntry entry = new ArmpEntry(this, id, name);
+                entry.SetDefaultColumnContent();
+                Entries.Insert(id, entry);
+
+                if (Entries.Count > id)
+                {
+                    foreach (ArmpEntry e in Entries.GetRange(id + 1, Entries.Count - id - 1))
+                    {
+                        e.ID++;
+                    }
+                }
+                return entry;
+            }
+            else
+            {
+                throw new Exception($"ID {id} is greater than the amount of entries in the table.");
+            }
         }
 
 
@@ -621,7 +628,7 @@ namespace LibARMP
         /// Copy a specified entry.
         /// </summary>
         /// <param name="id">The entry to copy.</param>
-        public ArmpEntry CopyEntry (int id)
+        public ArmpEntry CopyEntry (int id) //TODO rewrite this to copy from one table to another
         {
             ArmpEntry entry;
             entry = GetEntry(id);
@@ -630,13 +637,42 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Deletes the specified entry and updates the ids for any entries after it.
+        /// Deletes the specified entry and updates the IDs for any entries after it.
         /// </summary>
-        /// <param name="id">The entry to delete.</param>
+        /// <param name="id">The ID of the entry to delete.</param>
         public void DeleteEntry (int id)
         {
-            //TODO
-            throw new NotImplementedException();
+            if (id < Entries.Count)
+            {
+                Entries.RemoveAt(id);
+                foreach (ArmpEntry entry in Entries.GetRange(id, Entries.Count - id))
+                {
+                    entry.ID--;
+                }
+            }
+            else
+            {
+                throw new Exception($"No entry with ID {id} in this table.");
+            }
+        }
+
+
+        /// <summary>
+        /// Deletes the specified entry and updates the IDs for any entries after it.
+        /// </summary>
+        /// <param name="name">The name of the entry to delete.</param>
+        public void DeleteEntry (string name)
+        {
+            try
+            {
+                ArmpEntry entry = GetEntry(name);
+                DeleteEntry(entry.ID);
+
+            }
+            catch
+            {
+                throw new Exception($"No entry with name {name} in this table.");
+            }
         }
 
 
@@ -696,19 +732,6 @@ namespace LibARMP
                 }
             }
             throw new ColumnNotFoundException($"The column '{columnName}' does not exist.");
-        }
-
-
-        /// <summary>
-        /// Returns a dummy entry for the specified table. TODO: THIS IS A PLACEHOLDER
-        /// </summary>
-        public ArmpEntry GenerateTemplateArmpEntry()
-        {
-            //Entry 0 is always empty, dirty approach is to make a copy.
-            //FIXME This wont work for empty armps (not a realistic case but an issue regardless) and subtables may have weird results.
-            ArmpEntry entry0;
-            entry0 = GetEntry(0);
-            return Util.DeepCopy<ArmpEntry>(entry0);
         }
     }
 }

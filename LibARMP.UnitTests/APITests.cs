@@ -8,7 +8,7 @@ namespace LibARMP.UnitTests
     public class APITests
     {
         ///// ArmpEntry /////
-        
+
         [TestMethod]
         public void ArmpEntry_ID()
         {
@@ -262,7 +262,7 @@ namespace LibARMP.UnitTests
             Assert.IsTrue((bool)armp_new.MainTable.GetColumn("string").IsValid);
             Assert.AreEqual("test_string", result);
             Assert.AreEqual("", result2);
-            
+
         }
 
 
@@ -308,11 +308,43 @@ namespace LibARMP.UnitTests
             ARMP armp_new = ArmpFileReader.ReadARMP(stream);
             ArmpEntry entry = armp_new.MainTable.GetEntry("test_entry");
             Assert.AreEqual(4, entry.ID);
-            Assert.AreEqual((byte) 0, entry.GetValueFromColumn<byte>("u8_"));
-            Assert.AreEqual((UInt16) 0, entry.GetValueFromColumn<UInt16>("u16_"));
-            Assert.AreEqual((UInt32) 0, entry.GetValueFromColumn<UInt32>("u32_"));
-            Assert.AreEqual((UInt64) 0, entry.GetValueFromColumn<UInt64>("u64_"));
-            Assert.AreEqual((float) 0, entry.GetValueFromColumn<float>("f32_"));
+            Assert.AreEqual((byte)0, entry.GetValueFromColumn<byte>("u8_"));
+            Assert.AreEqual((UInt16)0, entry.GetValueFromColumn<UInt16>("u16_"));
+            Assert.AreEqual((UInt32)0, entry.GetValueFromColumn<UInt32>("u32_"));
+            Assert.AreEqual((UInt64)0, entry.GetValueFromColumn<UInt64>("u64_"));
+            Assert.AreEqual((float)0, entry.GetValueFromColumn<float>("f32_"));
+        }
+
+
+        [TestMethod]
+        public void ArmpTable_InsertEntry()
+        {
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode0);
+            armp.MainTable.InsertEntry(2, "test_entry");
+            armp.MainTable.InsertEntry(4, "test_entry2");
+            armp.MainTable.InsertEntry(6, "test_entry3");
+            byte[] stream = ArmpFileWriter.WriteARMPToArray(armp);
+            ARMP armp_new = ArmpFileReader.ReadARMP(stream);
+            Assert.AreEqual(2, armp_new.MainTable.GetEntry("test_entry").ID);
+            Assert.AreEqual(3, armp_new.MainTable.GetEntry("min_value").ID);
+            Assert.AreEqual(4, armp_new.MainTable.GetEntry("test_entry2").ID);
+            Assert.AreEqual(5, armp_new.MainTable.GetEntry("max_value").ID);
+            Assert.AreEqual(6, armp_new.MainTable.GetEntry("test_entry3").ID);
+        }
+
+
+        [TestMethod]
+        public void ArmpTable_DeleteEntry()
+        {
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode0);
+            armp.MainTable.DeleteEntry(0);
+            armp.MainTable.DeleteEntry("min_value");
+            Assert.AreEqual(0, armp.MainTable.GetEntry("value").ID);
+            Assert.AreEqual("max_value", armp.MainTable.GetEntry(1).Name);
+            byte[] stream = ArmpFileWriter.WriteARMPToArray(armp);
+            ARMP armp_new = ArmpFileReader.ReadARMP(stream);
+            Assert.AreEqual(0, armp_new.MainTable.GetEntry("value").ID);
+            Assert.AreEqual("max_value", armp_new.MainTable.GetEntry(1).Name);
         }
     }
 }
