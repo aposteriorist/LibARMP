@@ -17,7 +17,7 @@ namespace LibARMP.UnitTests
             ARMP armp_new = ArmpFileReader.ReadARMP(stream);
             Assert.AreEqual(armp.Version, armp_new.Version);
             Assert.AreEqual(armp.Revision, armp_new.Revision);
-            Assert.AreEqual(armp.IsOldEngine, armp_new.IsOldEngine);
+            Assert.AreEqual(armp.FormatVersion, armp_new.FormatVersion);
             CollectionAssert.AreEqual(armp.MainTable.GetEntryNames(), armp_new.MainTable.GetEntryNames());
             CollectionAssert.AreEqual(armp.MainTable.GetColumnNames(), armp_new.MainTable.GetColumnNames());
             Assert.AreEqual(armp.MainTable.GetEntry(1).GetValueFromColumn("string"), armp_new.MainTable.GetEntry(1).GetValueFromColumn("string"));
@@ -255,7 +255,7 @@ namespace LibARMP.UnitTests
             ARMP armp_new = ArmpFileReader.ReadARMP(stream);
             Assert.AreEqual(armp.Version, armp_new.Version);
             Assert.AreEqual(armp.Revision, armp_new.Revision);
-            Assert.AreEqual(armp.IsOldEngine, armp_new.IsOldEngine);
+            Assert.AreEqual(armp.FormatVersion, armp_new.FormatVersion);
             Assert.AreEqual(armp.MainTable.TableInfo.StorageMode, armp_new.MainTable.TableInfo.StorageMode);
             CollectionAssert.AreEqual(armp.MainTable.GetEntryNames(), armp_new.MainTable.GetEntryNames());
             CollectionAssert.AreEqual(armp.MainTable.GetColumnNames(), armp_new.MainTable.GetColumnNames());
@@ -482,7 +482,7 @@ namespace LibARMP.UnitTests
             ARMP armp_new = ArmpFileReader.ReadARMP(stream);
             Assert.AreEqual(armp.Version, armp_new.Version);
             Assert.AreEqual(armp.Revision, armp_new.Revision);
-            Assert.AreEqual(armp.IsOldEngine, armp_new.IsOldEngine);
+            Assert.AreEqual(armp.FormatVersion, armp_new.FormatVersion);
             Assert.AreEqual(armp.MainTable.TableInfo.StorageMode, armp_new.MainTable.TableInfo.StorageMode);
             CollectionAssert.AreEqual(armp.MainTable.GetEntryNames(), armp_new.MainTable.GetEntryNames());
             CollectionAssert.AreEqual(armp.MainTable.GetColumnNames(), armp_new.MainTable.GetColumnNames());

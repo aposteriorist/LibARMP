@@ -271,7 +271,7 @@ namespace LibARMP
         {
             if (ColumnNameCache.ContainsKey(columnName))
             {
-                return ColumnNameCache[columnName].ColumnType;
+                return ColumnNameCache[columnName].Type.CSType;
             }
             throw new ColumnNotFoundException($"The column '{columnName}' does not exist in this table.");   
         }
@@ -287,7 +287,7 @@ namespace LibARMP
             List<string> returnList = new List<string>();
             foreach (ArmpTableColumn column in Columns)
             {
-                if (column.ColumnType == type)
+                if (column.Type.CSType == type)
                     returnList.Add(column.Name);
             }
 
@@ -317,7 +317,7 @@ namespace LibARMP
             List<int> returnList = new List<int>();
             foreach (ArmpTableColumn column in Columns)
             {
-                if (column.ColumnType == type) returnList.Add(column.ID);
+                if (column.Type.CSType == type) returnList.Add(column.ID);
             }
 
             return returnList;
@@ -565,7 +565,7 @@ namespace LibARMP
             if (ColumnNameCache.ContainsKey(columnName))
             {
                 ArmpTableColumn column = ColumnNameCache[columnName];
-                value = Convert.ChangeType(value, column.ColumnType);
+                value = Convert.ChangeType(value, column.Type.CSType);
 
                 List<ArmpEntry> returnList = new List<ArmpEntry>();
                 foreach (ArmpEntry entry in Entries)
@@ -687,13 +687,13 @@ namespace LibARMP
             if (ColumnNameCache.ContainsKey(columnName))
             {
                 ArmpTableColumn column = ColumnNameCache[columnName];
-                if (value.GetType() == column.ColumnType)
+                if (value.GetType() == column.Type.CSType)
                 {
                     ArmpEntry entry = GetEntry(id);
                     entry.SetValueFromColumn(columnName, value);
 
                     //PLACEHOLDER PATCHER CODE
-                    if (column.ColumnType != DataTypes.Types[DataTypes.ArmpType.String])
+                    if (column.Type.CSType != typeof(string))
                     {
                         if (!EditedValues.ContainsKey(column.Name))
                         {
@@ -704,7 +704,7 @@ namespace LibARMP
                 }
                 else
                 {
-                    throw new Exception($"Type mismatch. Expected {column.ColumnType} and got {value.GetType()}.");
+                    throw new Exception($"Type mismatch. Expected {column.Type} and got {value.GetType()}.");
                 }
             }
             else
@@ -723,7 +723,7 @@ namespace LibARMP
             if (ColumnNameCache.ContainsKey(columnName))
             {
                 ArmpTableColumn column = ColumnNameCache[columnName];
-                column.ColumnType = typeof(string);
+                column.Type.CSType = typeof(string);
                 foreach (ArmpEntry entry in Entries)
                 {
                     Int16 textIndex = (Int16)entry.Data[columnName];

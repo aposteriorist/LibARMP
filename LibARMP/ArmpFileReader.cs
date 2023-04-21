@@ -33,10 +33,10 @@ namespace LibARMP
             {
                 reader.Endianness = EndiannessMode.BigEndian;
                 reader.DefaultEncoding = System.Text.Encoding.GetEncoding(932);
-                armp.IsOldEngine = true;
+                armp.FormatVersion = Version.OldEngine;
             }
 
-            if (armp.IsOldEngine)
+            if (armp.FormatVersion == Version.OldEngine)
             {
                 armp.Version = reader.ReadInt16();
                 armp.Revision = reader.ReadInt16();
@@ -54,14 +54,16 @@ namespace LibARMP
 
             int fileSize = reader.ReadInt32(); //Only used in OE
 
-            if (armp.IsOldEngine)
+            if (armp.FormatVersion == Version.OldEngine)
             {
-                armp.MainTable = ReadTableMainOE(reader);
+                armp.MainTable = ReadTableMainOE(reader, armp.FormatVersion);
             }
             else
             {
+                if (armp.Version == 1) armp.FormatVersion = Version.DragonEngineV1;
+                else if (armp.Version == 2) armp.FormatVersion = Version.DragonEngineV2;
                 uint ptrMainTable = reader.ReadUInt32();
-                armp.MainTable = ReadTableMain(reader, ptrMainTable, armp.Version);
+                armp.MainTable = ReadTableMain(reader, ptrMainTable, armp.FormatVersion);
             }
 
             datastream.WriteTo(armp.File);
@@ -124,13 +126,13 @@ namespace LibARMP
         /// <param name="reader">The path to the armp file.</param>
         /// <param name="ptrMainTable">The pointer to the main table.</param>
         /// <returns>An ArmpTable object.</returns>
-        private static ArmpTable ReadTable (DataReader reader, long ptrMainTable, int version)
+        private static ArmpTable ReadTable (DataReader reader, long ptrMainTable, Version version)
         {
             ArmpTable table = new ArmpTable();
 
             reader.Stream.Seek(ptrMainTable);
             table.TableInfo = GetARMPTableInfo(reader, false);
-            if (version == 2) table.TableInfo.IsDragonEngineV2 = true;
+            table.TableInfo.FormatVersion = version;
 
             //Read general data
 
@@ -150,17 +152,17 @@ namespace LibARMP
             }
 
             //Column Data Types
-            List<Type> columnDataTypes = GetColumnDataTypes(reader, table.TableInfo.ptrColumnDataTypes, table.TableInfo.ColumnCount, version, false);
+            List<ArmpType> columnDataTypes = GetColumnDataTypes(reader, table.TableInfo.ptrColumnDataTypes, table.TableInfo.ColumnCount, version, false);
 
             //Column Data Types Aux
             List<List<int>> columnDataTypesAuxTable = new List<List<int>>();
-            List<Type> columnDataTypesAux = new List<Type>();
+            List<ArmpType> columnDataTypesAux = new List<ArmpType>();
             if (table.TableInfo.HasColumnDataTypesAux)
             {
-                if (version == 2)
+                if (version == Version.DragonEngineV2)
                 {
                     columnDataTypesAuxTable = GetColumnDataTypesAuxTable(reader, table.TableInfo.ptrColumnDataTypesAux, table.TableInfo.ColumnCount);
-                    columnDataTypesAux = ColumnDataTypesAuxTableToColumnDataTypesAux(columnDataTypesAuxTable);
+                    columnDataTypesAux = ColumnDataTypesAuxTableToColumnDataTypesAux(columnDataTypesAuxTable, version);
                 }
                 else
                 {
@@ -187,14 +189,13 @@ namespace LibARMP
                 if (table.TableInfo.HasColumnDataTypesAux)
                 {
                     //Use the aux type as main for v1. This is better than having to check for the correct type multiple times.
-                    if (version == 1)
+                    if (version == Version.DragonEngineV1)
                     {
-                        column.ColumnType = columnDataTypesAux[c];
-                        column.ColumnTypeAux = columnDataTypes[c];
+                        column.Type = columnDataTypesAux[c];
                     }
                     else //v2
                     {
-                        column.ColumnTypeAux = columnDataTypesAux[c];
+                        column.Type = columnDataTypes[c];
                         column.Distance = columnDataTypesAuxTable[c][1];
                         column.SpecialSize = columnDataTypesAuxTable[c][2];
                     }
@@ -204,9 +205,9 @@ namespace LibARMP
                 if (table.TableInfo.HasColumnIndices) column.Index = columnIndices[c];
                 if (table.TableInfo.HasColumnMetadata) column.UnknownMetadata0x40 = columnMetadata0x40[c];
 
-                if (version == 2)
+                if (version == Version.DragonEngineV2)
                 {
-                    if (DataTypes.TypesV2Specials.Contains(column.ColumnType)) column.IsSpecial = true;
+                    if (DataTypes.SpecialTypes.Contains(column.Type.CSType)) column.IsSpecial = true;
                     else column.IsSpecial = false;
                 }
 
@@ -215,7 +216,7 @@ namespace LibARMP
 
 
             //Assign special columns' children
-            if (version == 2)
+            if (version == Version.DragonEngineV2)
             {
                 foreach (ArmpTableColumn column in table.Columns)
                 {
@@ -271,11 +272,11 @@ namespace LibARMP
             //Extra Field Info
             if (table.TableInfo.HasExtraFieldInfo)
             {
-                if (version == 1) //Flags for each entry
+                if (version == Version.DragonEngineV1) //Flags for each entry
                 {
                     IterateEntryInfoFlags(reader, table.TableInfo.ptrExtraFieldInfo, table.Entries);
                 }
-                if (version == 2)
+                if (version == Version.DragonEngineV2)
                 {
                     ReadColumnUnknownMetadata0x4C(reader, table.TableInfo.ptrExtraFieldInfo, table);
                 }
@@ -317,7 +318,7 @@ namespace LibARMP
         /// <param name="ptrMainTable">The pointer to the main table.</param>
         /// <param name="version">The version number.</param>
         /// <returns>An ArmpTable object.</returns>
-        private static ArmpTableMain ReadTableMain (DataReader reader, long ptrMainTable, int version)
+        private static ArmpTableMain ReadTableMain (DataReader reader, long ptrMainTable, Version version)
         {
             ArmpTableMain mainTable = new ArmpTableMain(ReadTable(reader, ptrMainTable, version));
             if (mainTable.TableInfo.HasSubTable) mainTable.SubTable = new ArmpTableSub(mainTable, ReadTable(reader, mainTable.TableInfo.ptrSubTable, version));
@@ -331,12 +332,13 @@ namespace LibARMP
         /// </summary>
         /// <param name="reader">The DataReader.</param>
         /// <returns>An ArmpTable object.</returns>
-        private static ArmpTable ReadTable (DataReader reader)
+        private static ArmpTable ReadTable (DataReader reader, Version version)
         {
             //TODO column metadata, text
             ArmpTable table = new ArmpTable();
 
             table.TableInfo = GetARMPTableInfo(reader, true);
+            table.TableInfo.FormatVersion = version;
 
             //Read general data
 
@@ -355,9 +357,9 @@ namespace LibARMP
                 }
             }
 
-            List<Type> columnDataTypes = new List<Type>();
             //Column Data Types
-            columnDataTypes = GetColumnDataTypes(reader, table.TableInfo.ptrColumnDataTypes, table.TableInfo.ColumnCount);
+            List<ArmpType> columnDataTypes = new List<ArmpType>();
+            columnDataTypes = GetColumnDataTypes(reader, table.TableInfo.ptrColumnDataTypes, table.TableInfo.ColumnCount, version);
 
             //Column Metadata
             List<int> columnMetadata = new List<int>();
@@ -430,9 +432,9 @@ namespace LibARMP
         /// </summary>
         /// <param name="reader">The DataReader.</param>
         /// <returns>An ArmpTableMain object.</returns>
-        private static ArmpTableMain ReadTableMainOE (DataReader reader)
+        private static ArmpTableMain ReadTableMainOE (DataReader reader, Version version)
         {
-            ArmpTable table = ReadTable(reader);
+            ArmpTable table = ReadTable(reader, version);
             return new ArmpTableMain(table);
         }
 
@@ -454,15 +456,15 @@ namespace LibARMP
                 uint check = reader.ReadUInt32();
                 if (check > 0)
                 {
-                    armpTableInfo.IsIshin = true;
+                    armpTableInfo.FormatVersion = Version.OldEngineIshin;
                     armpTableInfo.ptrEntryValidity = check;
                 }
                 else
                 {
-                    armpTableInfo.IsOldEngine = true;
+                    armpTableInfo.FormatVersion = Version.OldEngine;
                 }
                 armpTableInfo.ptrEntryNamesOffsetTable = reader.ReadUInt32();
-                if (armpTableInfo.IsOldEngine) armpTableInfo.ptrEntryValidity = reader.ReadUInt32();
+                if (armpTableInfo.FormatVersion == Version.OldEngine) armpTableInfo.ptrEntryValidity = reader.ReadUInt32();
                 else reader.ReadBytes(0x4);
                 armpTableInfo.ColumnCount = reader.ReadInt32();
                 armpTableInfo.ptrColumnNamesOffsetTable = reader.ReadUInt32();
@@ -568,62 +570,36 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Reads the column data types. (DRAGON ENGINE ONLY)
+        /// Reads the column data types.
         /// </summary>
         /// <param name="reader">The DataStream Reader.</param>
         /// <param name="ptrDataTypes">The pointer to the column data type array.</param>
         /// <param name="amount">The amount of values in the array.</param>
-        /// <param name="version">The armp version.</param>
+        /// <param name="version">The armp format version.</param>
         /// <param name="isAuxiliary">Is it the auxiliary data types array?</param>
         /// <returns>A types list.</returns>
-        private static List<Type> GetColumnDataTypes (DataReader reader, UInt32 ptrDataTypes, int amount, int version, bool isAuxiliary)
+        private static List<ArmpType> GetColumnDataTypes (DataReader reader, UInt32 ptrDataTypes, int amount, Version version, bool isAuxiliary = false)
         {
-            List<Type> returnList = new List<Type>();
-            IDictionary<sbyte, DataTypes.ArmpType> typesDictionary = new Dictionary<sbyte, DataTypes.ArmpType>();
+            List<ArmpType> returnList = new List<ArmpType>();
 
             reader.Stream.Seek(ptrDataTypes);
-
-            //v1
-            if (version == 1 && !isAuxiliary) typesDictionary = DataTypes.TypesV1;
-            else if (version == 1 && isAuxiliary) typesDictionary = DataTypes.TypesV1Aux;
-
-            //v2
-            if (version == 2) typesDictionary = DataTypes.TypesV2;
 
             for (int i = 0; i < amount; i++)
             {
                 sbyte id = reader.ReadSByte();
-                returnList.Add(DataTypes.Types[typesDictionary[id]]);
+                foreach (ArmpType armpType in DataTypes.Types)
+                {
+                    if (armpType.GetID(version, isAuxiliary) == id)
+                    {
+                        returnList.Add(armpType);
+                        break;
+                    }
+                }
             }
 
             return returnList;
         }
 
-
-        /// <summary>
-        /// Reads the column data types. (OLD ENGINE ONLY)
-        /// </summary>
-        /// <param name="reader">The DataStream Reader.</param>
-        /// <param name="ptrDataTypes">The pointer to the column data type array.</param>
-        /// <param name="amount">The amount of values in the array.</param>
-        /// <returns>A types list.</returns>
-        private static List<Type> GetColumnDataTypes (DataReader reader, UInt32 ptrDataTypes, int amount)
-        {
-            List<Type> returnList = new List<Type>();
-            IDictionary<int, Type> typesDictionary = new Dictionary<int, Type>();
-
-            reader.Stream.Seek(ptrDataTypes);
-
-            typesDictionary = DataTypes.TypesOE;
-
-            for (int i = 0; i < amount; i++)
-            {
-                int id = reader.ReadInt32();
-                returnList.Add(typesDictionary[id]);
-            }
-
-            return returnList;
-        }
 
 
         /// <summary>
@@ -675,7 +651,7 @@ namespace LibARMP
         /// <param name="storageMode">Storage mode used (0 = per column, 1 = per entry).</param>
         /// <param name="version">Version of the format.</param>
         /// <param name="table">The table where the data will be added to.</param>
-        private static void ReadEntryData (DataReader reader, UInt32 ptrOffsetTable, int storageMode, int version, ArmpTable table)
+        private static void ReadEntryData (DataReader reader, UInt32 ptrOffsetTable, int storageMode, Version version, ArmpTable table)
         {
             reader.Stream.Seek(ptrOffsetTable);
 
@@ -702,11 +678,11 @@ namespace LibARMP
                     if (!noData) //TODO this is a placeholder fix
                     {
 #if DEBUG
-                        Console.WriteLine(column.Name + " ----> " + column.ColumnType);
+                        Console.WriteLine(column.Name + " ----> " + column.Type);
 #endif
                         //Only storage mode 0
                         List<bool> booleanColumnDataTemp = new List<bool>();
-                        if (column.ColumnType == DataTypes.Types[DataTypes.ArmpType.Boolean])
+                        if (column.Type.CSType == typeof(bool))
                         {
                             booleanColumnDataTemp = Util.IterateBooleanBitmask(reader, (uint)reader.Stream.Position, table.TableInfo.EntryCount);
                         }
@@ -753,14 +729,14 @@ namespace LibARMP
         /// <param name="version">armp version.</param>
         /// <param name="entryIndex">The entry index.</param>
         /// <param name="booleanColumnDataTemp">(Optional) The boolean column data if its using storage mode 0.</param>
-        private static void ReadValue (DataReader reader, ArmpTable table, int version, int entryIndex, ArmpTableColumn column, List<bool> booleanColumnDataTemp = null)
+        private static void ReadValue (DataReader reader, ArmpTable table, Version version, int entryIndex, ArmpTableColumn column, List<bool> booleanColumnDataTemp = null)
         {
-            if (column.ColumnType == DataTypes.Types[DataTypes.ArmpType.Invalid])
+            if (column.Type.CSType == null) //invalid
             {
                 table.Entries[entryIndex].Data.Add(column.Name, null);
             }
 
-            else if (column.ColumnType == DataTypes.Types[DataTypes.ArmpType.Boolean])
+            else if (column.Type.CSType == typeof(bool))
             {
                 if (booleanColumnDataTemp != null)
                 {
@@ -776,7 +752,7 @@ namespace LibARMP
                 }
             }
 
-            else if (column.ColumnType == DataTypes.Types[DataTypes.ArmpType.String])
+            else if (column.Type.CSType == typeof(string))
             {
                 int index = reader.ReadInt32();
                 if (index != -1 && table.TableInfo.HasText) //Some files have valid string ids despite not having any text.
@@ -785,7 +761,7 @@ namespace LibARMP
                     table.Entries[entryIndex].Data.Add(column.Name, null);
             }
 
-            else if (column.ColumnType == DataTypes.Types[DataTypes.ArmpType.Table])
+            else if (column.Type.CSType == typeof(ArmpTableMain))
             {
                 Int64 tablepointer = reader.ReadInt64();
                 Int64 currentpos = reader.Stream.Position;
@@ -805,16 +781,16 @@ namespace LibARMP
 
             else
             {
-                if (ReadTypeCache.ContainsKey(column.ColumnType))
+                if (ReadTypeCache.ContainsKey(column.Type.CSType))
                 {
-                    MethodInfo methodref = ReadTypeCache[column.ColumnType];
+                    MethodInfo methodref = ReadTypeCache[column.Type.CSType];
                     methodref.Invoke(null, new object[] { reader, table, entryIndex, column.ID });
                 }
                 else
                 {
                     MethodInfo methodinfo = typeof(ArmpFileReader).GetMethod("ReadType", BindingFlags.NonPublic | BindingFlags.Static);
-                    MethodInfo methodref = methodinfo.MakeGenericMethod(column.ColumnType);
-                    ReadTypeCache.Add(column.ColumnType, methodref);
+                    MethodInfo methodref = methodinfo.MakeGenericMethod(column.Type.CSType);
+                    ReadTypeCache.Add(column.Type.CSType, methodref);
                     methodref.Invoke(null, new object[] { reader, table, entryIndex, column.ID });
                 }
             }
@@ -840,20 +816,19 @@ namespace LibARMP
                 reader.Stream.Seek(ptrData);
 
                 List<bool> booleanColumnDataTemp = new List<bool>();
-                if (column.ColumnType == DataTypes.Types[DataTypes.ArmpType.Boolean])
+                if (column.Type.CSType == typeof(bool))
                 {
                     booleanColumnDataTemp = Util.IterateBooleanBitmask(reader, (uint)reader.Stream.Position, table.TableInfo.EntryCount);
                 }
 
                 for (int entryIndex = 0; entryIndex < table.TableInfo.EntryCount; entryIndex++)
                 {
-                    //TODO make this a function
-                    if (column.ColumnType == DataTypes.Types[DataTypes.ArmpType.Invalid])
+                    if (column.Type.CSType == null)
                     {
                         table.Entries[entryIndex].Data.Add(column.Name, null);
                     }
 
-                    else if (column.ColumnType == DataTypes.Types[DataTypes.ArmpType.Boolean])
+                    else if (column.Type.CSType == typeof(bool))
                     {
                         bool value = booleanColumnDataTemp[entryIndex];
                         table.Entries[entryIndex].Data.Add(column.Name, value);
@@ -861,16 +836,16 @@ namespace LibARMP
 
                     else
                     {
-                        if (ReadTypeCache.ContainsKey(column.ColumnType))
+                        if (ReadTypeCache.ContainsKey(column.Type.CSType))
                         {
-                            MethodInfo methodref = ReadTypeCache[column.ColumnType];
+                            MethodInfo methodref = ReadTypeCache[column.Type.CSType];
                             methodref.Invoke(null, new object[] { reader, table, entryIndex, column.ID });
                         }
                         else
                         {
                             MethodInfo methodinfo = typeof(ArmpFileReader).GetMethod("ReadType", BindingFlags.NonPublic | BindingFlags.Static);
-                            MethodInfo methodref = methodinfo.MakeGenericMethod(column.ColumnType);
-                            ReadTypeCache.Add(column.ColumnType, methodref);
+                            MethodInfo methodref = methodinfo.MakeGenericMethod(column.Type.CSType);
+                            ReadTypeCache.Add(column.Type.CSType, methodref);
                             methodref.Invoke(null, new object[] { reader, table, entryIndex, column.ID });
                         }
                     }
@@ -996,38 +971,24 @@ namespace LibARMP
         /// </summary>
         /// <param name="columnDataTypesAuxTable">The Column Data Types Auxiliary Table.</param>
         /// <returns>A type list.</returns>
-        private static List<Type> ColumnDataTypesAuxTableToColumnDataTypesAux (List<List<int>> columnDataTypesAuxTable)
+        private static List<ArmpType> ColumnDataTypesAuxTableToColumnDataTypesAux (List<List<int>> columnDataTypesAuxTable, Version version)
         {
-            List<Type> typesList = new List<Type>();
+            List<ArmpType> typesList = new List<ArmpType>();
 
             for (int i = 0; i < columnDataTypesAuxTable.Count; i++)
             {
-                Type type = DataTypes.IdToType(Convert.ToSByte(columnDataTypesAuxTable[i][0]), true, 2);
-                typesList.Add(type);
+                sbyte id = Convert.ToSByte(columnDataTypesAuxTable[i][0]);
+                foreach (ArmpType armpType in DataTypes.Types)
+                {
+                    if (armpType.GetIDAux(version) == id)
+                    {
+                        typesList.Add(armpType);
+                        break;
+                    }
+                }
             }
 
             return typesList;
         }
-
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="columnDataTypes"></param>
-        /// <returns></returns>
-        private static List<bool> GetSpecialColumnList (List<Type> columnDataTypes)
-        {
-            List<bool> returnList = new List<bool>();
-
-            foreach(Type columnType in columnDataTypes)
-            {
-                if (DataTypes.TypesV2Specials.Contains(columnType)) returnList.Add(true);
-                else returnList.Add(false);
-            }
-
-            return returnList;
-        }
-
     }
 }

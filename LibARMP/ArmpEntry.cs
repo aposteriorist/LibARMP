@@ -19,7 +19,7 @@ namespace LibARMP
             if (ParentTable.TableInfo.HasEntryValidity)
                 IsValid = true;
 
-            if (ParentTable.TableInfo.HasExtraFieldInfo && !ParentTable.TableInfo.IsDragonEngineV2)
+            if (ParentTable.TableInfo.HasExtraFieldInfo && ParentTable.TableInfo.FormatVersion == Version.DragonEngineV1)
                 Flags = new bool[8] { false, false, false, false, false, false, false, false };
         }
 
@@ -85,12 +85,7 @@ namespace LibARMP
         {
             if (!column.IsSpecial)
             {
-                Type type = column.ColumnType;
-                if (type != null)
-                {
-                    object value = DataTypes.DefaultValues[DataTypes.TypesReverse[type]];
-                    SetValueFromColumn(column.Name, value);
-                }
+                SetValueFromColumn(column.Name, column.Type.DefaultValue);
             }
         }
 
@@ -263,7 +258,7 @@ namespace LibARMP
         /// <param name="value">The value to write.</param>
         public void SetValueFromColumn (string columnName, object value)
         {
-            Type targetType = ParentTable.GetColumn(columnName).ColumnType;
+            Type targetType = ParentTable.GetColumn(columnName).Type.CSType;
 
             if (value == null)
                 return;

@@ -23,9 +23,9 @@ namespace LibARMP
         public Int16 Revision { get; internal set; }
 
         /// <summary>
-        /// Is it using the Old Engine version of the format? (it shares the same version and revision numbers with Dragon Engine v1).
+        /// Which specific version it is using. (Version and Revision numbers are shared between multiple different format versions)
         /// </summary>
-        public bool IsOldEngine { get; internal set; }
+        public Version FormatVersion { get; internal set; }
 
         /// <summary>
         /// Gets the main table.

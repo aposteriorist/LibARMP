@@ -46,9 +46,7 @@ namespace LibARMP
             this.HasExtraFieldInfo = false;
 
             //Extra data
-            this.IsOldEngine = false;
-            this.IsIshin = false;
-            this.IsDragonEngineV2 = false;
+            this.FormatVersion = Version.Unknown;
         }
 
 
@@ -238,18 +236,8 @@ namespace LibARMP
         //Version Data
 
         /// <summary>
-        /// Gets a boolean indicating if the table uses the Old Engine (0-K1-FOTNS) version.
+        /// Which specific version it is using. (Version and Revision numbers are shared between multiple different format versions)
         /// </summary>
-        public bool IsOldEngine { get; internal set; }
-
-        /// <summary>
-        /// Gets a boolean indicating if the table uses the Old Engine (Ishin) version.
-        /// </summary>
-        public bool IsIshin { get; internal set; }
-
-        /// <summary>
-        /// Gets a boolean indicating if the table uses the Dragon Engine version 2.
-        /// </summary>
-        public bool IsDragonEngineV2 { get; internal set; }
+        public Version FormatVersion { get; internal set; }
     }
 }

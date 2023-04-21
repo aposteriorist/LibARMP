@@ -13,7 +13,7 @@ namespace LibARMP
                 Endianness = EndiannessMode.LittleEndian,
                 DefaultEncoding = System.Text.Encoding.UTF8,
             };
-            if (armp.IsOldEngine)
+            if (armp.FormatVersion == Version.OldEngine)
             {
                 writer.Endianness = EndiannessMode.BigEndian;
                 writer.DefaultEncoding = System.Text.Encoding.GetEncoding(932);
@@ -85,13 +85,13 @@ namespace LibARMP
                         writer.Stream.Seek(table.GetEntry(entryId).ColumnValueOffsets[column.Name]);
 
                         MethodInfo methodinfo = typeof(ArmpFileWriter).GetMethod("WriteType", BindingFlags.NonPublic | BindingFlags.Static);
-                        MethodInfo methodref = methodinfo.MakeGenericMethod(column.ColumnType);
+                        MethodInfo methodref = methodinfo.MakeGenericMethod(column.Type.CSType);
                         methodref.Invoke(null, new object[] { writer, entryvalue });
                         
                     }
                 }
 
-                if (column.ColumnType == DataTypes.Types[DataTypes.ArmpType.Table])
+                if (column.Type.CSType == typeof(ArmpTableMain))
                 {
                     foreach (ArmpEntry entry in table.GetAllEntries())
                     {

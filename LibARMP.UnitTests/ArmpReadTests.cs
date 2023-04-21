@@ -14,7 +14,7 @@ namespace LibARMP.UnitTests
             ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v1AllTypes);
             Assert.AreEqual(armp.Version, 1);
             Assert.AreEqual(armp.Revision, 12);
-            Assert.IsFalse(armp.IsOldEngine);
+            Assert.AreEqual(armp.FormatVersion, Version.DragonEngineV1);
         }
 
 

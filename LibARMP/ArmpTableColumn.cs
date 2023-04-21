@@ -12,10 +12,10 @@ namespace LibARMP
             Children = new List<ArmpTableColumn>();
         }
 
-        internal ArmpTableColumn(int id, string name, Type type) : this(id)
+        internal ArmpTableColumn(int id, string name, ArmpType type) : this(id)
         {
             this.Name = name;
-            this.ColumnType = type;
+            this.Type = type;
         }
 
         /// <summary>
@@ -31,12 +31,7 @@ namespace LibARMP
         /// <summary>
         /// Gets the column type.
         /// </summary>
-        public Type ColumnType { get; internal set; }
-
-        /// <summary>
-        /// Gets or sets the auxiliary column type.
-        /// </summary>
-        internal Type ColumnTypeAux { get; set; }
+        internal ArmpType Type { get; set; }
 
         /// <summary>
         /// Gets or sets the column index. Can be NULL
