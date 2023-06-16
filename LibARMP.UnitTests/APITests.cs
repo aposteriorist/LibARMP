@@ -202,34 +202,34 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
-        public void ArmpTable_GetColumnIndex()
+        public void ArmpTable_GetColumnID()
         {
             ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode0);
-            int index = armp.MainTable.GetColumnIndex("s32_");
+            int index = armp.MainTable.GetColumnID("s32_");
             Assert.AreEqual(7, index);
         }
 
 
         [TestMethod]
-        public void ArmpTable_GetColumnOverrideIndex()
+        public void ArmpTable_GetColumnIndex()
         {
             ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode0);
-            int index = armp.MainTable.GetColumnOverrideIndex("s32_");
+            int index = armp.MainTable.GetColumnIndex("s32_");
             Assert.AreEqual(8, index);
-            index = armp.MainTable.GetColumnOverrideIndex(7);
+            index = armp.MainTable.GetColumnIndex(7);
             Assert.AreEqual(8, index);
         }
 
 
         [TestMethod]
-        public void ArmpTable_SetColumnOverrideIndex()
+        public void ArmpTable_SetColumnIndex()
         {
             ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode0);
-            armp.MainTable.SetColumnOverrideIndex("s32_", 123);
-            int index = armp.MainTable.GetColumnOverrideIndex("s32_");
+            armp.MainTable.SetColumnIndex("s32_", 123);
+            int index = armp.MainTable.GetColumnIndex("s32_");
             Assert.AreEqual(123, index);
-            armp.MainTable.SetColumnOverrideIndex(7, 321);
-            index = armp.MainTable.GetColumnOverrideIndex(7);
+            armp.MainTable.SetColumnIndex(7, 321);
+            index = armp.MainTable.GetColumnIndex(7);
             Assert.AreEqual(321, index);
         }
 

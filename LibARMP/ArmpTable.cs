@@ -88,6 +88,7 @@ namespace LibARMP
         /// Returns all entries in the table.
         /// </summary>
         /// <returns>An ArmpEntry list.</returns>
+        /// <exception cref="EntryNotFoundException">The table has no entries.</exception>
         public List<ArmpEntry> GetAllEntries()
         {
             try
@@ -96,7 +97,7 @@ namespace LibARMP
             }
             catch
             {
-                throw new EntryNotFoundException("No entries found for this table.");
+                throw new EntryNotFoundException();
             }
         }
 
@@ -104,7 +105,9 @@ namespace LibARMP
         /// <summary>
         /// Returns a specific entry in the table.
         /// </summary>
-        /// <returns>An ArmpEntry list.</returns>
+        /// <param name="id">The entry ID.</param>
+        /// <returns>An ArmpEntry.</returns>
+        /// <exception cref="EntryNotFoundException">The table has no entry with the specified ID.</exception>
         public ArmpEntry GetEntry (int id)
         {
             try
@@ -113,7 +116,7 @@ namespace LibARMP
             }
             catch
             {
-                throw new EntryNotFoundException($"No entry with ID {id}");
+                throw new EntryNotFoundException(id);
             }
         }
 
@@ -121,7 +124,9 @@ namespace LibARMP
         /// <summary>
         /// Returns a specific entry in the table.
         /// </summary>
-        /// <returns>An ArmpEntry list.</returns>
+        /// <param name="name">The entry name.</param>
+        /// <returns>An ArmpEntry.</returns>
+        /// <exception cref="EntryNotFoundException">The table has no entry with the specified name.</exception>
         public ArmpEntry GetEntry (string name)
         {
             try
@@ -130,11 +135,11 @@ namespace LibARMP
                 {
                     if (entry.Name == name) return entry;
                 }
-                throw new EntryNotFoundException($"No entry with name '{name}'");
+                throw new EntryNotFoundException(name);
             }
             catch
             {
-                throw new EntryNotFoundException($"No entry with name '{name}'");
+                throw new EntryNotFoundException(name);
             }
         }
 
@@ -153,10 +158,11 @@ namespace LibARMP
         /// Gets all entry names.
         /// </summary>
         /// <returns>A string list.</returns>
+        /// <exception cref="EntryNameNotFoundException">The table has no entry names.</exception>
         public List<string> GetEntryNames()
         {
             if (!TableInfo.HasEntryNames)
-                throw new Exception("There are no entry names in this table.");
+                throw new EntryNameNotFoundException();
 
             List<string> returnList = new List<string>();
             foreach (ArmpEntry entry in Entries)
@@ -173,10 +179,12 @@ namespace LibARMP
         /// </summary>
         /// <param name="id">The entry ID.</param>
         /// <returns>A string.</returns>
+        /// <exception cref="EntryNameNotFoundException">The table has no entry names.</exception>
+        /// <exception cref="EntryNotFoundException">The table has no entry with the specified ID.</exception>
         public string GetEntryName (int id)
         {
             if (!TableInfo.HasEntryNames)
-                throw new Exception("There are no entry names in this table.");
+                throw new EntryNameNotFoundException();
 
             try
             {
@@ -184,7 +192,7 @@ namespace LibARMP
             }
             catch
             {
-                throw new Exception($"No entry with ID {id}");
+                throw new EntryNotFoundException(id);
             }
         }
 
@@ -194,6 +202,7 @@ namespace LibARMP
         /// </summary>
         /// <param name="id">The column ID.</param>
         /// <returns>An ArmpTableColumn.</returns>
+        /// <exception cref="ColumnNotFoundException">The table has no column with the specified ID.</exception>
         public ArmpTableColumn GetColumn (int id)
         {
             try
@@ -202,7 +211,7 @@ namespace LibARMP
             }
             catch
             {
-                throw new Exception($"No column with ID {id} in this table.");
+                throw new ColumnNotFoundException(id);
             }
         }
 
@@ -212,6 +221,7 @@ namespace LibARMP
         /// </summary>
         /// <param name="columnName">The column name.</param>
         /// <returns>An ArmpTableColumn.</returns>
+        /// <exception cref="ColumnNotFoundException">The table has no column with the specified name.</exception>
         public ArmpTableColumn GetColumn(string columnName)
         {
             try
@@ -220,7 +230,7 @@ namespace LibARMP
             }
             catch
             {
-                throw new Exception($"No column with name '{columnName}' in this table.");
+                throw new ColumnNotFoundException(columnName);
             }
         }
 
@@ -247,17 +257,18 @@ namespace LibARMP
         /// <summary>
         /// Gets the column name.
         /// </summary>
-        /// <param name="index">The column index.</param>
+        /// <param name="id">The column ID.</param>
         /// <returns>A string.</returns>
-        public string GetColumnName (int index)
+        /// <exception cref="ColumnNotFoundException">The table has no column with the specified ID.</exception>
+        public string GetColumnName (int id)
         {
             try
             {
-                return Columns[index].Name;
+                return Columns[id].Name;
             }
             catch
             {
-                throw new ColumnNotFoundException($"No column with index {index}.");
+                throw new ColumnNotFoundException(id);
             }
         }
 
@@ -267,13 +278,14 @@ namespace LibARMP
         /// </summary>
         /// <param name="columnName">The column name.</param>
         /// <returns>The column Type.</returns>
+        /// <exception cref="ColumnNotFoundException">The table has no column with the specified name.</exception>
         public Type GetColumnDataType (string columnName)
         {
             if (ColumnNameCache.ContainsKey(columnName))
             {
                 return ColumnNameCache[columnName].Type.CSType;
             }
-            throw new ColumnNotFoundException($"The column '{columnName}' does not exist in this table.");   
+            throw new ColumnNotFoundException(columnName);   
         }
 
 
@@ -337,94 +349,103 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Gets the column index by name.
+        /// Gets the column ID by name.
         /// </summary>
         /// <param name="columnName">The column name.</param>
-        /// <returns>The column index.</returns>
-        public int GetColumnIndex (string columnName)
+        /// <returns>The column ID.</returns>
+        /// <exception cref="ColumnNotFoundException">The table has no column with the specified name.</exception>
+        public int GetColumnID (string columnName)
         {
             if (ColumnNameCache.ContainsKey(columnName))
             {
                 return ColumnNameCache[columnName].ID;
             }
-            throw new Exception($"No column with name '{columnName}'.");
+            throw new ColumnNotFoundException(columnName);
         }
 
 
         /// <summary>
-        /// Gets a column's override index.
+        /// Gets a column's index.
         /// </summary>
-        /// <param name="index">The base column index.</param>
-        /// <returns>The override index.</returns>
-        public int GetColumnOverrideIndex (int index)
+        /// <param name="id">The column ID.</param>
+        /// <returns>The column index.</returns>
+        /// <exception cref="ColumnNoIndexException">The table has no column indices.</exception>
+        /// <exception cref="ColumnNotFoundException">The table has no column with the specified ID.</exception>
+        public int GetColumnIndex (int id)
         {
-            if (!TableInfo.HasColumnIndices) throw new Exception("This table has no column index overrides.");
+            if (!TableInfo.HasColumnIndices) throw new ColumnNoIndexException();
 
             try
             {
-                return Columns[index].Index;
+                return Columns[id].Index;
             }
             catch
             {
-                throw new Exception($"There is no column with index {index}.");
+                throw new ColumnNotFoundException(id);
             }
         }
 
 
         /// <summary>
-        /// Gets a column's override index.
+        /// Gets a column's index.
         /// </summary>
         /// <param name="columnName">The column name.</param>
-        /// <returns>The override index.</returns>
-        public int GetColumnOverrideIndex (string columnName)
+        /// <returns>The column index.</returns>
+        /// <exception cref="ColumnNoIndexException">The table has no column indices.</exception>
+        /// <exception cref="ColumnNotFoundException">The table has no column with the specified name.</exception>
+        public int GetColumnIndex (string columnName)
         {
-            if (!TableInfo.HasColumnIndices) throw new Exception("This table has no column index overrides.");
+            if (!TableInfo.HasColumnIndices) throw new ColumnNoIndexException();
 
             if (ColumnNameCache.ContainsKey(columnName))
             {
                 return ColumnNameCache[columnName].Index;
             }
-            throw new Exception($"There is no column with name '{columnName}'.");   
+            throw new ColumnNotFoundException(columnName);
         }
 
 
         /// <summary>
-        /// Sets a column's override index.
+        /// Sets a column's index.
         /// </summary>
-        /// <param name="index">The base column index.</param>
-        /// <param name="newOverrideIndex">The new override index.</param>
-        public void SetColumnOverrideIndex (int index, int newOverrideIndex)
+        /// <param name="id">The column ID.</param>
+        /// <param name="newIndex">The new index.</param>
+        /// <exception cref="ColumnNoIndexException">The table has no column indices.</exception>
+        /// <exception cref="ColumnNotFoundException">The table has no column with the specified ID.</exception>
+        public void SetColumnIndex (int id, int newIndex)
         {
-            if (!TableInfo.HasColumnIndices) throw new Exception("This table has no column index overrides.");
+            if (!TableInfo.HasColumnIndices) throw new ColumnNoIndexException();
 
             try
             {
-                Columns[index].Index = newOverrideIndex;
+                Columns[id].Index = newIndex;
             }
             catch
             {
-                throw new Exception($"There is no column with index {index}.");
+                throw new ColumnNotFoundException(id);
             }
         }
 
 
         /// <summary>
-        /// Sets a column's override index.
+        /// Sets a column's index.
         /// </summary>
         /// <param name="columnName">The column name.</param>
-        /// <param name="newOverrideIndex">The new override index.</param>
-        public void SetColumnOverrideIndex (string columnName, int newOverrideIndex)
+        /// <param name="newIndex">The new index.</param>
+        /// <exception cref="ColumnNoIndexException">The table has no column indices.</exception>
+        /// <exception cref="ColumnNotFoundException">The table has no column with the specified name.</exception>
+        public void SetColumnIndex (string columnName, int newIndex)
         {
-            if (!TableInfo.HasColumnIndices) throw new Exception("This table has no column index overrides.");
+            if (!TableInfo.HasColumnIndices) throw new ColumnNoIndexException();
 
             try
             {
-                int index = GetColumnIndex(columnName);
-                Columns[index].Index = newOverrideIndex;
+                int index = GetColumnID(columnName);
+                Columns[index].Index = newIndex;
             }
             catch
             {
-                throw new Exception($"There is no column with name '{columnName}'.");
+                throw new ColumnNotFoundException(columnName);
             }
         }
 
@@ -432,19 +453,21 @@ namespace LibARMP
         /// <summary>
         /// Gets a boolean indicating if the column is valid.
         /// </summary>
-        /// <param name="columnIndex">The column index.</param>
+        /// <param name="id">The column ID.</param>
         /// <returns>A boolean.</returns>
-        public bool IsColumnValid (int columnIndex)
+        /// <exception cref="ColumnNoValidityException">The table has no column validity.</exception>
+        /// <exception cref="ColumnNotFoundException">The table has no column with the specified ID.</exception>
+        public bool IsColumnValid (int id)
         {
-            if (!TableInfo.HasColumnValidity) throw new Exception("This table has no column validity.");
+            if (!TableInfo.HasColumnValidity) throw new ColumnNoValidityException();
 
             try
             {
-                return (bool)Columns[columnIndex].IsValid;
+                return (bool)Columns[id].IsValid;
             }
             catch
             {
-                throw new Exception($"No column with index {columnIndex}");
+                throw new ColumnNotFoundException(id);
             }
         }
 
@@ -454,9 +477,11 @@ namespace LibARMP
         /// </summary>
         /// <param name="columnName">The column name.</param>
         /// <returns>A boolean.</returns>
+        /// <exception cref="ColumnNoValidityException">The table has no column validity.</exception>
+        /// <exception cref="ColumnNotFoundException">The table has no column with the specified name.</exception>
         public bool IsColumnValid (string columnName)
         {
-            if (!TableInfo.HasColumnValidity) throw new Exception("This table has no column validity.");
+            if (!TableInfo.HasColumnValidity) throw new ColumnNoValidityException();
 
             try
             {
@@ -464,7 +489,7 @@ namespace LibARMP
             }
             catch
             {
-                throw new Exception($"No column with name '{columnName}'");
+                throw new ColumnNotFoundException(columnName);
             }
         }
 
@@ -475,6 +500,7 @@ namespace LibARMP
         /// </summary>
         /// <param name="column">The ArmpTableColumn.</param>
         /// <param name="isValid">The new column validity.</param>
+        /// <exception cref="ColumnNoValidityException">The table has no column validity.</exception>
         public void SetColumnValidity (ArmpTableColumn column, bool isValid)
         {
             if (TableInfo.HasColumnValidity)
@@ -498,7 +524,7 @@ namespace LibARMP
             }
             else
             {
-                throw new Exception("This table has no column validity.");
+                throw new ColumnNoValidityException();
             }
         }
 
@@ -509,6 +535,8 @@ namespace LibARMP
         /// </summary>
         /// <param name="columnName">The column name.</param>
         /// <param name="isValid">The new column validity.</param>
+        /// <exception cref="ColumnNoValidityException">The table has no column validity.</exception>
+        /// <exception cref="ColumnNotFoundException">The table has no column with the specified name.</exception>
         public void SetColumnValidity (string columnName, bool isValid)
         {
             try
@@ -516,9 +544,13 @@ namespace LibARMP
                 ArmpTableColumn column = ColumnNameCache[columnName];
                 SetColumnValidity(column, isValid);
             }
-            catch 
+            catch (ColumnNoValidityException ex)
             {
-                throw new Exception($"The column '{columnName}' does not exist in this table.");
+                throw ex;
+            }
+            catch
+            {
+                throw new ColumnNotFoundException(columnName);
             }
         }
 
@@ -528,13 +560,14 @@ namespace LibARMP
         /// </summary>
         /// <param name="columnName">The column name.</param>
         /// <returns>A boolean</returns>
+        /// <exception cref="ColumnNotFoundException">The table has no column with the specified name.</exception>
         public bool IsColumnSpecial (string columnName)
         {
             if (ColumnNameCache.ContainsKey(columnName))
             {
                 return ColumnNameCache[columnName].IsSpecial;
             }
-            throw new ColumnNotFoundException($"The column '{columnName}' does not exist in this table.");
+            throw new ColumnNotFoundException(columnName);
         }
 
 
@@ -560,6 +593,7 @@ namespace LibARMP
         /// <param name="columnName">The column containing the value to find.</param>
         /// <param name="value">The value to find.</param>
         /// <returns>An ArmpEntry list.</returns>
+        /// <exception cref="ColumnNotFoundException">The table has no column with the specified name.</exception>
         public List<ArmpEntry> SearchByValue (string columnName, object value)
         {
             if (ColumnNameCache.ContainsKey(columnName))
@@ -577,7 +611,7 @@ namespace LibARMP
                 }
                 return returnList;
             }
-            throw new ColumnNotFoundException($"The column '{columnName}' does not exist in this table.");
+            throw new ColumnNotFoundException(columnName);
         }
 
 
@@ -596,10 +630,11 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Creates and inserts a new entry at the specified index.
+        /// Creates and inserts a new entry at the specified ID.
         /// </summary>
         /// <param name="id">The new entry ID.</param>
         /// <param name="name">The new entry name.</param>
+        /// <exception cref="EntryInsertException">The specified ID is greater than the amount of entries in the table.</exception>
         public ArmpEntry InsertEntry (int id, string name = "")
         {
             if (id <= Entries.Count)
@@ -619,7 +654,7 @@ namespace LibARMP
             }
             else
             {
-                throw new Exception($"ID {id} is greater than the amount of entries in the table.");
+                throw new EntryInsertException(id);
             }
         }
 
@@ -640,6 +675,7 @@ namespace LibARMP
         /// Deletes the specified entry and updates the IDs for any entries after it.
         /// </summary>
         /// <param name="id">The ID of the entry to delete.</param>
+        /// <exception cref="EntryNotFoundException">The table has no entry with the specified ID.</exception>
         public void DeleteEntry (int id)
         {
             if (id < Entries.Count)
@@ -652,7 +688,7 @@ namespace LibARMP
             }
             else
             {
-                throw new Exception($"No entry with ID {id} in this table.");
+                throw new EntryNotFoundException(id);
             }
         }
 
@@ -661,17 +697,17 @@ namespace LibARMP
         /// Deletes the specified entry and updates the IDs for any entries after it.
         /// </summary>
         /// <param name="name">The name of the entry to delete.</param>
+        /// <exception cref="EntryNotFoundException">The table has no entry with the specified name.</exception>
         public void DeleteEntry (string name)
         {
             try
             {
                 ArmpEntry entry = GetEntry(name);
                 DeleteEntry(entry.ID);
-
             }
             catch
             {
-                throw new Exception($"No entry with name {name} in this table.");
+                throw new EntryNotFoundException(name);
             }
         }
 
@@ -682,6 +718,8 @@ namespace LibARMP
         /// <param name="id">The entry to modify.</param>
         /// <param name="columnName">The column name.</param>
         /// <param name="value">The value to write.</param>
+        /// <exception cref="TypeMismatchException">The column type does not match the type of the provided object.</exception>
+        /// <exception cref="ColumnNotFoundException">The table has no column with the specified name.</exception>
         public void SetValue (int id, string columnName, object value)
         {
             if (ColumnNameCache.ContainsKey(columnName))
@@ -704,12 +742,12 @@ namespace LibARMP
                 }
                 else
                 {
-                    throw new Exception($"Type mismatch. Expected {column.Type} and got {value.GetType()}.");
+                    throw new TypeMismatchException(column.Type.CSType, value.GetType());
                 }
             }
             else
             {
-                throw new ColumnNotFoundException($"The column '{columnName}' does not exist.");
+                throw new ColumnNotFoundException(columnName);
             }
         }
 
@@ -718,6 +756,7 @@ namespace LibARMP
         /// Sets the selected column as string type. (This is only needed for Old Engine files with text).
         /// </summary>
         /// <param name="columnName">The column name.</param>
+        /// <exception cref="ColumnNotFoundException">The table has no column with the specified name.</exception>
         public void SetTextColumnOE (string columnName)
         {
             if (ColumnNameCache.ContainsKey(columnName))
@@ -731,7 +770,7 @@ namespace LibARMP
                     else entry.Data[columnName] = null;
                 }
             }
-            throw new ColumnNotFoundException($"The column '{columnName}' does not exist.");
+            throw new ColumnNotFoundException(columnName);
         }
     }
 }

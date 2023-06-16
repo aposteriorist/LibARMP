@@ -3,31 +3,29 @@
 namespace LibARMP.Exceptions
 {
     [Serializable]
-    class ColumnNotFoundException : Exception
+    class ColumnNoDataException : Exception
     {
-        private static readonly string messageId = "No column with ID {0}.";
-        private static readonly string messageName = "No column with name '{0}'.";
-        private static readonly string messageNone = "No columns found.";
+        private static readonly string messageId = "The column with ID {0} has no data.";
+        private static readonly string messageName = "The column '{0}' has no data.";
 
-        public ColumnNotFoundException()
-            : base(messageNone)
+        internal ColumnNoDataException()
         {
 
         }
 
-        internal ColumnNotFoundException(string message, Exception inner)
+        internal ColumnNoDataException(string message, Exception inner)
             : base(message, inner)
         {
 
         }
 
-        public ColumnNotFoundException(int columnId)
+        public ColumnNoDataException(int columnId)
             : base(GetMessage(columnId))
         {
 
         }
 
-        public ColumnNotFoundException(string columnName)
+        public ColumnNoDataException(string columnName)
             : base(GetMessage(columnName))
         {
 

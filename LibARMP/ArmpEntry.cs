@@ -94,6 +94,7 @@ namespace LibARMP
         /// Sets the value for the column to default.
         /// </summary>
         /// <param name="columnName">The column name.</param>
+        /// <exception cref="ColumnNotFoundException">The column name doesn't match any columns in the table.</exception>
         internal void SetDefaultColumnContent (string columnName)
         {
             try
@@ -103,7 +104,7 @@ namespace LibARMP
             }
             catch
             {
-                throw new Exception($"The column '{columnName}' does not exist in this table.");
+                throw new ColumnNotFoundException(columnName);
             }
         }
 
@@ -152,15 +153,25 @@ namespace LibARMP
         /// Gets the value for the specified column.
         /// </summary>
         /// <param name="columnName">The name of the column.</param>
+        /// <exception cref="ColumnNotFoundException">The column name doesn't match any columns in the table.</exception>
+        /// <exception cref="ColumnNoDataException">The column has no data.</exception>
         public object GetValueFromColumn (string columnName)
         {
             if (Data.ContainsKey(columnName))
             {
                 return Data[columnName];
             }
-            else
+            else //Check if the column doesn't exist or has no data
             {
-                throw new ColumnNotFoundException($"The column '{columnName}' does not exist or has no data.");
+                try
+                {
+                    ParentTable.GetColumn(columnName);
+                } catch (ColumnNotFoundException ex)
+                {
+                    throw ex;
+                }
+
+                throw new ColumnNoDataException(columnName);
             }
         }
 
@@ -169,17 +180,25 @@ namespace LibARMP
         /// Gets the value for the specified column.
         /// </summary>
         /// <param name="columnIndex">The column index.</param>
+        /// <exception cref="ColumnNotFoundException">The column name doesn't match any columns in the table.</exception>
+        /// <exception cref="ColumnNoDataException">The column has no data.</exception>
         public object GetValueFromColumn (int columnIndex)
         {
             List<string> keys = new List<string>(Data.Keys);
 
             if (keys.Count > columnIndex)
             {
-                return Data[keys[columnIndex]];
+                try
+                {
+                    return Data[keys[columnIndex]];
+                } catch (Exception)
+                {
+                    throw new ColumnNoDataException(columnIndex);
+                }
             }
             else
             {
-                throw new ColumnNotFoundException($"A column with index '{columnIndex}' does not exist or has no data.");
+                throw new ColumnNotFoundException(columnIndex);
             }
         }
 
@@ -198,6 +217,7 @@ namespace LibARMP
         /// Gets the value for the specified column.
         /// </summary>
         /// <param name="columnName">The name of the column.</param>
+        /// <exception cref="InvalidTypeConversionException">The column type cannot be converted to the requested type.</exception>
         public T GetValueFromColumn<T> (string columnName)
         {
             object result = GetValueFromColumn(columnName);
@@ -208,7 +228,7 @@ namespace LibARMP
             catch
             {
                 Type paramType = typeof(T);
-                throw new Exception($"Cannot convert from {result.GetType()} to {paramType}.");
+                throw new InvalidTypeConversionException(result.GetType(), paramType);
             }
         }
 
@@ -217,6 +237,7 @@ namespace LibARMP
         /// Gets the value for the specified column.
         /// </summary>
         /// <param name="columnIndex">The column index.</param>
+        /// <exception cref="InvalidTypeConversionException">The column type cannot be converted to the requested type.</exception>
         public T GetValueFromColumn<T> (int columnIndex)
         {
             object result = GetValueFromColumn(columnIndex);
@@ -227,7 +248,7 @@ namespace LibARMP
             catch
             {
                 Type paramType = typeof(T);
-                throw new Exception($"Cannot convert from {result.GetType()} to {paramType}");
+                throw new InvalidTypeConversionException(result.GetType(), paramType);
             }
         }
 
@@ -236,6 +257,7 @@ namespace LibARMP
         /// Gets the value for the specified column.
         /// </summary>
         /// <param name="column">The ArmpTableColumn.</param>
+        /// <exception cref="InvalidTypeConversionException">The column type cannot be converted to the requested type.</exception>
         public T GetValueFromColumn<T> (ArmpTableColumn column)
         {
             object result = GetValueFromColumn(column.Name);
@@ -246,7 +268,7 @@ namespace LibARMP
             catch
             {
                 Type paramType = typeof(T);
-                throw new Exception($"Cannot convert from {result.GetType()} to {paramType}.");
+                throw new InvalidTypeConversionException(result.GetType(), paramType);
             }
         }
 
@@ -256,6 +278,7 @@ namespace LibARMP
         /// </summary>
         /// <param name="columnName">The column name.</param>
         /// <param name="value">The value to write.</param>
+        /// <exception cref="TypeMismatchException">The column type does not match the type of the provided object.</exception>
         public void SetValueFromColumn (string columnName, object value)
         {
             Type targetType = ParentTable.GetColumn(columnName).Type.CSType;
@@ -264,7 +287,7 @@ namespace LibARMP
                 return;
 
             if (targetType != value.GetType())
-                throw new Exception($"Type mismatch. Expected {targetType} and got {value.GetType()}.");
+                throw new TypeMismatchException(targetType, value.GetType());
 
             Data[columnName] = value;
         }
