@@ -3,7 +3,7 @@
 namespace LibARMP.Exceptions
 {
     [Serializable]
-    class ColumnNoValidityException : Exception
+    public class ColumnNoValidityException : Exception
     {
         private static readonly string message = "The table has no column validity.";
 

@@ -56,6 +56,7 @@ namespace LibARMP
         /// <summary>
         /// Amount of elements in the array if the column is special.
         /// </summary>
+        // TODO: Remove this. Equivalent to Children.Count
         internal int SpecialSize { get; set; }
 
         /// <summary>

@@ -3,7 +3,7 @@
 namespace LibARMP.Exceptions
 {
     [Serializable]
-    class EntryNameNotFoundException : Exception
+    public class EntryNameNotFoundException : Exception
     {
         private static readonly string message = "No entry names found.";
 

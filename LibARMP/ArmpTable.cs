@@ -222,7 +222,7 @@ namespace LibARMP
         /// <param name="columnName">The column name.</param>
         /// <returns>An ArmpTableColumn.</returns>
         /// <exception cref="ColumnNotFoundException">The table has no column with the specified name.</exception>
-        public ArmpTableColumn GetColumn(string columnName)
+        public ArmpTableColumn GetColumn (string columnName)
         {
             try
             {
@@ -568,6 +568,113 @@ namespace LibARMP
                 return ColumnNameCache[columnName].IsSpecial;
             }
             throw new ColumnNotFoundException(columnName);
+        }
+
+
+        /// <summary>
+        /// Sets the column's value to default for all entries.
+        /// </summary>
+        /// <param name="column">The ArmpTableColumn.</param>
+        internal void SetDefaultColumnContent (ArmpTableColumn column)
+        {
+            foreach (ArmpEntry entry in Entries)
+            {
+                entry.SetDefaultColumnContent(column);
+            }
+        }
+
+
+        /// <summary>
+        /// Adds a new column to the table.
+        /// </summary>
+        /// <param name="columnName">The column name.</param>
+        /// <param name="columnType">The column type.</param>
+        /// <returns>The newly created column.</returns>
+        /// <exception cref="TypeNotSupportedException">The provided C# type is not supported by the armp format.</exception>
+        public ArmpTableColumn AddColumn (string columnName, Type columnType)
+        {
+            int id = Columns.Count;
+            ArmpType armpType = DataTypes.GetArmpTypeByCSType(columnType);
+            ArmpTableColumn column = new ArmpTableColumn(id, columnName, armpType);
+            if (TableInfo.HasColumnIndices) column.Index = id;
+            if (TableInfo.HasColumnValidity) column.IsValid = true;
+            column.IsNoData = false;
+
+            if (TableInfo.FormatVersion == Version.DragonEngineV2)
+            {
+                //If the type is special
+                if (DataTypes.SpecialTypes.Contains(armpType.CSType))
+                {
+                    column.IsSpecial = true;
+                    column.SpecialSize = 0; //currently empty
+                    column.Children = new List<ArmpTableColumn>();
+                }
+
+                //Check if the name matches an existing special column and assign parent/child
+                //NOTE: unsure if allowing the creation of a column with child naming but no parent will cause problems down the line.
+                if (columnName.Contains("[") && columnName.Contains("]"))
+                {
+                    string baseName = columnName.Split('[')[0];
+                    if (ColumnNameCache.ContainsKey(baseName))
+                    {
+                        ArmpTableColumn parentColumn = ColumnNameCache[baseName];
+                        parentColumn.Children.Add(column);
+                        parentColumn.SpecialSize += 1;
+                        column.Parent = parentColumn;
+                    }
+                }
+            }
+
+            Columns.Add(column);
+            RefreshColumnNameCache();
+            SetDefaultColumnContent(column);
+            return column;
+        }
+
+
+        /// <summary>
+        /// Adds a new column to the table.
+        /// </summary>
+        /// <typeparam name="T">The column type.</typeparam>
+        /// <param name="columnName">The column name.</param>
+        /// <returns>The newly created column.</returns>
+        /// <exception cref="TypeNotSupportedException">The provided C# type is not supported by the armp format.</exception>
+        public ArmpTableColumn AddColumn<T> (string columnName)
+        {
+            return AddColumn(columnName, typeof(T));
+        }
+
+
+        /// <summary>
+        /// Deletes the specified column from the table.
+        /// </summary>
+        /// <param name="columnName">The column name.</param>
+        /// <returns>A boolean indicating if the operation completed successfully.</returns>
+        public bool DeleteColumn (string columnName)
+        {
+            //TODO: Deleting a column will break how the game reads subsequent columns. Indices may need to be updated. Make it an optional argument?
+            if (ColumnNameCache.ContainsKey(columnName))
+            {
+                ArmpTableColumn column = ColumnNameCache[columnName];
+
+                //Remove column from parent and children
+                if (column.Parent != null)
+                {
+                    column.Parent.Children.Remove(column);
+                    column.Parent.SpecialSize -= 1;
+                    column.Parent = null;
+                }
+
+                foreach (ArmpTableColumn child in column.Children)
+                {
+                    child.Parent = null;
+                }
+
+                Columns.Remove(column);
+                RefreshColumnNameCache();
+                return true;
+            }
+            return false;
         }
 
 

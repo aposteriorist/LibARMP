@@ -3,7 +3,7 @@
 namespace LibARMP.Exceptions
 {
     [Serializable]
-    class ColumnNoDataException : Exception
+    public class ColumnNoDataException : Exception
     {
         private static readonly string messageId = "The column with ID {0} has no data.";
         private static readonly string messageName = "The column '{0}' has no data.";

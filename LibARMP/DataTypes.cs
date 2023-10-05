@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LibARMP.Exceptions;
+using System;
 using System.Collections.Generic;
 
 namespace LibARMP
@@ -34,6 +35,9 @@ namespace LibARMP
         }
 
 
+        /// <summary>
+        /// Initializes all armp type information.
+        /// </summary>
         private static void Init()
         {
             Types.Add(new ArmpType() { CSType = null, IDv1 = -1, IDAuxv1 = -1, IDv2 = -1, IDAuxv2 = 0, IDOE = -1, Size = 0x0, DefaultValue = null }); //Invalid
@@ -65,6 +69,22 @@ namespace LibARMP
             Types.Add(new ArmpType() { CSType = typeof(List<double>), IDv1 = -1, IDAuxv1 = -1, IDv2 = 26, IDAuxv2 = 24, IDOE = -1, Size = 0x0, DefaultValue = null }); //float64 array
             Types.Add(new ArmpType() { CSType = typeof(float[]), IDv1 = -1, IDAuxv1 = -1, IDv2 = 27, IDAuxv2 = 27, IDOE = -1, Size = 0x0, DefaultValue = null }); //VF128
             Types.Add(new ArmpType() { CSType = typeof(List<bool>), IDv1 = -1, IDAuxv1 = -1, IDv2 = 29, IDAuxv2 = 29, IDOE = -1, Size = 0x0, DefaultValue = null }); //boolean array
+        }
+
+
+        /// <summary>
+        /// Gets the ArmpType matching the provided C# Type.
+        /// </summary>
+        /// <param name="cstype">The C# type.</param>
+        /// <returns>An ArmpType.</returns>
+        /// <exception cref="TypeNotSupportedException">The provided C# type is not supported by the armp format.</exception>
+        internal static ArmpType GetArmpTypeByCSType(Type cstype)
+        {
+            foreach (ArmpType type in Types)
+            {
+                if (type.CSType == cstype) return type;
+            }
+            throw new TypeNotSupportedException(cstype);
         }
     }
 }

@@ -3,7 +3,7 @@
 namespace LibARMP.Exceptions
 {
     [Serializable]
-    class ColumnNoIndexException : Exception
+    public class ColumnNoIndexException : Exception
     {
         private static readonly string message = "The table has no column indices.";
 

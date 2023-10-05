@@ -3,7 +3,7 @@
 namespace LibARMP.Exceptions
 {
     [Serializable]
-    class EntryNotFoundException : Exception
+    public class EntryNotFoundException : Exception
     {
         private static readonly string messageId = "No entry with ID {0}.";
         private static readonly string messageName = "No entry with name '{0}'.";

@@ -3,7 +3,7 @@
 namespace LibARMP.Exceptions
 {
     [Serializable]
-    class InvalidTypeConversionException : InvalidCastException
+    public class InvalidTypeConversionException : InvalidCastException
     {
         private static readonly string message = "Cannot convert from {0} to {1}.";
         public static Type SourceType { get; private set; }

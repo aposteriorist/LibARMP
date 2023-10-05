@@ -3,7 +3,7 @@
 namespace LibARMP.Exceptions
 {
     [Serializable]
-    class TypeMismatchException : Exception
+    public class TypeMismatchException : Exception
     {
         private static readonly string message = "Type mismatch. Expected {0} and got {1}.";
         public static Type ExpectedType { get; private set; }

@@ -3,7 +3,7 @@
 namespace LibARMP.Exceptions
 {
     [Serializable]
-    class EntryInsertException : Exception
+    public class EntryInsertException : Exception
     {
         private static readonly string message = "ID {0} is greater than the amount of entries in the table.";
 
