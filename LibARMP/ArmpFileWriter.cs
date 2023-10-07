@@ -60,9 +60,9 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Writes an ARMP to a file.
+        /// Writes an <see cref="ARMP"/> to a file.
         /// </summary>
-        /// <param name="armp">The ARMP to write.</param>
+        /// <param name="armp">The <see cref="ARMP"/> to write.</param>
         /// <param name="path">The destination file path.</param>
         public static void WriteARMPToFile (ARMP armp, string path)
         {
@@ -75,9 +75,9 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Writes an ARMP to a stream.
+        /// Writes an <see cref="ARMP"/> to a stream.
         /// </summary>
-        /// <param name="armp">The ARMP to write.</param>
+        /// <param name="armp">The <see cref="ARMP"/> to write.</param>
         public static Stream WriteARMPToStream (ARMP armp)
         {
             MemoryStream stream = new MemoryStream();
@@ -90,9 +90,9 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Writes an ARMP to a byte array.
+        /// Writes an <see cref="ARMP"/> to a byte array.
         /// </summary>
-        /// <param name="armp"></param>
+        /// <param name="armp">The <see cref="ARMP"/> to write.</param>
         public static byte[] WriteARMPToArray (ARMP armp)
         {
             DataStream tempds = DataStreamFactory.FromMemory();
@@ -103,10 +103,10 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Writes a value of type T to the DataStream.
+        /// Writes a value of type T to the <see cref="DataStream"/>.
         /// </summary>
         /// <typeparam name="T">The type to read.</typeparam>
-        /// <param name="writer">The DataWriter.</param>
+        /// <param name="writer">The <see cref="DataWriter"/>.</param>
         /// <param name="value">The value of type T to write.</param>
         private static void WriteType<T> (DataWriter writer, object value)
         {
@@ -116,10 +116,10 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Writes an OE table to the DataStream.
+        /// Writes an OE table to the <see cref="DataStream"/>.
         /// </summary>
-        /// <param name="writer">The DataWriter.</param>
-        /// <param name="table">The ArmpTable to write.</param>
+        /// <param name="writer">The <see cref="DataWriter"/>.</param>
+        /// <param name="table">The <see cref="ArmpTableMain"/> to write.</param>
         private static void WriteTableOE (DataWriter writer, ArmpTableMain table)
         {
             long baseOffset = writer.Stream.Position;
@@ -305,8 +305,8 @@ namespace LibARMP
         /// <summary>
         /// Recursively writes tables from the lowest level upwards.
         /// </summary>
-        /// <param name="writer">The DataWriter.</param>
-        /// <param name="table">The ArmpTableMain to write.</param>
+        /// <param name="writer">The <see cref="DataWriter"/>.</param>
+        /// <param name="table">The <see cref="ArmpTable"/> to write.</param>
         /// <returns>The pointer to the table.</returns>
         private static uint WriteTableRecursive (DataWriter writer, ArmpTable table)
         {
@@ -355,10 +355,10 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Writes a DE table to the DataStream.
+        /// Writes a DE table to the <see cref="DataStream"/>.
         /// </summary>
-        /// <param name="writer">The DataWriter.</param>
-        /// <param name="table">The ArmpTable to write.</param>
+        /// <param name="writer">The <see cref="DataWriter"/>.</param>
+        /// <param name="table">The <see cref="ArmpTable"/> to write.</param>
         private static void WriteTable (DataWriter writer, ArmpTable table, Dictionary<ArmpTable, uint> tableValuePointers = null)
         {
             long baseOffset = writer.Stream.Position;
@@ -810,8 +810,8 @@ namespace LibARMP
         /// <summary>
         /// Writes the DE v2 Data Types Aux table.
         /// </summary>
-        /// <param name="writer">The DataWriter.</param>
-        /// <param name="table">The ArmpTable.</param>
+        /// <param name="writer">The <see cref="DataWriter"/>.</param>
+        /// <param name="table">The <see cref="ArmpTable"/>.</param>
         private static void WriteColumnDataTypesAuxTable (DataWriter writer, ArmpTable table)
         {
             int distance = 0; //Distance from start

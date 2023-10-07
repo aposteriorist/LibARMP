@@ -11,10 +11,10 @@ namespace LibARMP
         /// <summary>
         /// Stores a determined amount of offsets into a list.
         /// </summary>
-        /// <param name="reader">The DataStream Reader.</param>
+        /// <param name="reader">The <see cref="DataStream"/> Reader.</param>
         /// <param name="ptrOffsetList">Pointer to the Offset List.</param>
         /// <param name="amount">Amount of offsets to store.</param>
-        /// <returns>An int list.</returns>
+        /// <returns>A <see cref="uint"/> list.</returns>
         internal static List<UInt32> IterateOffsetList (DataReader reader, UInt32 ptrOffsetList, int amount)
         {
             List<UInt32> offsetList = new List<UInt32>();
@@ -31,9 +31,9 @@ namespace LibARMP
         /// <summary>
         /// Reads strings based on an offset list.
         /// </summary>
-        /// <param name="reader">The DataStream Reader.</param>
+        /// <param name="reader">The <see cref="DataReader"/>.</param>
         /// <param name="offsetList">The String Offset List.</param>
-        /// <returns>A string list.</returns>
+        /// <returns>A <see cref="string"/> list.</returns>
         internal static List<string> IterateStringList (DataReader reader, List<UInt32> offsetList)
         {
             List<string> stringList = new List<string>();
@@ -50,10 +50,10 @@ namespace LibARMP
         /// <summary>
         /// Reads a bitmask.
         /// </summary>
-        /// <param name="reader">The DataStream Reader.</param>
+        /// <param name="reader">The <see cref="DataReader"/>.</param>
         /// <param name="ptrBitmask">The pointer to the bitmask.</param>
         /// <param name="amount">The amount of values in the bitmask.</param>
-        /// <returns>A bool list.</returns>
+        /// <returns>A <see cref="Boolean"/> list.</returns>
         internal static List<bool> IterateBooleanBitmask (DataReader reader, UInt32 ptrBitmask, int amount)
         {
             List<bool> booleanList = new List<bool>();
@@ -79,10 +79,10 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Reverses a string.
+        /// Reverses a <see cref="string"/>.
         /// </summary>
-        /// <param name="str">The string to reverse.</param>
-        /// <returns>A reversed string.</returns>
+        /// <param name="str">The <see cref="string"/> to reverse.</param>
+        /// <returns>A reversed <see cref="string"/>.</returns>
         internal static string ReverseString (string str)
         {
             char[] charArray = str.ToCharArray();
@@ -94,10 +94,10 @@ namespace LibARMP
         /// <summary>
         /// Reads an array of type T.
         /// </summary>
-        /// <param name="reader">The DataStream Reader.</param>
+        /// <param name="reader">The <see cref="DataReader"/>.</param>
         /// <param name="ptrArray">The pointer to the array.</param>
         /// <param name="amount">The amount of values in the array.</param>
-        /// <returns>A list.</returns>
+        /// <returns>A list of type T.</returns>
         internal static dynamic IterateArray<T> (DataReader reader, UInt32 ptrArray, int amount)
         {
             List<T> returnList = new List<T>();
@@ -114,10 +114,10 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Writes a boolean list to a stream.
+        /// Writes a <see cref="Boolean"/> list to a stream.
         /// </summary>
-        /// <param name="writer">The DataWriter.</param>
-        /// <param name="boolList">The boolean list.</param>
+        /// <param name="writer">The <see cref="DataWriter"/>.</param>
+        /// <param name="boolList">The <see cref="Boolean"/> list.</param>
         internal static void WriteBooleanBitmask (DataWriter writer, List<bool> boolList)
         {
             string bitstring = "";
@@ -140,9 +140,9 @@ namespace LibARMP
 
 
         /// <summary>
-        /// TODO
+        /// Writes a text list and its offset table to the stream.
         /// </summary>
-        /// <param name="writer">The DataWriter.</param>
+        /// <param name="writer">The <see cref="DataWriter"/>.</param>
         /// <param name="textList">The text list.</param>
         /// <returns>The pointer to the text offset table.</returns>
         internal static int WriteText (DataWriter writer, List<string> textList)
@@ -167,10 +167,10 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Counts the amount of occurences of a substring in a string list.
+        /// Counts the amount of occurences of a substring in a <see cref="string"/> list.
         /// </summary>
-        /// <param name="str">The string to look for.</param>
-        /// <param name="strList">The string list to look for occurrences in.</param>
+        /// <param name="str">The <see cref="string"/> to look for.</param>
+        /// <param name="strList">The <see cref="string"/> list to look for occurrences in.</param>
         /// <returns>The amount of occurrences.</returns>
         internal static int CountStringOccurrences(string str, List<string> strList)
         {
@@ -205,9 +205,9 @@ namespace LibARMP
         ///// EXTENSIONS /////
 
         /// <summary>
-        /// Writes the complete DataStream into a Stream.
+        /// Writes the complete <see cref="DataStream"/> into a <see cref="Stream"/>.
         /// </summary>
-        /// <param name="stream">The destination stream.</param>
+        /// <param name="stream">The destination <see cref="Stream"/>.</param>
         internal static void WriteTo(this DataStream ds, Stream stream)
         {
             ds.Seek(0);
@@ -219,7 +219,7 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Returns the contents of the DataStream as a byte array.
+        /// Returns the contents of the <see cref="DataStream"/> as a byte array.
         /// </summary>
         internal static byte[] ToArray(this DataStream ds)
         {

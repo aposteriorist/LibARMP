@@ -5,7 +5,9 @@ namespace LibARMP
     [Serializable]
     public class ArmpTableInfo
     {
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ArmpTableInfo"/> class.
+        /// </summary>
         internal ArmpTableInfo ()
         {
             //General Info
@@ -68,23 +70,27 @@ namespace LibARMP
         public Int32 TextCount { get; internal set; }
 
         /// <summary>
-        /// Gets a value indicating the validity of entries. (DRAGON ENGINE ONLY)
+        /// Gets a value indicating the validity of entries.
         /// </summary>
+        /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
         public Int32 EntryValidator { get; internal set; }
 
         /// <summary>
-        /// Gets a value indicating the validity of columns. (DRAGON ENGINE ONLY)
+        /// Gets a value indicating the validity of columns.
         /// </summary>
+        /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
         public Int32 ColumnValidator { get; internal set; }
 
         /// <summary>
-        /// Gets the table ID (Int24). (DRAGON ENGINE ONLY)
+        /// Gets the table ID (Int24).
         /// </summary>
+        /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
         public Int32 TableID { get; internal set; }
 
         /// <summary>
-        /// Gets the storage Mode (only used in version 2). (DRAGON ENGINE ONLY)
+        /// Gets the storage mode.
         /// </summary>
+        /// <remarks><para><b>DRAGON ENGINE V2 ONLY</b></para></remarks>
         public byte StorageMode { get; internal set; }
 
 
@@ -93,8 +99,9 @@ namespace LibARMP
         //Pointers
 
         /// <summary>
-        /// Gets or sets the pointer to the Main Table. DEBUG
+        /// Gets or sets the pointer to the Main Table.
         /// </summary>
+        /// <remarks><para>DEBUG</para></remarks>
         internal UInt32 ptrMainTable { get; set; }
 
         /// <summary>
@@ -128,38 +135,45 @@ namespace LibARMP
         internal UInt32 ptrColumnNamesOffsetTable { get; set; }
 
         /// <summary>
-        /// Gets or sets the pointer to the Entry Indices int array. (DRAGON ENGINE ONLY)
+        /// Gets or sets the pointer to the Entry Indices int array.
         /// </summary>
+        /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
         internal UInt32 ptrEntryIndices { get; set; }
 
         /// <summary>
-        /// Gets or sets the pointer to the Column Indices int array. (DRAGON ENGINE ONLY)
+        /// Gets or sets the pointer to the Column Indices int array.
         /// </summary>
+        /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
         internal UInt32 ptrColumnIndices { get; set; }
 
         /// <summary>
-        /// Gets or sets the pointer to the Column Validity bitmask. (DRAGON ENGINE ONLY)
+        /// Gets or sets the pointer to the Column Validity bitmask.
         /// </summary>
+        /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
         internal UInt32 ptrColumnValidity { get; set; }
 
         /// <summary>
-        /// Gets or sets the pointer to the SubTable. (DRAGON ENGINE ONLY)
+        /// Gets or sets the pointer to the SubTable.
         /// </summary>
+        /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
         internal UInt32 ptrSubTable { get; set; }
 
         /// <summary>
-        /// Gets or sets the pointer to the Empty Values Offset Table. (DRAGON ENGINE ONLY)
+        /// Gets or sets the pointer to the Empty Values Offset Table.
         /// </summary>
+        /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
         internal UInt32 ptrEmptyValuesOffsetTable { get; set; }
 
         /// <summary>
-        /// Gets or sets the pointer to the Auxiliary Column Data Type Table. (DRAGON ENGINE ONLY)
+        /// Gets or sets the pointer to the Auxiliary Column Data Type Table.
         /// </summary>
+        /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
         internal UInt32 ptrColumnDataTypesAux { get; set; }
 
         /// <summary>
-        /// Gets or sets the pointer to the additional Field Info. (DRAGON ENGINE ONLY)
+        /// Gets or sets the pointer to the additional Field Info.
         /// </summary>
+        /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
         internal UInt32 ptrExtraFieldInfo { get; set; }
 
         /// <summary>
@@ -177,8 +191,9 @@ namespace LibARMP
         public bool HasText { get; internal set; }
 
         /// <summary>
-        /// Gets a boolean indicating if the table has a SubTable. (DRAGON ENGINE ONLY)
+        /// Gets a boolean indicating if the table has a SubTable.
         /// </summary>
+        /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
         public bool HasSubTable { get; internal set; }
 
         /// <summary>
@@ -192,38 +207,45 @@ namespace LibARMP
         public bool HasColumnNames { get; internal set; }
 
         /// <summary>
-        /// Gets or sets the boolean indicating if the table has an auxiliary column data types list. (DRAGON ENGINE ONLY)
+        /// Gets or sets the boolean indicating if the table has an auxiliary column data types list.
         /// </summary>
+        /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
         internal bool HasColumnDataTypesAux { get; set; }
 
         /// <summary>
-        /// Gets a boolean indicating if the table has validity flags for entries. (DRAGON ENGINE ONLY)
+        /// Gets a boolean indicating if the table has validity flags for entries.
         /// </summary>
+        /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
         public bool HasEntryValidity { get; internal set; }
 
         /// <summary>
-        /// Gets a boolean indicating if the table has validity flags for columns. (DRAGON ENGINE ONLY)
+        /// Gets a boolean indicating if the table has validity flags for columns.
         /// </summary>
+        /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
         public bool HasColumnValidity { get; internal set; }
 
         /// <summary>
-        /// Gets a boolean indicating if the table has entry indices. (DRAGON ENGINE ONLY)
+        /// Gets a boolean indicating if the table has entry indices.
         /// </summary>
+        /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
         public bool HasEntryIndices { get; internal set; }
 
         /// <summary>
-        /// Gets a boolean indicating if the table has column indices. (DRAGON ENGINE ONLY)
+        /// Gets a boolean indicating if the table has column indices.
         /// </summary>
+        /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
         public bool HasColumnIndices { get; internal set; }
 
         /// <summary>
-        /// Gets or sets the boolean indicating if the table has an Empty Values Table. (DRAGON ENGINE ONLY)
+        /// Gets or sets the boolean indicating if the table has an Empty Values Table.
         /// </summary>
+        /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
         internal bool HasEmptyValues { get; set; }
 
         /// <summary>
-        /// Gets a boolean indicating if the table has additional field info (varies between format versions). (DRAGON ENGINE ONLY)
+        /// Gets a boolean indicating if the table has additional field info (varies between format versions).
         /// </summary>
+        /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
         public bool HasExtraFieldInfo { get; internal set; }
 
         /// <summary>
@@ -236,8 +258,9 @@ namespace LibARMP
         //Version Data
 
         /// <summary>
-        /// Which specific version it is using. (Version and Revision numbers are shared between multiple different format versions)
+        /// Which specific version it is using.
         /// </summary>
+        /// <remarks><para>Version and Revision numbers are shared between multiple different format versions.</para></remarks>
         public Version FormatVersion { get; internal set; }
     }
 }

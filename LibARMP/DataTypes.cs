@@ -73,10 +73,10 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Gets the ArmpType matching the provided C# Type.
+        /// Gets the <see cref="ArmpType"/> matching the provided C# Type.
         /// </summary>
         /// <param name="cstype">The C# type.</param>
-        /// <returns>An ArmpType.</returns>
+        /// <returns>An <see cref="ArmpType"/>.</returns>
         /// <exception cref="TypeNotSupportedException">The provided C# type is not supported by the armp format.</exception>
         internal static ArmpType GetArmpTypeByCSType(Type cstype)
         {

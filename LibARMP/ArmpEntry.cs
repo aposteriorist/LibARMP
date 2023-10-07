@@ -7,7 +7,10 @@ namespace LibARMP
     [Serializable]
     public class ArmpEntry
     {
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ArmpEntry"/> class.
+        /// </summary>
+        /// <param name="parentTable">The table that contains this entry.</param>
         internal ArmpEntry(ArmpTable parentTable)
         {
             Data = new Dictionary<string, object>();
@@ -23,12 +26,25 @@ namespace LibARMP
                 Flags = new bool[8] { false, false, false, false, false, false, false, false };
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ArmpEntry"/> class.
+        /// </summary>
+        /// <param name="parentTable">The table that contains this entry.</param>
+        /// <param name="id">The entry ID.</param>
+        /// <param name="name">The entry name.</param>
         internal ArmpEntry(ArmpTable parentTable, int id, string name) : this(parentTable)
         {
             ID = id;
             Name = name;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ArmpEntry"/> class.
+        /// </summary>
+        /// <param name="parentTable">The table that contains this entry.</param>
+        /// <param name="id">The entry ID.</param>
+        /// <param name="name">The entry name.</param>
+        /// <param name="index">The entry index.</param>
         internal ArmpEntry(ArmpTable parentTable, int id, string name, int index) : this(parentTable, id, name)
         {
             Index = index;
@@ -46,27 +62,31 @@ namespace LibARMP
         public string Name { get; set; }
 
         /// <summary>
-        /// Data per column. (column, value)
+        /// Data per column.
         /// </summary>
+        /// <remarks><para>column name : value</para></remarks>
         internal IDictionary<string, object> Data { get; set; }
 
         /// <summary>
-        /// Gets or sets the entry index. Can be NULL
+        /// Gets or sets the entry index.
         /// </summary>
+        /// <remarks><para>Can be null if unused.</para></remarks>
         public int Index { get; set; }
 
         /// <summary>
-        /// Gets or sets if the entry is valid. Can be NULL
+        /// Gets or sets if the entry is valid.
         /// </summary>
+        /// <remarks><para>Can be null if unused.</para></remarks>
         public bool IsValid { get; set; }
 
         /// <summary>
-        /// Gets or sets the entry flags. Can be NULL
+        /// Gets or sets the entry flags.
         /// </summary>
+        /// <remarks><para>Can be null if unused.</para></remarks>
         public bool[] Flags { get; set; }
 
         /// <summary>
-        /// The ArmpTable this entry belongs to.
+        /// The <see cref="ArmpTable"/> this entry belongs to.
         /// </summary>
         internal ArmpTable ParentTable { get; set; }
 
@@ -80,7 +100,7 @@ namespace LibARMP
         /// <summary>
         /// Sets the value for the column to default.
         /// </summary>
-        /// <param name="column">The ArmpTableColumn.</param>
+        /// <param name="column">The <see cref="ArmpTableColumn"/>.</param>
         internal void SetDefaultColumnContent (ArmpTableColumn column)
         {
             if (!column.IsSpecial)
@@ -124,7 +144,7 @@ namespace LibARMP
         /// <summary>
         /// Removes the contents of the specified column.
         /// </summary>
-        /// <returns>A boolean indicating if the operation completed successfully.</returns>
+        /// <returns>A <see cref="Boolean"/> indicating if the operation completed successfully.</returns>
         internal bool RemoveColumnContent (string columnName)
         {
             try
@@ -142,7 +162,7 @@ namespace LibARMP
         /// <summary>
         /// Removes the contents of the specified column.
         /// </summary>
-        /// <returns>A boolean indicating if the operation completed successfully.</returns>
+        /// <returns>A <see cref="Boolean"/> indicating if the operation completed successfully.</returns>
         internal bool RemoveColumnContent (ArmpTableColumn column)
         {
             return RemoveColumnContent(column.Name);
@@ -152,7 +172,7 @@ namespace LibARMP
         /// <summary>
         /// Gets the value for the specified column.
         /// </summary>
-        /// <param name="columnName">The name of the column.</param>
+        /// <param name="columnName">The column name.</param>
         /// <exception cref="ColumnNotFoundException">The column name doesn't match any columns in the table.</exception>
         /// <exception cref="ColumnNoDataException">The column has no data.</exception>
         public object GetValueFromColumn (string columnName)
@@ -206,7 +226,7 @@ namespace LibARMP
         /// <summary>
         /// Gets the value for the specified column.
         /// </summary>
-        /// <param name="column">The ArmpTableColumn.</param>
+        /// <param name="column">The <see cref="ArmpTableColumn"/>.</param>
         public object GetValueFromColumn (ArmpTableColumn column)
         {
             return GetValueFromColumn(column.Name);
@@ -216,7 +236,7 @@ namespace LibARMP
         /// <summary>
         /// Gets the value for the specified column.
         /// </summary>
-        /// <param name="columnName">The name of the column.</param>
+        /// <param name="columnName">The column name.</param>
         /// <exception cref="InvalidTypeConversionException">The column type cannot be converted to the requested type.</exception>
         public T GetValueFromColumn<T> (string columnName)
         {
@@ -256,7 +276,7 @@ namespace LibARMP
         /// <summary>
         /// Gets the value for the specified column.
         /// </summary>
-        /// <param name="column">The ArmpTableColumn.</param>
+        /// <param name="column">The <see cref="ArmpTableColumn"/>.</param>
         /// <exception cref="InvalidTypeConversionException">The column type cannot be converted to the requested type.</exception>
         public T GetValueFromColumn<T> (ArmpTableColumn column)
         {

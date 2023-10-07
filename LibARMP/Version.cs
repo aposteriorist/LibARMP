@@ -1,5 +1,8 @@
 ﻿namespace LibARMP
 {
+    /// <summary>
+    /// Format version.
+    /// </summary>
     public enum Version
     {
         Unknown,

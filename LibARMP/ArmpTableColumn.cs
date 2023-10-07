@@ -6,12 +6,22 @@ namespace LibARMP
     [Serializable]
     public class ArmpTableColumn
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ArmpTableColumn"/> class.
+        /// </summary>
+        /// <param name="id">The column ID.</param>
         internal ArmpTableColumn(int id)
         {
             this.ID = id;
             Children = new List<ArmpTableColumn>();
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ArmpTableColumn"/> class.
+        /// </summary>
+        /// <param name="id">The column ID.</param>
+        /// <param name="name">The column name.</param>
+        /// <param name="type">The column type.</param>
         internal ArmpTableColumn(int id, string name, ArmpType type) : this(id)
         {
             this.Name = name;
@@ -34,13 +44,15 @@ namespace LibARMP
         internal ArmpType Type { get; set; }
 
         /// <summary>
-        /// Gets or sets the column index. Can be NULL
+        /// Gets or sets the column index.
         /// </summary>
+        /// <remarks><para>Can be null if unused.</para></remarks>
         public int Index { get; set; }
 
         /// <summary>
-        /// Gets or sets if the column is valid. Can be NULL
+        /// Gets or sets if the column is valid.
         /// </summary>
+        /// <remarks><para>Can be null if unused.</para></remarks>
         public bool? IsValid { get; set; }
 
         /// <summary>
@@ -65,23 +77,27 @@ namespace LibARMP
         internal int Distance { get; set; }
 
         /// <summary>
-        /// Gets or sets the unknown metadata. TODO
+        /// Gets or sets the unknown metadata.
         /// </summary>
+        /// <remarks><para>TODO</para></remarks>
         public int UnknownMetadata0x40 { get; set; }
 
         /// <summary>
-        /// Gets or sets the unknown metadata. TODO
+        /// Gets or sets the unknown metadata.
         /// </summary>
+        /// <remarks><para>TODO</para></remarks>
         public int UnknownMetadata0x4C { get; set; }
 
         /// <summary>
-        /// Gets or sets the column's children. Only used if the column is special. (v2)
+        /// Gets or sets the column's children.
         /// </summary>
+        /// <remarks><para>Only used if the column is special.</para><para><b>DRAGON ENGINE V2 ONLY</b></para></remarks>
         internal List<ArmpTableColumn> Children { get; set; }
 
         /// <summary>
-        /// Gets or sets the column's parent. Only used if the column is child of a special. (v2)
+        /// Gets or sets the column's parent.
         /// </summary>
+        /// <remarks><para>Only used if the column is child of a special.</para><para><b>DRAGON ENGINE V2 ONLY</b></para></remarks>
         internal ArmpTableColumn Parent { get; set; }
     }
 }

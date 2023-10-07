@@ -6,6 +6,9 @@ namespace LibARMP
     [Serializable]
     public class ArmpTableMain : ArmpTable
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ArmpTableMain"/> class.
+        /// </summary>
         internal ArmpTableMain() : base()
         {
 
@@ -13,9 +16,9 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Creates a new ArmpTableMain object and populates it with the properties of the source ArmpTable.
+        /// Initializes a new instance of the <see cref="ArmpTableMain"/> class and populates it with the properties of the source <see cref="ArmpTable"/>.
         /// </summary>
-        /// <param name="armpTable">The source ArmpTable object.</param>
+        /// <param name="armpTable">The source <see cref="ArmpTable"/> object.</param>
         internal ArmpTableMain(ArmpTable armpTable) : this()
         {
             var srcProperties = armpTable.GetType().GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);

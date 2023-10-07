@@ -15,8 +15,8 @@ namespace LibARMP
         /// <summary>
         /// Reads an armp file.
         /// </summary>
-        /// <param name="datastream">The armp file as DataStream.</param>
-        /// <returns>An ARMP object.</returns>
+        /// <param name="datastream">The armp file as <see cref="DataStream"/>.</param>
+        /// <returns>An <see cref="ARMP"/> object.</returns>
         public static ARMP ReadARMP (DataStream datastream)
         {
             var reader = new DataReader(datastream)
@@ -78,7 +78,7 @@ namespace LibARMP
         /// <param name="fileBytes">The armp file as byte array.</param>
         /// <param name="offset">The location in the array to start reading data from.</param>
         /// <param name="length">The number of bytes to read from the array.</param>
-        /// <returns>An ARMP object.</returns>
+        /// <returns>An <see cref="ARMP"/> object.</returns>
         public static ARMP ReadARMP (byte[] fileBytes, int offset=0, int length=0)
         {
             if (length == 0) length = fileBytes.Length;
@@ -93,8 +93,8 @@ namespace LibARMP
         /// <summary>
         /// Reads an armp file.
         /// </summary>
-        /// <param name="stream">The armp file as stream.</param>
-        /// <returns>An ARMP object.</returns>
+        /// <param name="stream">The armp file as <see cref="Stream"/>.</param>
+        /// <returns>An <see cref="ARMP"/> object.</returns>
         public static ARMP ReadARMP (Stream stream)
         {
             using (var datastream = DataStreamFactory.FromStream(stream))
@@ -109,7 +109,7 @@ namespace LibARMP
         /// Reads an armp file.
         /// </summary>
         /// <param name="path">The path to the armp file.</param>
-        /// <returns>An ARMP object.</returns>
+        /// <returns>An <see cref="ARMP"/> object.</returns>
         public static ARMP ReadARMP (string path)
         {
             using (var datastream = DataStreamFactory.FromFile(path, FileOpenMode.Read))
@@ -125,7 +125,7 @@ namespace LibARMP
         /// </summary>
         /// <param name="reader">The path to the armp file.</param>
         /// <param name="ptrMainTable">The pointer to the main table.</param>
-        /// <returns>An ArmpTable object.</returns>
+        /// <returns>An <see cref="ArmpTable"/> object.</returns>
         private static ArmpTable ReadTable (DataReader reader, long ptrMainTable, Version version)
         {
             ArmpTable table = new ArmpTable();
@@ -316,8 +316,8 @@ namespace LibARMP
         /// </summary>
         /// <param name="reader">The path to the armp file.</param>
         /// <param name="ptrMainTable">The pointer to the main table.</param>
-        /// <param name="version">The version number.</param>
-        /// <returns>An ArmpTable object.</returns>
+        /// <param name="version">The format version.</param>
+        /// <returns>An <see cref="ArmpTable"/> object.</returns>
         private static ArmpTableMain ReadTableMain (DataReader reader, long ptrMainTable, Version version)
         {
             ArmpTableMain mainTable = new ArmpTableMain(ReadTable(reader, ptrMainTable, version));
@@ -330,8 +330,9 @@ namespace LibARMP
         /// <summary>
         /// Reads an Old Engine armp table.
         /// </summary>
-        /// <param name="reader">The DataReader.</param>
-        /// <returns>An ArmpTable object.</returns>
+        /// <param name="reader">The <see cref="DataReader"/>.</param>
+        /// <param name="version">The format version.</param>
+        /// <returns>An <see cref="ArmpTable"/> object.</returns>
         private static ArmpTable ReadTable (DataReader reader, Version version)
         {
             //TODO column metadata, text
@@ -430,8 +431,9 @@ namespace LibARMP
         /// <summary>
         /// Reads an Old Engine armp's main table.
         /// </summary>
-        /// <param name="reader">The DataReader.</param>
-        /// <returns>An ArmpTableMain object.</returns>
+        /// <param name="reader">The <see cref="DataReader"/>.</param>
+        /// <param name="version">The format version.</param>
+        /// <returns>An <see cref="ArmpTableMain"/> object.</returns>
         private static ArmpTableMain ReadTableMainOE (DataReader reader, Version version)
         {
             ArmpTable table = ReadTable(reader, version);
@@ -441,9 +443,11 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Reads the table data and returns an ArmpTableInfo object.
+        /// Reads the table information.
         /// </summary>
-        /// <param name="reader">The DataStream reader</param>
+        /// <param name="reader">The <see cref="DataReader"/>.</param>
+        /// <param name="IsOldEngine">If the format version is from Old Engine.</param>
+        /// <returns>An <see cref="ArmpTableInfo"/> object.</returns>
         private static ArmpTableInfo GetARMPTableInfo (DataReader reader, bool IsOldEngine)
         {
             ArmpTableInfo armpTableInfo = new ArmpTableInfo();
@@ -572,12 +576,12 @@ namespace LibARMP
         /// <summary>
         /// Reads the column data types.
         /// </summary>
-        /// <param name="reader">The DataStream Reader.</param>
+        /// <param name="reader">The <see cref="DataReader"/>.</param>
         /// <param name="ptrDataTypes">The pointer to the column data type array.</param>
         /// <param name="amount">The amount of values in the array.</param>
-        /// <param name="version">The armp format version.</param>
+        /// <param name="version">The format version.</param>
         /// <param name="isAuxiliary">Is it the auxiliary data types array?</param>
-        /// <returns>A types list.</returns>
+        /// <returns>An <see cref="ArmpType"/> list.</returns>
         private static List<ArmpType> GetColumnDataTypes (DataReader reader, UInt32 ptrDataTypes, int amount, Version version, bool isAuxiliary = false)
         {
             List<ArmpType> returnList = new List<ArmpType>();
@@ -605,7 +609,7 @@ namespace LibARMP
         /// <summary>
         /// Initializes the entries of a table.
         /// </summary>
-        /// <param name="table">The ArmpTable.</param>
+        /// <param name="table">The <see cref="ArmpTable"/>.</param>
         private static void InitializeEntries (ArmpTable table)
         {
             for (int i=0; i<table.TableInfo.EntryCount; i++)
@@ -631,8 +635,8 @@ namespace LibARMP
         /// Reads a value of type T and stores it in the corresponding entry.
         /// </summary>
         /// <typeparam name="T">The type to read.</typeparam>
-        /// <param name="reader">The DataReader.</param>
-        /// <param name="table">The ArmpTable to store the read value.</param>
+        /// <param name="reader">The <see cref="DataReader"/>.</param>
+        /// <param name="table">The <see cref="ArmpTable"/> to store the read value.</param>
         /// <param name="entryIndex">Entry to insert the value into.</param>
         /// <param name="columnIndex">Column to insert the value into.</param>
         private static void ReadType<T> (DataReader reader, ArmpTable table, int entryIndex, int columnIndex)
@@ -644,13 +648,14 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Reads the column values for each entry. (DRAGON ENGINE ONLY)
+        /// Reads the column values for each entry.
         /// </summary>
-        /// <param name="reader">The DataReader.</param>
+        /// <param name="reader">The <see cref="DataReader"/>.</param>
         /// <param name="ptrOffsetTable">The pointer to the offset table.</param>
         /// <param name="storageMode">Storage mode used (0 = per column, 1 = per entry).</param>
-        /// <param name="version">Version of the format.</param>
+        /// <param name="version">The format version.</param>
         /// <param name="table">The table where the data will be added to.</param>
+        /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
         private static void ReadEntryData (DataReader reader, UInt32 ptrOffsetTable, int storageMode, Version version, ArmpTable table)
         {
             reader.Stream.Seek(ptrOffsetTable);
@@ -724,9 +729,9 @@ namespace LibARMP
         /// <summary>
         /// Reads a value corresponding to an entry and column.
         /// </summary>
-        /// <param name="reader">The DataReader.</param>
-        /// <param name="table">ArmpTable to save the data to.</param>
-        /// <param name="version">armp version.</param>
+        /// <param name="reader">The <see cref="DataReader"/>.</param>
+        /// <param name="table"><see cref="ArmpTable"/> to save the data to.</param>
+        /// <param name="version">The format version.</param>
         /// <param name="entryIndex">The entry index.</param>
         /// <param name="booleanColumnDataTemp">(Optional) The boolean column data if its using storage mode 0.</param>
         private static void ReadValue (DataReader reader, ArmpTable table, Version version, int entryIndex, ArmpTableColumn column, List<bool> booleanColumnDataTemp = null)
@@ -799,11 +804,12 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Reads the column values for each entry. (OLD ENGINE ONLY)
+        /// Reads the column values for each entry.
         /// </summary>
-        /// <param name="reader">The DataReader.</param>
+        /// <param name="reader">The <see cref="DataReader"/>.</param>
         /// <param name="ptrOffsetTable">The pointer to the offset table.</param>
         /// <param name="table">The table where the data will be added to.</param>
+        /// <remarks><para><b>OLD ENGINE ONLY</b></para></remarks>
         private static void ReadEntryData (DataReader reader, UInt32 ptrOffsetTable, ArmpTable table)
         {
             //TODO
@@ -876,12 +882,12 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Reads the Entry Info Flags. (v1 only)
+        /// Reads the Entry Info Flags. 
         /// </summary>
-        /// <param name="reader">The DataReader.</param>
+        /// <param name="reader">The <see cref="DataReader"/>.</param>
         /// <param name="ptrArray">The pointer to the array.</param>
         /// <param name="entries">The entry list.</param>
-        /// <returns>A list.</returns>
+        /// <remarks><para><b>DRAGON ENGINE V1 ONLY</b></para></remarks>
         private static void IterateEntryInfoFlags (DataReader reader, UInt32 ptrArray, List<ArmpEntry> entries)
         {
             reader.Stream.Seek(ptrArray);
@@ -908,11 +914,12 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Reads the additional Column Metadata. (v2 only)
+        /// Reads the additional Column Metadata.
         /// </summary>
-        /// <param name="reader">The DataReader.</param>
+        /// <param name="reader">The <see cref="DataReader"/>.</param>
         /// <param name="ptrEntryInfo">The pointer to the Entry Info section.</param>
-        /// <param name="entries">The entry list.</param>
+        /// <param name="table">The table.</param>
+        /// <remarks><para><b>DRAGON ENGINE V2 ONLY</b></para></remarks>
         private static void ReadColumnUnknownMetadata0x4C (DataReader reader, UInt32 ptrEntryInfo, ArmpTable table)
         {
             reader.Stream.Seek(ptrEntryInfo);
@@ -943,7 +950,7 @@ namespace LibARMP
         /// <summary>
         /// Reads the Column Data Types auxiliary table.
         /// </summary>
-        /// <param name="reader">The DataReader.</param>
+        /// <param name="reader">The <see cref="DataReader"/>.</param>
         /// <param name="ptrTable">The pointer to the auxiliary table.</param>
         /// <param name="columnAmount">The amount of columns in the table.</param>
         private static List<List<int>> GetColumnDataTypesAuxTable (DataReader reader, UInt32 ptrTable, int columnAmount)
@@ -967,10 +974,12 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Generates an auxiliary type list from the IDs in the aux table. (v2 only)
+        /// Generates an auxiliary type list from the IDs in the aux table.
         /// </summary>
         /// <param name="columnDataTypesAuxTable">The Column Data Types Auxiliary Table.</param>
-        /// <returns>A type list.</returns>
+        /// <param name="version">The format version.</param>
+        /// <returns>A <see cref="ArmpType"/> list.</returns>
+        /// <remarks><para><b>DRAGON ENGINE V2 ONLY</b></para></remarks>
         private static List<ArmpType> ColumnDataTypesAuxTableToColumnDataTypesAux (List<List<int>> columnDataTypesAuxTable, Version version)
         {
             List<ArmpType> typesList = new List<ArmpType>();

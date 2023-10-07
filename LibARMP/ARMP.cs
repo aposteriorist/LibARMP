@@ -5,7 +5,9 @@ namespace LibARMP
 {
     public class ARMP
     {
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ARMP"/> class.
+        /// </summary>
         internal ARMP ()
         {
 
@@ -23,8 +25,9 @@ namespace LibARMP
         public Int16 Revision { get; internal set; }
 
         /// <summary>
-        /// Which specific version it is using. (Version and Revision numbers are shared between multiple different format versions)
+        /// Which specific version it is using.
         /// </summary>
+        /// <remarks><para>Version and Revision numbers are shared between multiple different format versions.</para></remarks>
         public Version FormatVersion { get; internal set; }
 
         /// <summary>

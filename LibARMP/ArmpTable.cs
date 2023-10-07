@@ -10,6 +10,9 @@ namespace LibARMP
 
         internal Dictionary<string, ArmpTableColumn> ColumnNameCache { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ArmpTable"/> class.
+        /// </summary>
         internal ArmpTable()
         {
             ColumnNameCache = new Dictionary<string, ArmpTableColumn>();
@@ -55,18 +58,21 @@ namespace LibARMP
         internal List<ArmpEntry> Entries { get; set; }
 
         /// <summary>
-        /// Values marked as empty for specific columns (despite actually having a value) [column index, list<bool> (length = entry count)]
+        /// Values marked as empty for specific columns (despite actually having a value).
         /// </summary>
+        /// <remarks><para>[column index : list<bool> (length = entry count)]</para></remarks>
         internal Dictionary<int, List<bool>> EmptyValues { get; set; }
 
         /// <summary>
-        /// DEBUG: Boolean list (length = column count) to indicate if the offset in the empty values offset list was -1. The difference between 0 and -1 is unknown.
+        /// DEBUG: Boolean list (length = column count) to indicate if the offset in the empty values offset list was -1.
         /// </summary>
+        /// <remarks><para>The difference between 0 and -1 is unknown.</para></remarks>
         internal List<bool> EmptyValuesIsNegativeOffset { get; set; }
 
         /// <summary>
-        /// PLACEHOLDER: Edited values for patcher. [column:list of entry ids]
+        /// PLACEHOLDER: Edited values for patcher.
         /// </summary>
+        /// <remarks><para>[column : list of entry ids]</para></remarks>
         internal Dictionary<string, List<int>> EditedValues = new Dictionary<string, List<int>>();
 
 
@@ -87,7 +93,7 @@ namespace LibARMP
         /// <summary>
         /// Returns all entries in the table.
         /// </summary>
-        /// <returns>An ArmpEntry list.</returns>
+        /// <returns>An <see cref="ArmpEntry"/> list.</returns>
         /// <exception cref="EntryNotFoundException">The table has no entries.</exception>
         public List<ArmpEntry> GetAllEntries()
         {
@@ -106,7 +112,7 @@ namespace LibARMP
         /// Returns a specific entry in the table.
         /// </summary>
         /// <param name="id">The entry ID.</param>
-        /// <returns>An ArmpEntry.</returns>
+        /// <returns>An <see cref="ArmpEntry"/>.</returns>
         /// <exception cref="EntryNotFoundException">The table has no entry with the specified ID.</exception>
         public ArmpEntry GetEntry (int id)
         {
@@ -125,7 +131,7 @@ namespace LibARMP
         /// Returns a specific entry in the table.
         /// </summary>
         /// <param name="name">The entry name.</param>
-        /// <returns>An ArmpEntry.</returns>
+        /// <returns>An <see cref="ArmpEntry"/>.</returns>
         /// <exception cref="EntryNotFoundException">The table has no entry with the specified name.</exception>
         public ArmpEntry GetEntry (string name)
         {
@@ -157,7 +163,7 @@ namespace LibARMP
         /// <summary>
         /// Gets all entry names.
         /// </summary>
-        /// <returns>A string list.</returns>
+        /// <returns>A <see cref="string"/> list.</returns>
         /// <exception cref="EntryNameNotFoundException">The table has no entry names.</exception>
         public List<string> GetEntryNames()
         {
@@ -178,7 +184,7 @@ namespace LibARMP
         /// Gets the name of a specific entry.
         /// </summary>
         /// <param name="id">The entry ID.</param>
-        /// <returns>A string.</returns>
+        /// <returns>A <see cref="string"/>.</returns>
         /// <exception cref="EntryNameNotFoundException">The table has no entry names.</exception>
         /// <exception cref="EntryNotFoundException">The table has no entry with the specified ID.</exception>
         public string GetEntryName (int id)
@@ -201,7 +207,7 @@ namespace LibARMP
         /// Gets a specific column in the table.
         /// </summary>
         /// <param name="id">The column ID.</param>
-        /// <returns>An ArmpTableColumn.</returns>
+        /// <returns>An <see cref="ArmpTableColumn"/>.</returns>
         /// <exception cref="ColumnNotFoundException">The table has no column with the specified ID.</exception>
         public ArmpTableColumn GetColumn (int id)
         {
@@ -220,7 +226,7 @@ namespace LibARMP
         /// Gets a specific column in the table.
         /// </summary>
         /// <param name="columnName">The column name.</param>
-        /// <returns>An ArmpTableColumn.</returns>
+        /// <returns>An <see cref="ArmpTableColumn"/>.</returns>
         /// <exception cref="ColumnNotFoundException">The table has no column with the specified name.</exception>
         public ArmpTableColumn GetColumn (string columnName)
         {
@@ -239,7 +245,7 @@ namespace LibARMP
         /// Gets the column names.
         /// </summary>
         /// <param name="includeSpecials">Include special columns? (Array data types. These columns do not contain data)</param>
-        /// <returns>A string list.</returns>
+        /// <returns>A <see cref="string"/> list.</returns>
         public List<string> GetColumnNames (bool includeSpecials = true)
         {
             List<string> returnList = new List<string>();
@@ -258,7 +264,7 @@ namespace LibARMP
         /// Gets the column name.
         /// </summary>
         /// <param name="id">The column ID.</param>
-        /// <returns>A string.</returns>
+        /// <returns>A <see cref="string"/>.</returns>
         /// <exception cref="ColumnNotFoundException">The table has no column with the specified ID.</exception>
         public string GetColumnName (int id)
         {
@@ -277,7 +283,7 @@ namespace LibARMP
         /// Gets the column's data type.
         /// </summary>
         /// <param name="columnName">The column name.</param>
-        /// <returns>The column Type.</returns>
+        /// <returns>The column <see cref="Type"/>.</returns>
         /// <exception cref="ColumnNotFoundException">The table has no column with the specified name.</exception>
         public Type GetColumnDataType (string columnName)
         {
@@ -292,8 +298,8 @@ namespace LibARMP
         /// <summary>
         /// Gets a list of column names matching the type.
         /// </summary>
-        /// <param name="type">The Type to look for.</param>
-        /// <returns>A string list.</returns>
+        /// <param name="type">The <see cref="Type"/> to look for.</param>
+        /// <returns>A <see cref="string"/> list.</returns>
         public List<string> GetColumnNamesByType (Type type)
         {
             List<string> returnList = new List<string>();
@@ -310,8 +316,8 @@ namespace LibARMP
         /// <summary>
         /// Gets a list of column names matching the type.
         /// </summary>
-        /// <typeparam name="T">The Type to look for.</typeparam>
-        /// <returns>A string list.</returns>
+        /// <typeparam name="T">The <see cref="Type"/> to look for.</typeparam>
+        /// <returns>A <see cref="string"/> list.</returns>
         public List<string> GetColumnNamesByType<T>()
         {
             Type type = typeof(T);
@@ -322,8 +328,8 @@ namespace LibARMP
         /// <summary>
         /// Gets a list of column indices matching the type.
         /// </summary>
-        /// <param name="type">The Type to look for.</param>
-        /// <returns>An int list.</returns>
+        /// <param name="type">The <see cref="Type"/> to look for.</param>
+        /// <returns>An <see cref="int"/> list.</returns>
         public List<int> GetColumnIndicesByType (Type type)
         {
             List<int> returnList = new List<int>();
@@ -339,8 +345,8 @@ namespace LibARMP
         /// <summary>
         /// Gets a list of column indices matching the type.
         /// </summary>
-        /// <typeparam name="T">The Type to look for.</typeparam>
-        /// <returns>An int list.</returns>
+        /// <typeparam name="T">The <see cref="Type"/> to look for.</typeparam>
+        /// <returns>An <see cref="int"/> list.</returns>
         public List<int> GetColumnIndicesByType<T>()
         {
             Type type = typeof(T);
@@ -454,7 +460,7 @@ namespace LibARMP
         /// Gets a boolean indicating if the column is valid.
         /// </summary>
         /// <param name="id">The column ID.</param>
-        /// <returns>A boolean.</returns>
+        /// <returns>A <see cref="Boolean"/>.</returns>
         /// <exception cref="ColumnNoValidityException">The table has no column validity.</exception>
         /// <exception cref="ColumnNotFoundException">The table has no column with the specified ID.</exception>
         public bool IsColumnValid (int id)
@@ -476,7 +482,7 @@ namespace LibARMP
         /// Gets a boolean indicating if the column is valid.
         /// </summary>
         /// <param name="columnName">The column name.</param>
-        /// <returns>A boolean.</returns>
+        /// <returns>A <see cref="Boolean"/>.</returns>
         /// <exception cref="ColumnNoValidityException">The table has no column validity.</exception>
         /// <exception cref="ColumnNotFoundException">The table has no column with the specified name.</exception>
         public bool IsColumnValid (string columnName)
@@ -498,7 +504,7 @@ namespace LibARMP
         /// Make a column valid/invalid. All entry values of a valid column made invalid will be lost.
         /// All entry values of an invalid column made valid will be set to their defaults.
         /// </summary>
-        /// <param name="column">The ArmpTableColumn.</param>
+        /// <param name="column">The <see cref="ArmpTableColumn"/>.</param>
         /// <param name="isValid">The new column validity.</param>
         /// <exception cref="ColumnNoValidityException">The table has no column validity.</exception>
         public void SetColumnValidity (ArmpTableColumn column, bool isValid)
@@ -559,7 +565,7 @@ namespace LibARMP
         /// Returns if the column is special (array/list). Only used in v2.
         /// </summary>
         /// <param name="columnName">The column name.</param>
-        /// <returns>A boolean</returns>
+        /// <returns>A <see cref="Boolean"/></returns>
         /// <exception cref="ColumnNotFoundException">The table has no column with the specified name.</exception>
         public bool IsColumnSpecial (string columnName)
         {
@@ -574,7 +580,7 @@ namespace LibARMP
         /// <summary>
         /// Sets the column's value to default for all entries.
         /// </summary>
-        /// <param name="column">The ArmpTableColumn.</param>
+        /// <param name="column">The <see cref="ArmpTableColumn"/>.</param>
         internal void SetDefaultColumnContent (ArmpTableColumn column)
         {
             foreach (ArmpEntry entry in Entries)
@@ -649,7 +655,7 @@ namespace LibARMP
         /// Deletes the specified column from the table.
         /// </summary>
         /// <param name="columnName">The column name.</param>
-        /// <returns>A boolean indicating if the operation completed successfully.</returns>
+        /// <returns>A <see cref="Boolean"/> indicating if the operation completed successfully.</returns>
         public bool DeleteColumn (string columnName)
         {
             //TODO: Deleting a column will break how the game reads subsequent columns. Indices may need to be updated. Make it an optional argument?
@@ -682,7 +688,7 @@ namespace LibARMP
         /// Searches all entries for matching names.
         /// </summary>
         /// <param name="name">The name to search for.</param>
-        /// <returns>An ArmpEntry list.</returns>
+        /// <returns>An <see cref="ArmpEntry"/> list.</returns>
         public List<ArmpEntry> SearchByName (string name)
         {
             List<ArmpEntry> returnList = new List<ArmpEntry>();
@@ -699,7 +705,7 @@ namespace LibARMP
         /// </summary>
         /// <param name="columnName">The column containing the value to find.</param>
         /// <param name="value">The value to find.</param>
-        /// <returns>An ArmpEntry list.</returns>
+        /// <returns>An <see cref="ArmpEntry"/> list.</returns>
         /// <exception cref="ColumnNotFoundException">The table has no column with the specified name.</exception>
         public List<ArmpEntry> SearchByValue (string columnName, object value)
         {
@@ -860,10 +866,11 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Sets the selected column as string type. (This is only needed for Old Engine files with text).
+        /// Sets the selected column as string type.
         /// </summary>
         /// <param name="columnName">The column name.</param>
         /// <exception cref="ColumnNotFoundException">The table has no column with the specified name.</exception>
+        /// <remarks><para><b>This is only needed for Old Engine files with text.</b></para></remarks>
         public void SetTextColumnOE (string columnName)
         {
             if (ColumnNameCache.ContainsKey(columnName))

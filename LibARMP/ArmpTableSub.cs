@@ -6,6 +6,10 @@ namespace LibARMP
     [Serializable]
     public class ArmpTableSub : ArmpTable
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ArmpTableSub"/> class.
+        /// </summary>
+        /// <param name="parentTable">The parent <see cref="ArmpTableMain"/>.</param>
         internal ArmpTableSub(ArmpTableMain parentTable) : base()
         {
             this.ParentTable = parentTable;
@@ -13,10 +17,10 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Creates a new ArmpTableSub object and populates it with the properties of the source ArmpTable.
+        /// Initializes a new instance of the <see cref="ArmpTableSub"/> class and populates it with the properties of the source <see cref="ArmpTable"/>.
         /// </summary>
-        /// <param name="parentTable">The parent ArmpTableMain.</param>
-        /// <param name="armpTable">The source ArmpTable object.</param>
+        /// <param name="parentTable">The parent <see cref="ArmpTableMain"/>.</param>
+        /// <param name="armpTable">The source <see cref="ArmpTable"/> object.</param>
         internal ArmpTableSub(ArmpTableMain parentTable, ArmpTable armpTable) : this(parentTable)
         {
             var srcProperties = armpTable.GetType().GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);

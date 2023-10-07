@@ -5,6 +5,11 @@ namespace LibARMP
     internal class ArmpType
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="ArmpType"/> class.
+        /// </summary>
+        internal ArmpType() { }
+
+        /// <summary>
         /// C# equivalent of the type.
         /// </summary>
         internal Type CSType { get; set; }
@@ -44,9 +49,8 @@ namespace LibARMP
         /// </summary>
         internal sbyte Size { get; set; }
 
-        internal ArmpType() { }
 
-
+        
         internal sbyte GetID (Version version)
         {
             switch (version)
