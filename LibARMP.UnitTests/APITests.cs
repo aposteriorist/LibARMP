@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using LibARMP.Exceptions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 
@@ -274,6 +275,39 @@ namespace LibARMP.UnitTests
             Assert.IsTrue(special);
             special = armp.MainTable.IsColumnSpecial("f32_");
             Assert.IsFalse(special);
+        }
+
+
+        [TestMethod]
+        public void ArmpTable_AddColumn()
+        {
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode0);
+            ArmpTableColumn c1 = armp.MainTable.AddColumn<Int64>("test_s64");
+            ArmpTableColumn c2 = armp.MainTable.AddColumn<bool>("test_bool");
+            //Before saving
+            Assert.AreEqual(typeof(Int64), armp.MainTable.GetColumnDataType(c1.Name));
+            Assert.AreEqual(typeof(bool), armp.MainTable.GetColumnDataType(c2.Name));
+            //After saving
+            byte[] temp = ArmpFileWriter.WriteARMPToArray(armp);
+            ARMP armp_new = ArmpFileReader.ReadARMP(temp);
+            Assert.AreEqual(typeof(Int64), armp_new.MainTable.GetColumnDataType(c1.Name));
+            Assert.AreEqual(typeof(bool), armp_new.MainTable.GetColumnDataType(c2.Name));
+        }
+
+
+        [TestMethod]
+        public void ArmpTable_DeleteColumn()
+        {
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode0);
+            string column = "s32_";
+            bool result = armp.MainTable.DeleteColumn(column);
+            //Before saving
+            Assert.IsTrue(result);
+            Assert.ThrowsException<ColumnNotFoundException>(() => armp.MainTable.GetColumn(column));
+            //After saving
+            byte[] temp = ArmpFileWriter.WriteARMPToArray(armp);
+            ARMP armp_new = ArmpFileReader.ReadARMP(temp);
+            Assert.ThrowsException<ColumnNotFoundException>(() => armp_new.MainTable.GetColumn(column));
         }
 
 
