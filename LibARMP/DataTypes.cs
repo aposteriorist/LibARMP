@@ -25,6 +25,7 @@ namespace LibARMP
             typeof(List<float>),
             typeof(List<double>),
             typeof(float[]),
+            typeof(double[]),
             typeof(List<bool>),
         };
 
@@ -68,6 +69,7 @@ namespace LibARMP
             Types.Add(new ArmpType() { CSType = typeof(List<float>), IDv1 = -1, IDAuxv1 = -1, IDv2 = 25, IDAuxv2 = 23, IDOE = -1, Size = 0x0, DefaultValue = null }); //float32 array
             Types.Add(new ArmpType() { CSType = typeof(List<double>), IDv1 = -1, IDAuxv1 = -1, IDv2 = 26, IDAuxv2 = 24, IDOE = -1, Size = 0x0, DefaultValue = null }); //float64 array
             Types.Add(new ArmpType() { CSType = typeof(float[]), IDv1 = -1, IDAuxv1 = -1, IDv2 = 27, IDAuxv2 = 27, IDOE = -1, Size = 0x0, DefaultValue = null }); //VF128
+            Types.Add(new ArmpType() { CSType = typeof(double[]), IDv1 = -1, IDAuxv1 = -1, IDv2 = 28, IDAuxv2 = 28, IDOE = -1, Size = 0x0, DefaultValue = null }); //VD256
             Types.Add(new ArmpType() { CSType = typeof(List<bool>), IDv1 = -1, IDAuxv1 = -1, IDv2 = 29, IDAuxv2 = 29, IDOE = -1, Size = 0x0, DefaultValue = null }); //boolean array
         }
 
