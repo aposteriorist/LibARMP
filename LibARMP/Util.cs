@@ -161,7 +161,7 @@ namespace LibARMP
             {
                 writer.Write(pointer);
             }
-            writer.WritePadding(0x00, 0x10);
+
             return ptrOffsetTable;
         }
 

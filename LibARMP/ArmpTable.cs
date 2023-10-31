@@ -886,5 +886,28 @@ namespace LibARMP
             }
             throw new ColumnNotFoundException(columnName);
         }
+
+
+        /// <summary>
+        /// Calculates the distance between data for Storage Mode 1 columns.
+        /// </summary>
+        /// <remarks><para><b>DRAGON ENGINE V2 (STORAGE MODE 1) ONLY</b></para></remarks>
+        internal void UpdateColumnDistances()
+        {
+            int distance = 0;
+
+            foreach (ArmpTableColumn column in Columns)
+            {
+                if (column.Type.Size == 0)
+                {
+                    column.Distance = distance;
+                    continue;
+                }
+
+                int padding = distance % column.Type.Size;
+                column.Distance = distance + padding;
+                distance = column.Distance + column.Type.Size;
+            }
+        }
     }
 }
