@@ -2,11 +2,11 @@
 using System.Reflection;
 using Yarhl.IO;
 
-namespace LibARMP
+namespace LibARMP.IO
 {
     public static class ArmpFilePatcher
     {
-        private static void PatchARMP (ARMP armp, DataStream outputDataStream)
+        private static void PatchARMP(ARMP armp, DataStream outputDataStream)
         {
             var writer = new DataWriter(outputDataStream)
             {
@@ -34,7 +34,7 @@ namespace LibARMP
         /// </summary>
         /// <param name="armp">The ARMP to write.</param>
         /// <param name="path">The destination file path.</param>
-        public static void PatchARMPToFile (ARMP armp, string path)
+        public static void PatchARMPToFile(ARMP armp, string path)
         {
             using (var datastream = DataStreamFactory.FromFile(path, FileOpenMode.Write))
             {
@@ -48,7 +48,7 @@ namespace LibARMP
         /// Writes a patched ARMP to a stream.
         /// </summary>
         /// <param name="armp">The ARMP to write.</param>
-        public static Stream PatchARMPToStream (ARMP armp)
+        public static Stream PatchARMPToStream(ARMP armp)
         {
             MemoryStream stream = new MemoryStream();
             DataStream tempds = DataStreamFactory.FromMemory();
@@ -63,7 +63,7 @@ namespace LibARMP
         /// Writes a patched ARMP to a byte array.
         /// </summary>
         /// <param name="armp"></param>
-        public static byte[] PatchARMPToArray (ARMP armp)
+        public static byte[] PatchARMPToArray(ARMP armp)
         {
             DataStream tempds = DataStreamFactory.FromMemory();
             PatchARMP(armp, tempds);
@@ -74,7 +74,7 @@ namespace LibARMP
         //PLACEHOLDER
         private static void PatchTableRecursive(DataWriter writer, ArmpTable table)
         {
-            foreach(ArmpTableColumn column in table.Columns)
+            foreach (ArmpTableColumn column in table.Columns)
             {
                 if (table.EditedValues.ContainsKey(column.Name))
                 {
@@ -87,7 +87,7 @@ namespace LibARMP
                         MethodInfo methodinfo = typeof(ArmpFileWriter).GetMethod("WriteType", BindingFlags.NonPublic | BindingFlags.Static);
                         MethodInfo methodref = methodinfo.MakeGenericMethod(column.Type.CSType);
                         methodref.Invoke(null, new object[] { writer, entryvalue });
-                        
+
                     }
                 }
 
@@ -122,7 +122,7 @@ namespace LibARMP
         /// <param name="value">The value of type T to write.</param>
         private static void WriteType<T>(DataWriter writer, object value)
         {
-            writer.WriteOfType<T>((T)value);
+            writer.WriteOfType((T)value);
         }
     }
 }

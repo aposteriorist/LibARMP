@@ -4,14 +4,14 @@ using System.IO;
 using System.Reflection;
 using Yarhl.IO;
 
-namespace LibARMP
+namespace LibARMP.IO
 {
     public static class ArmpFileWriter
     {
 
         internal static Dictionary<Type, MethodInfo> WriteTypeCache = new Dictionary<Type, MethodInfo>();
 
-        private static void WriteARMP (ARMP armp, DataStream datastream)
+        private static void WriteARMP(ARMP armp, DataStream datastream)
         {
             bool isOldEngine = false;
             if (armp.FormatVersion == Version.OldEngine || armp.FormatVersion == Version.OldEngineIshin)
@@ -64,7 +64,7 @@ namespace LibARMP
         /// </summary>
         /// <param name="armp">The <see cref="ARMP"/> to write.</param>
         /// <param name="path">The destination file path.</param>
-        public static void WriteARMPToFile (ARMP armp, string path)
+        public static void WriteARMPToFile(ARMP armp, string path)
         {
             using (var datastream = DataStreamFactory.FromFile(path, FileOpenMode.Write))
             {
@@ -78,7 +78,7 @@ namespace LibARMP
         /// Writes an <see cref="ARMP"/> to a stream.
         /// </summary>
         /// <param name="armp">The <see cref="ARMP"/> to write.</param>
-        public static Stream WriteARMPToStream (ARMP armp)
+        public static Stream WriteARMPToStream(ARMP armp)
         {
             MemoryStream stream = new MemoryStream();
             DataStream tempds = DataStreamFactory.FromMemory();
@@ -93,7 +93,7 @@ namespace LibARMP
         /// Writes an <see cref="ARMP"/> to a byte array.
         /// </summary>
         /// <param name="armp">The <see cref="ARMP"/> to write.</param>
-        public static byte[] WriteARMPToArray (ARMP armp)
+        public static byte[] WriteARMPToArray(ARMP armp)
         {
             DataStream tempds = DataStreamFactory.FromMemory();
             WriteARMP(armp, tempds);
@@ -108,9 +108,9 @@ namespace LibARMP
         /// <typeparam name="T">The type to read.</typeparam>
         /// <param name="writer">The <see cref="DataWriter"/>.</param>
         /// <param name="value">The value of type T to write.</param>
-        private static void WriteType<T> (DataWriter writer, object value)
+        private static void WriteType<T>(DataWriter writer, object value)
         {
-            writer.WriteOfType<T>((T)value);
+            writer.WriteOfType((T)value);
         }
 
 
@@ -120,7 +120,7 @@ namespace LibARMP
         /// </summary>
         /// <param name="writer">The <see cref="DataWriter"/>.</param>
         /// <param name="table">The <see cref="ArmpTableMain"/> to write.</param>
-        private static void WriteTableOE (DataWriter writer, ArmpTableMain table)
+        private static void WriteTableOE(DataWriter writer, ArmpTableMain table)
         {
             long baseOffset = writer.Stream.Position;
             writer.WriteTimes(0x00, 0x40); //Placeholder table
@@ -239,11 +239,11 @@ namespace LibARMP
                             if (entry.GetValueFromColumn(column.Name) != null)
                             {
                                 int index = table.Text.IndexOf((string)entry.GetValueFromColumn(column.Name));
-                                writer.WriteOfType<Int16>((Int16)index);
+                                writer.WriteOfType((short)index);
                             }
                             else
                             {
-                                writer.WriteOfType<Int16>(-1);
+                                writer.WriteOfType<short>(-1);
                             }
                         }
 
@@ -262,24 +262,24 @@ namespace LibARMP
                             writer.Write((sbyte)entry.GetValueFromColumn(column.Name));
                         }
 
-                        else if (column.Type.CSType == typeof(UInt16))
+                        else if (column.Type.CSType == typeof(ushort))
                         {
-                            writer.Write((UInt16)entry.GetValueFromColumn(column.Name));
+                            writer.Write((ushort)entry.GetValueFromColumn(column.Name));
                         }
 
-                        else if (column.Type.CSType == typeof(Int16))
+                        else if (column.Type.CSType == typeof(short))
                         {
-                            writer.Write((Int16)entry.GetValueFromColumn(column.Name));
+                            writer.Write((short)entry.GetValueFromColumn(column.Name));
                         }
 
-                        else if (column.Type.CSType == typeof(UInt32))
+                        else if (column.Type.CSType == typeof(uint))
                         {
-                            writer.Write((UInt32)entry.GetValueFromColumn(column.Name));
+                            writer.Write((uint)entry.GetValueFromColumn(column.Name));
                         }
 
-                        else if (column.Type.CSType == typeof(Int32))
+                        else if (column.Type.CSType == typeof(int))
                         {
-                            writer.Write((Int32)entry.GetValueFromColumn(column.Name));
+                            writer.Write((int)entry.GetValueFromColumn(column.Name));
                         }
 
                     }
@@ -309,7 +309,7 @@ namespace LibARMP
         /// <param name="writer">The <see cref="DataWriter"/>.</param>
         /// <param name="table">The <see cref="ArmpTable"/> to write.</param>
         /// <returns>The pointer to the table.</returns>
-        private static uint WriteTableRecursive (DataWriter writer, ArmpTable table)
+        private static uint WriteTableRecursive(DataWriter writer, ArmpTable table)
         {
             List<string> tableColumns = table.GetColumnNamesByType<ArmpTableMain>();
             Dictionary<ArmpTable, uint> tablePointers = new Dictionary<ArmpTable, uint>();
@@ -344,7 +344,7 @@ namespace LibARMP
                 }
             }
 
-            UInt32 pointer = (uint)writer.Stream.Position;
+            uint pointer = (uint)writer.Stream.Position;
             WriteTable(writer, table, tablePointers);
             writer.WritePadding(0x00, 0x10);
             writer.Stream.PushToPosition(pointer + 0x3C);
@@ -360,7 +360,7 @@ namespace LibARMP
         /// </summary>
         /// <param name="writer">The <see cref="DataWriter"/>.</param>
         /// <param name="table">The <see cref="ArmpTable"/> to write.</param>
-        private static void WriteTable (DataWriter writer, ArmpTable table, Dictionary<ArmpTable, uint> tableValuePointers = null)
+        private static void WriteTable(DataWriter writer, ArmpTable table, Dictionary<ArmpTable, uint> tableValuePointers = null)
         {
             long baseOffset = writer.Stream.Position;
             writer.WriteTimes(0x00, 0x50); //Placeholder table
@@ -456,7 +456,7 @@ namespace LibARMP
 
                 List<string> textList = new List<string>();
 
-                foreach(ArmpTableColumn column in stringTypeColumns)
+                foreach (ArmpTableColumn column in stringTypeColumns)
                 {
                     foreach (ArmpEntry entry in table.Entries)
                     {
@@ -632,7 +632,7 @@ namespace LibARMP
                             columnPaddingCache.Add(column.Name, columnPadding);
                         }
                         writer.WriteTimes(0x00, columnPadding);
-                        
+
 
                         if (table.TableInfo.HasColumnValidity && table.IsColumnValid(column.Name))
                         {
@@ -703,7 +703,7 @@ namespace LibARMP
             {
                 ptr = (int)writer.Stream.Position;
 
-                foreach(ArmpEntry entry in table.Entries)
+                foreach (ArmpEntry entry in table.Entries)
                 {
                     writer.Write(entry.Index);
                 }
@@ -736,10 +736,10 @@ namespace LibARMP
             if (table.TableInfo.HasExtraFieldInfo && table.TableInfo.FormatVersion == Version.DragonEngineV1)
             {
                 ptr = (int)writer.Stream.Position;
-                foreach(ArmpEntry entry in table.Entries)
+                foreach (ArmpEntry entry in table.Entries)
                 {
                     string bitstring = "";
-                    for(int i=0; i<entry.Flags.Length; i++)
+                    for (int i = 0; i < entry.Flags.Length; i++)
                     {
                         bitstring += Convert.ToByte(entry.Flags[i]);
                     }
@@ -761,7 +761,7 @@ namespace LibARMP
                 }
 
                 ptr = (int)writer.Stream.Position;
-                for (int i=0; i<table.TableInfo.ColumnCount; i++)
+                for (int i = 0; i < table.TableInfo.ColumnCount; i++)
                 {
                     if (table.EmptyValuesIsNegativeOffset[i])
                     {
@@ -835,7 +835,7 @@ namespace LibARMP
         /// </summary>
         /// <param name="writer">The <see cref="DataWriter"/>.</param>
         /// <param name="table">The <see cref="ArmpTable"/>.</param>
-        private static void WriteColumnDataTypesAuxTable (DataWriter writer, ArmpTable table)
+        private static void WriteColumnDataTypesAuxTable(DataWriter writer, ArmpTable table)
         {
             foreach (ArmpTableColumn column in table.Columns)
             {
