@@ -91,7 +91,7 @@ namespace LibARMP
         /// Gets the storage mode.
         /// </summary>
         /// <remarks><para><b>DRAGON ENGINE V2 ONLY</b></para></remarks>
-        public byte StorageMode { get; internal set; }
+        public StorageMode StorageMode { get; internal set; }
 
 
 

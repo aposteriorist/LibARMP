@@ -206,7 +206,7 @@ namespace LibARMP.UnitTests
             ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode0);
             Assert.AreEqual(armp.Version, 2);
             Assert.AreEqual(armp.Revision, 0);
-            Assert.AreEqual(armp.MainTable.TableInfo.StorageMode, 0);
+            Assert.AreEqual(armp.MainTable.TableInfo.StorageMode, StorageMode.Column);
         }
 
 
@@ -371,7 +371,7 @@ namespace LibARMP.UnitTests
             ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode1);
             Assert.AreEqual(armp.Version, 2);
             Assert.AreEqual(armp.Revision, 0);
-            Assert.AreEqual(armp.MainTable.TableInfo.StorageMode, 1);
+            Assert.AreEqual(armp.MainTable.TableInfo.StorageMode, StorageMode.Entry);
         }
 
 

@@ -513,7 +513,7 @@ namespace LibARMP
                 armpTableInfo.ptrColumnDataTypes = reader.ReadUInt32();
                 armpTableInfo.ptrColumnContentOffsetTable = reader.ReadUInt32();
                 armpTableInfo.TableID = reader.ReadInt24();
-                armpTableInfo.StorageMode = reader.ReadByte();
+                armpTableInfo.StorageMode = (StorageMode)reader.ReadByte();
                 armpTableInfo.ptrTextOffsetTable = reader.ReadUInt32();
                 armpTableInfo.ptrColumnNamesOffsetTable = reader.ReadUInt32();
                 armpTableInfo.ColumnValidator = reader.ReadInt32();
@@ -656,11 +656,11 @@ namespace LibARMP
         /// <param name="version">The format version.</param>
         /// <param name="table">The table where the data will be added to.</param>
         /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
-        private static void ReadEntryData (DataReader reader, UInt32 ptrOffsetTable, int storageMode, Version version, ArmpTable table)
+        private static void ReadEntryData (DataReader reader, UInt32 ptrOffsetTable, StorageMode storageMode, Version version, ArmpTable table)
         {
             reader.Stream.Seek(ptrOffsetTable);
 
-            if (storageMode == 0)
+            if (storageMode == StorageMode.Column)
             {
                 foreach (ArmpTableColumn column in table.Columns)
                 {
@@ -705,7 +705,7 @@ namespace LibARMP
             }
 
 
-            else if (storageMode == 1)
+            else if (storageMode == StorageMode.Entry)
             {
                 for (int entryIndex = 0; entryIndex < table.TableInfo.EntryCount; entryIndex++)
                 {

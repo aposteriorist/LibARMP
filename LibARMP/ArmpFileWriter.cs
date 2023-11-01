@@ -374,7 +374,7 @@ namespace LibARMP
             writer.Stream.Position = baseOffset + 0x20;
             writer.Write(table.TableInfo.TableID);
             writer.Stream.Position = baseOffset + 0x23;
-            writer.Write(table.TableInfo.StorageMode);
+            writer.Write((byte)table.TableInfo.StorageMode);
             writer.Stream.PopPosition();
 
             int ptr = 0;
@@ -509,7 +509,7 @@ namespace LibARMP
 
 
             //Column Contents
-            if (table.TableInfo.StorageMode == 0)
+            if (table.TableInfo.StorageMode == StorageMode.Column)
             {
                 List<int> columnValueOffsets = new List<int>();
                 foreach (ArmpTableColumn column in table.Columns)
@@ -606,7 +606,7 @@ namespace LibARMP
             }
 
 
-            else if (table.TableInfo.StorageMode == 1)
+            else if (table.TableInfo.StorageMode == StorageMode.Entry)
             {
                 writer.WritePadding(0x00, 0x10);
 
