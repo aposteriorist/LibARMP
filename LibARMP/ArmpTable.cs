@@ -876,7 +876,7 @@ namespace LibARMP
             if (ColumnNameCache.ContainsKey(columnName))
             {
                 ArmpTableColumn column = ColumnNameCache[columnName];
-                column.Type.CSType = typeof(string);
+                column.Type = DataTypes.GetArmpTypeByCSType(typeof(string));
                 foreach (ArmpEntry entry in Entries)
                 {
                     Int16 textIndex = (Int16)entry.Data[columnName];
@@ -884,7 +884,10 @@ namespace LibARMP
                     else entry.Data[columnName] = null;
                 }
             }
-            throw new ColumnNotFoundException(columnName);
+            else
+            {
+                throw new ColumnNotFoundException(columnName);
+            }
         }
 
 

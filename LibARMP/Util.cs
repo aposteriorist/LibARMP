@@ -263,5 +263,30 @@ namespace LibARMP
             }
             dw.Stream.PopPosition();
         }
+
+
+        /// <summary>
+        /// Attempts to add the specified key and value to the dictionary.
+        /// </summary>
+        /// <param name="dictionary">The Dictionary.</param>
+        /// <param name="key">The key of the element to add.</param>
+        /// <param name="value">The value of the element to add. It can be <c>null</c>.</param>
+        /// <returns><c>true</c> if the key/value pair was added to the dictionary successfully; otherwise, <c>false</c>.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="key"/> is <c>null</c>.</exception>
+        internal static bool TryAdd<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue value)
+        {
+            if (dictionary == null)
+            {
+                throw new ArgumentNullException(nameof(dictionary));
+            }
+
+            if (!dictionary.ContainsKey(key))
+            {
+                dictionary.Add(key, value);
+                return true;
+            }
+
+            return false;
+        }
     }
 }

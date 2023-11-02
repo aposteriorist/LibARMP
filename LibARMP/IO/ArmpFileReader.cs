@@ -359,8 +359,7 @@ namespace LibARMP.IO
             }
 
             //Column Data Types
-            List<ArmpType> columnDataTypes = new List<ArmpType>();
-            columnDataTypes = GetColumnDataTypes(reader, table.TableInfo.ptrColumnDataTypes, table.TableInfo.ColumnCount, version);
+            List<ArmpType> columnDataTypes = GetColumnDataTypes(reader, table.TableInfo.ptrColumnDataTypes, table.TableInfo.ColumnCount, version);
 
             //Column Metadata
             List<int> columnMetadata = new List<int>();
@@ -586,18 +585,30 @@ namespace LibARMP.IO
         {
             List<ArmpType> returnList = new List<ArmpType>();
 
+            Dictionary<sbyte, ArmpType> typeIdCache = new Dictionary<sbyte, ArmpType>();
+            foreach (ArmpType type in DataTypes.Types)
+            {
+                typeIdCache.TryAdd(type.GetID(version, isAuxiliary), type);
+            }
+
             reader.Stream.Seek(ptrDataTypes);
 
-            for (int i = 0; i < amount; i++)
+            if (version == Version.OldEngine || version == Version.OldEngineIshin)
             {
-                sbyte id = reader.ReadSByte();
-                foreach (ArmpType armpType in DataTypes.Types)
+                for (int i = 0; i < amount; i++)
                 {
-                    if (armpType.GetID(version, isAuxiliary) == id)
-                    {
-                        returnList.Add(armpType);
-                        break;
-                    }
+                    sbyte id = (sbyte)reader.ReadInt32();
+                    if (typeIdCache.ContainsKey(id))
+                        returnList.Add(typeIdCache[id]);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < amount; i++)
+                {
+                    sbyte id = reader.ReadSByte();
+                    if (typeIdCache.ContainsKey(id))
+                        returnList.Add(typeIdCache[id]);
                 }
             }
 
