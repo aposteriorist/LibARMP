@@ -56,25 +56,21 @@ namespace LibARMP
         /// <returns>A <see cref="Boolean"/> list.</returns>
         internal static List<bool> IterateBooleanBitmask (DataReader reader, UInt32 ptrBitmask, int amount)
         {
-            List<bool> booleanList = new List<bool>();
+            List<bool> boolList = new List<bool>();
 
             reader.Stream.Seek(ptrBitmask);
+
             for (int i = 0; i < Math.Ceiling((float)amount/8); i++)
             {
-                byte b = reader.ReadByte();
-                var bitstring = Convert.ToString(b, 2).PadLeft(8, '0');
-                bitstring = ReverseString(bitstring);
-                foreach (char c in bitstring)
+                int bitmask = reader.ReadInt32();
+
+                for (int j = 0; j < 32 && boolList.Count < amount; j++)
                 {
-                    if (booleanList.Count < amount)
-                    {
-                        bool boolvalue = false;
-                        if (c == '1') boolvalue = true;
-                        booleanList.Add(boolvalue);
-                    }
+                    boolList.Add((bitmask & (1 << j)) != 0);
                 }
             }
-            return booleanList;
+
+            return boolList;
         }
 
 
@@ -120,21 +116,22 @@ namespace LibARMP
         /// <param name="boolList">The <see cref="Boolean"/> list.</param>
         internal static void WriteBooleanBitmask (DataWriter writer, List<bool> boolList)
         {
-            string bitstring = "";
-            foreach (bool boolValue in boolList)
+            int index = 0;
+
+            while (index < boolList.Count)
             {
-                bitstring += Convert.ToByte(boolValue).ToString();
-                if (bitstring.Length == 8)
+                int bitmask = 0;
+
+                for (int i = 0; i < 32 && index < boolList.Count; i++)
                 {
-                    byte value = Convert.ToByte(ReverseString(bitstring), 2);
-                    bitstring = "";
-                    writer.Write(value);
+                    if (boolList[index])
+                    {
+                        bitmask |= (1 << i);
+                    }
+                    index++;
                 }
-            }
-            if (bitstring != "")
-            {
-                byte value = Convert.ToByte(ReverseString(bitstring).PadLeft(8, '0'), 2);
-                writer.Write(value);
+
+                writer.Write(bitmask);
             }
         }
 
