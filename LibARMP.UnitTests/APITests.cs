@@ -91,6 +91,25 @@ namespace LibARMP.UnitTests
 
 
 
+        ///// ArmpTableColumn /////
+
+        [TestMethod]
+        public void ArmpTableColumn_GetDataType()
+        {
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode0);
+            ArmpTableColumn c1 = armp.MainTable.GetColumn("u32_");
+            ArmpTableColumn c2 = armp.MainTable.GetColumn("s64_");
+            ArmpTableColumn c3 = armp.MainTable.GetColumn("f32_");
+            ArmpTableColumn c4 = armp.MainTable.GetColumn("bool_");
+
+            Assert.AreEqual(typeof(uint), c1.GetDataType());
+            Assert.AreEqual(typeof(Int64), c2.GetDataType());
+            Assert.AreEqual(typeof(float), c3.GetDataType());
+            Assert.AreEqual(typeof(bool), c4.GetDataType());
+        }
+
+
+
         ///// ArmpTable /////
 
         [TestMethod]

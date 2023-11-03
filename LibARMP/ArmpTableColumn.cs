@@ -99,5 +99,16 @@ namespace LibARMP
         /// </summary>
         /// <remarks><para>Only used if the column is child of a special.</para><para><b>DRAGON ENGINE V2 ONLY</b></para></remarks>
         internal ArmpTableColumn Parent { get; set; }
+
+
+
+        /// <summary>
+        /// Gets the column's data type.
+        /// </summary>
+        /// <returns>The column <see cref="System.Type"/>.</returns>
+        public Type GetDataType()
+        {
+            return Type.CSType;
+        }
     }
 }
