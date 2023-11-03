@@ -204,6 +204,24 @@ namespace LibARMP
 
 
         /// <summary>
+        /// Returns all columns in the table.
+        /// </summary>
+        /// <returns>An <see cref="ArmpTableColumn"/> list.</returns>
+        /// <exception cref="ColumnNotFoundException">The table has no columns.</exception>
+        public List<ArmpTableColumn> GetAllColumns()
+        {
+            try
+            {
+                return Columns;
+            }
+            catch
+            {
+                throw new ColumnNotFoundException();
+            }
+        }
+
+
+        /// <summary>
         /// Gets a specific column in the table.
         /// </summary>
         /// <param name="id">The column ID.</param>
