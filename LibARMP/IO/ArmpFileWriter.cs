@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Text;
 using Yarhl.IO;
 
 namespace LibARMP.IO
@@ -203,17 +204,22 @@ namespace LibARMP.IO
                 }
 
                 List<string> textList = new List<string>();
-                foreach (ArmpEntry entry in table.Entries)
+
+                foreach (ArmpTableColumn column in stringTypeColumns)
                 {
-                    foreach (ArmpTableColumn column in stringTypeColumns)
+                    foreach (ArmpEntry entry in table.Entries)
                     {
-                        string str = (string)entry.GetValueFromColumn(column.Name);
+                        string str = entry.GetValueFromColumn<string>(column.Name);
                         if (!textList.Contains(str) && str != null) textList.Add(str);
                     }
                 }
                 table.Text = textList;
 
-                ptr = Util.WriteText(writer, table.Text);
+                Encoding encoding = Encoding.UTF8;
+                if (table.TableInfo.FormatVersion == Version.OldEngineIshin)
+                    encoding = Encoding.GetEncoding(932);
+
+                ptr = Util.WriteText(writer, table.Text, encoding);
                 writer.WritePadding(0x00, 0x10);
                 writer.PushWritePop(ptr, baseOffset + 0x28);
                 //Text count

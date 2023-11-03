@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Text;
 using Yarhl.IO;
 
 namespace LibARMP
@@ -34,14 +35,14 @@ namespace LibARMP
         /// <param name="reader">The <see cref="DataReader"/>.</param>
         /// <param name="offsetList">The String Offset List.</param>
         /// <returns>A <see cref="string"/> list.</returns>
-        internal static List<string> IterateStringList (DataReader reader, List<UInt32> offsetList)
+        internal static List<string> IterateStringList (DataReader reader, List<UInt32> offsetList, Encoding encoding = null)
         {
             List<string> stringList = new List<string>();
 
             foreach (int offset in offsetList) 
             {
                 reader.Stream.Seek(offset);
-                stringList.Add(reader.ReadString());
+                stringList.Add(reader.ReadString(encoding));
             }
             return stringList;
         }
@@ -142,14 +143,14 @@ namespace LibARMP
         /// <param name="writer">The <see cref="DataWriter"/>.</param>
         /// <param name="textList">The text list.</param>
         /// <returns>The pointer to the text offset table.</returns>
-        internal static int WriteText (DataWriter writer, List<string> textList)
+        internal static int WriteText (DataWriter writer, List<string> textList, Encoding encoding = null)
         {
             List<int> ptrList = new List<int>();
             
             foreach (string text in textList)
             {
                 ptrList.Add((int)writer.Stream.Position);
-                writer.Write(text, true);
+                writer.Write(text, true, encoding);
             }
             writer.WritePadding(0x00, 0x10);
             int ptrOffsetTable = (int)writer.Stream.Position;

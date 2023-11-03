@@ -396,18 +396,11 @@ namespace LibARMP.IO
             if (table.TableInfo.HasText)
             {
                 List<uint> offsetList = Util.IterateOffsetList(reader, table.TableInfo.ptrTextOffsetTable, table.TableInfo.TextCount);
-                //Change encoding to utf8 to read the strings and convert to sjis later. Reading directly as sjis results in broken text (????)
-                Encoding utf8 = Encoding.UTF8;
-                Encoding sjis = Encoding.GetEncoding(932);
-                reader.DefaultEncoding = utf8;
-                table.Text = Util.IterateStringList(reader, offsetList);
-                reader.DefaultEncoding = sjis;
-                for (int i = 0; i < table.Text.Count; i++)
-                {
-                    byte[] utfBytes = utf8.GetBytes(table.Text[i]);
-                    byte[] sjisBytes = Encoding.Convert(utf8, sjis, utfBytes);
-                    table.Text[i] = sjis.GetString(sjisBytes);
-                }
+                Encoding encoding = Encoding.UTF8;
+                if (version == Version.OldEngineIshin)
+                    encoding = Encoding.GetEncoding(932);
+
+                table.Text = Util.IterateStringList(reader, offsetList, encoding);
             }
 
             InitializeEntries(table);
