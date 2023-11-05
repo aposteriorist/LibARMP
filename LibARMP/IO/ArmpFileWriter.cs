@@ -168,26 +168,6 @@ namespace LibARMP.IO
                 writer.PushWritePop(new int[] { table.Columns.Count, ptr }, baseOffset + 0x10);
             }
 
-            //Column Types
-            ptr = (int)writer.Stream.Position;
-            foreach (ArmpTableColumn column in table.Columns)
-            {
-                int typeID = column.Type.GetID(table.TableInfo.FormatVersion);
-                writer.Write(typeID);
-            }
-            writer.PushWritePop(ptr, baseOffset + 0x18);
-
-            //Column Metadata
-            if (table.TableInfo.HasColumnMetadata)
-            {
-                ptr = (int)writer.Stream.Position;
-                foreach (ArmpTableColumn column in table.Columns)
-                {
-                    writer.Write(column.UnknownMetadata0x40);
-                }
-                writer.PushWritePop(ptr, baseOffset + 0x24);
-            }
-
             //Text
             if (table.TableInfo.HasText)
             {
@@ -224,6 +204,26 @@ namespace LibARMP.IO
                 writer.PushWritePop(ptr, baseOffset + 0x28);
                 //Text count
                 writer.PushWritePop(table.Text.Count, baseOffset + 0x2C);
+            }
+
+            //Column Types
+            ptr = (int)writer.Stream.Position;
+            foreach (ArmpTableColumn column in table.Columns)
+            {
+                int typeID = column.Type.GetID(table.TableInfo.FormatVersion);
+                writer.Write(typeID);
+            }
+            writer.PushWritePop(ptr, baseOffset + 0x18);
+
+            //Column Metadata
+            if (table.TableInfo.HasColumnMetadata)
+            {
+                ptr = (int)writer.Stream.Position;
+                foreach (ArmpTableColumn column in table.Columns)
+                {
+                    writer.Write(column.UnknownMetadata0x40);
+                }
+                writer.PushWritePop(ptr, baseOffset + 0x24);
             }
 
             //Column Contents
