@@ -126,10 +126,8 @@ namespace LibARMP.IO
             long baseOffset = writer.Stream.Position;
             writer.WriteTimes(0x00, 0x40); //Placeholder table
 
-            writer.Stream.PushToPosition(baseOffset);
-            writer.Write(table.Entries.Count);
-            //TODO Ishin variant
-            writer.Stream.PopPosition();
+            //Entry Count
+            writer.PushWritePop(table.Entries.Count, baseOffset);
 
             int ptr = 0;
             //Entry Validity
@@ -171,6 +169,8 @@ namespace LibARMP.IO
                 table.EntryNames = entryNames;
                 ptr = Util.WriteText(writer, table.EntryNames);
                 writer.PushWritePop(ptr, baseOffset + 0x8);
+                
+                writer.WritePadding(0x00, 0x10);
             }
 
             //Column Names and Count
@@ -212,7 +212,6 @@ namespace LibARMP.IO
                     encoding = Encoding.GetEncoding(932);
 
                 ptr = Util.WriteText(writer, table.Text, encoding);
-                writer.WritePadding(0x00, 0x10);
                 writer.PushWritePop(ptr, baseOffset + 0x28);
                 //Text count
                 writer.PushWritePop(table.Text.Count, baseOffset + 0x2C);
@@ -309,14 +308,18 @@ namespace LibARMP.IO
                 }
             }
 
-            writer.WritePadding(0x00, 4);
+            writer.WritePadding(0x00, 0x4);
             int ptrColumnOffsetTable = (int)writer.Stream.Position;
             foreach (int offset in columnValueOffsets)
             {
                 writer.Write(offset);
             }
+            writer.WritePadding(0x00, 0x10);
 
             writer.PushWritePop(ptrColumnOffsetTable, baseOffset + 0x1C);
+
+            //File size in header
+            writer.PushWritePop((int)writer.Stream.Length, 0xC);
         }
 
 
