@@ -135,17 +135,29 @@ namespace LibARMP.IO
             //Entry Validity
             if (table.TableInfo.HasEntryValidity)
             {
-                //TODO Ishin
                 List<bool> entryValidity = new List<bool>();
-                foreach (ArmpEntry entry in table.Entries)
-                {
-                    entryValidity.Add(entry.IsValid);
-                }
-                table.EntryValidity = entryValidity;
                 ptr = (int)writer.Stream.Position;
-                Util.WriteBooleanBitmask(writer, table.EntryValidity);
-                writer.WritePadding(0x00, 8);
-                writer.PushWritePop(ptr, baseOffset + 0xC);
+
+                if (table.TableInfo.FormatVersion == Version.OldEngineIshin)
+                {
+                    foreach (ArmpEntry entry in table.Entries)
+                    {
+                        writer.Write(entry.IsValid ? 1 : 0);
+                    }
+                    writer.PushWritePop(ptr, baseOffset + 0x4);
+                }
+                else
+                {
+                    foreach (ArmpEntry entry in table.Entries)
+                    {
+                        entryValidity.Add(entry.IsValid);
+                    }
+                    table.EntryValidity = entryValidity;
+                    Util.WriteBooleanBitmask(writer, table.EntryValidity);
+                    writer.PushWritePop(ptr, baseOffset + 0xC);
+                }
+
+                writer.WritePadding(0x00, 0x10);
             }
 
             //Entry Names

@@ -409,9 +409,22 @@ namespace LibARMP.IO
             //Entry Validity
             if (table.TableInfo.HasEntryValidity)
             {
-                //TODO Ishin
-                table.EntryValidity = Util.IterateBooleanBitmask(reader, table.TableInfo.ptrEntryValidity, table.TableInfo.EntryCount);
-                SetEntryValidity(table.EntryValidity, table.Entries);
+                if (version == Version.OldEngineIshin)
+                {
+                    List<uint> tempList = Util.IterateArray<uint>(reader, table.TableInfo.ptrEntryValidity, table.TableInfo.EntryCount);
+                    List<bool> boolList = new List<bool>();
+                    foreach (uint integer in tempList)
+                    {
+                        boolList.Add(Convert.ToBoolean(integer));
+                    }
+                    table.EntryValidity = boolList;
+                    SetEntryValidity(table.EntryValidity, table.Entries);
+                }
+                else
+                {
+                    table.EntryValidity = Util.IterateBooleanBitmask(reader, table.TableInfo.ptrEntryValidity, table.TableInfo.EntryCount);
+                    SetEntryValidity(table.EntryValidity, table.Entries);
+                }
             }
 
             table.RefreshColumnNameCache();
