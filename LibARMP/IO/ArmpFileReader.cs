@@ -56,6 +56,9 @@ namespace LibARMP.IO
 
             if (armp.FormatVersion == Version.OldEngine)
             {
+                reader.Stream.PushToPosition(0xC, SeekMode.Current);
+                if (reader.ReadInt32() == 0) armp.FormatVersion = Version.OldEngineIshin;
+                reader.Stream.PopPosition();
                 armp.MainTable = ReadTableMainOE(reader, armp.FormatVersion);
             }
             else
