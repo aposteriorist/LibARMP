@@ -297,19 +297,22 @@ namespace LibARMP
         /// Sets the value for the specified column.
         /// </summary>
         /// <param name="columnName">The column name.</param>
-        /// <param name="value">The value to write.</param>
+        /// <param name="value">The value to write. <c>null</c> will set the value to its default.</param>
         /// <exception cref="TypeMismatchException">The column type does not match the type of the provided object.</exception>
-        public void SetValueFromColumn (string columnName, object value)
+        public void SetValueFromColumn (string columnName, object value = null)
         {
-            Type targetType = ParentTable.GetColumn(columnName).Type.CSType;
+            ArmpTableColumn column = ParentTable.GetColumn(columnName);
 
             if (value == null)
+            {
+                Data[column.Name] = column.Type.DefaultValue;
                 return;
+            }
 
-            if (targetType != value.GetType())
-                throw new TypeMismatchException(targetType, value.GetType());
+            if (column.Type.CSType != value.GetType())
+                throw new TypeMismatchException(column.Type.CSType, value.GetType());
 
-            Data[columnName] = value;
+            Data[column.Name] = value;
         }
     }
 }
