@@ -91,8 +91,25 @@ namespace LibARMP
         /// Gets the storage mode.
         /// </summary>
         /// <remarks><para><b>DRAGON ENGINE V2 ONLY</b></para></remarks>
-        public StorageMode StorageMode { get; internal set; }
+        public StorageMode StorageMode { get; internal set; } //Flag 0
 
+        public bool UnknownFlag1 { get; internal set; } //Flag 1
+        public bool UnknownFlag2 { get; internal set; } //Flag 2
+        public bool UnknownFlag3 { get; internal set; } //Flag 3
+        public bool UnknownFlag4 { get; internal set; } //Flag 4
+        public bool UnknownFlag5 { get; internal set; } //Flag 5
+
+        /// <summary>
+        /// Purpose unknown. Gets set when the armp is loaded into memory. It does not get set with modded/resaved armps. Are we missing data?
+        /// </summary>
+        /// <remarks>Flag 6</remarks>
+        public bool UnknownFlag6 { get; internal set; } //Flag 6
+
+        /// <summary>
+        /// Are the text indices and table type offsets processed? (Turned into memory pointers)
+        /// </summary>
+        /// <remarks>Flag 7</remarks>
+        public bool IsProcessedForMemory { get; internal set; } //Flag 7
 
 
 
@@ -262,5 +279,15 @@ namespace LibARMP
         /// </summary>
         /// <remarks><para>Version and Revision numbers are shared between multiple different format versions.</para></remarks>
         public Version FormatVersion { get; internal set; }
+
+
+
+        // Memory Address
+
+        /// <summary>
+        /// Address where the ARMP starts in memory.
+        /// </summary>
+        /// <remarks><para>Only used if Flag 7 is set.</para></remarks>
+        internal long BaseARMPMemoryAddress { get; set; }
     }
 }

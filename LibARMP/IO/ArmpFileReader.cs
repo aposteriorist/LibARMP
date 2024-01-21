@@ -16,8 +16,9 @@ namespace LibARMP.IO
         /// Reads an armp file.
         /// </summary>
         /// <param name="datastream">The armp file as <see cref="DataStream"/>.</param>
+        /// <param name="baseARMPMemoryAddress">The memory address where the armp starts at. Only needed if reading from memory.</param>
         /// <returns>An <see cref="ARMP"/> object.</returns>
-        public static ARMP ReadARMP(DataStream datastream)
+        public static ARMP ReadARMP(DataStream datastream, IntPtr baseARMPMemoryAddress = default(IntPtr))
         {
             var reader = new DataReader(datastream)
             {
@@ -66,7 +67,7 @@ namespace LibARMP.IO
                 if (armp.Version == 1) armp.FormatVersion = Version.DragonEngineV1;
                 else if (armp.Version == 2) armp.FormatVersion = Version.DragonEngineV2;
                 uint ptrMainTable = reader.ReadUInt32();
-                armp.MainTable = ReadTableMain(reader, ptrMainTable, armp.FormatVersion);
+                armp.MainTable = ReadTableMain(reader, ptrMainTable, armp.FormatVersion, baseARMPMemoryAddress.ToInt64());
             }
 
             datastream.WriteTo(armp.File);
@@ -81,13 +82,14 @@ namespace LibARMP.IO
         /// <param name="fileBytes">The armp file as byte array.</param>
         /// <param name="offset">The location in the array to start reading data from.</param>
         /// <param name="length">The number of bytes to read from the array.</param>
+        /// <param name="baseARMPMemoryAddress">The memory address where the armp starts at. Only needed if reading from memory.</param>
         /// <returns>An <see cref="ARMP"/> object.</returns>
-        public static ARMP ReadARMP(byte[] fileBytes, int offset = 0, int length = 0)
+        public static ARMP ReadARMP(byte[] fileBytes, int offset = 0, int length = 0, IntPtr baseARMPMemoryAddress = default(IntPtr))
         {
             if (length == 0) length = fileBytes.Length;
             using (var datastream = DataStreamFactory.FromArray(fileBytes, offset, length))
             {
-                return ReadARMP(datastream);
+                return ReadARMP(datastream, baseARMPMemoryAddress);
             }
         }
 
@@ -97,12 +99,13 @@ namespace LibARMP.IO
         /// Reads an armp file.
         /// </summary>
         /// <param name="stream">The armp file as <see cref="Stream"/>.</param>
+        /// <param name="baseARMPMemoryAddress">The memory address where the armp starts at. Only needed if reading from memory.</param>
         /// <returns>An <see cref="ARMP"/> object.</returns>
-        public static ARMP ReadARMP(Stream stream)
+        public static ARMP ReadARMP(Stream stream, IntPtr baseARMPMemoryAddress = default(IntPtr))
         {
             using (var datastream = DataStreamFactory.FromStream(stream))
             {
-                return ReadARMP(datastream);
+                return ReadARMP(datastream, baseARMPMemoryAddress);
             }
         }
 
@@ -112,12 +115,13 @@ namespace LibARMP.IO
         /// Reads an armp file.
         /// </summary>
         /// <param name="path">The path to the armp file.</param>
+        /// <param name="baseARMPMemoryAddress">The memory address where the armp starts at. Only needed if reading from memory.</param>
         /// <returns>An <see cref="ARMP"/> object.</returns>
-        public static ARMP ReadARMP(string path)
+        public static ARMP ReadARMP(string path, IntPtr baseARMPMemoryAddress = default(IntPtr))
         {
             using (var datastream = DataStreamFactory.FromFile(path, FileOpenMode.Read))
             {
-                return ReadARMP(datastream);
+                return ReadARMP(datastream, baseARMPMemoryAddress);
             }
         }
 
@@ -128,14 +132,15 @@ namespace LibARMP.IO
         /// </summary>
         /// <param name="reader">The path to the armp file.</param>
         /// <param name="ptrMainTable">The pointer to the main table.</param>
+        /// <param name="baseARMPMemoryAddress">The memory address where the armp starts at. Only needed if reading from memory.</param>
         /// <returns>An <see cref="ArmpTable"/> object.</returns>
-        private static ArmpTable ReadTable(DataReader reader, long ptrMainTable, Version version)
+        private static ArmpTable ReadTable(DataReader reader, long ptrMainTable, Version version, long baseARMPMemoryAddress)
         {
             ArmpTable table = new ArmpTable();
-
             reader.Stream.Seek(ptrMainTable);
             table.TableInfo = GetARMPTableInfo(reader, false);
             table.TableInfo.FormatVersion = version;
+            table.TableInfo.BaseARMPMemoryAddress = baseARMPMemoryAddress;
 
             //Read general data
 
@@ -262,6 +267,7 @@ namespace LibARMP.IO
             //Entry Indices
             if (table.TableInfo.HasEntryIndices) table.EntryIndices = Util.IterateArray<int>(reader, table.TableInfo.ptrEntryIndices, table.TableInfo.EntryCount);
 
+            //Entry Data
             InitializeEntries(table);
             ReadEntryData(reader, table.TableInfo.ptrColumnContentOffsetTable, table.TableInfo.StorageMode, version, table);
 
@@ -320,11 +326,12 @@ namespace LibARMP.IO
         /// <param name="reader">The path to the armp file.</param>
         /// <param name="ptrMainTable">The pointer to the main table.</param>
         /// <param name="version">The format version.</param>
+        /// <param name="baseARMPMemoryAddress">The memory address where the armp starts at. Only needed if reading from memory.</param>
         /// <returns>An <see cref="ArmpTable"/> object.</returns>
-        private static ArmpTableMain ReadTableMain(DataReader reader, long ptrMainTable, Version version)
+        private static ArmpTableMain ReadTableMain(DataReader reader, long ptrMainTable, Version version, long baseARMPMemoryAddress)
         {
-            ArmpTableMain mainTable = new ArmpTableMain(ReadTable(reader, ptrMainTable, version));
-            if (mainTable.TableInfo.HasSubTable) mainTable.SubTable = new ArmpTableSub(mainTable, ReadTable(reader, mainTable.TableInfo.ptrSubTable, version));
+            ArmpTableMain mainTable = new ArmpTableMain(ReadTable(reader, ptrMainTable, version, baseARMPMemoryAddress));
+            if (mainTable.TableInfo.HasSubTable) mainTable.SubTable = new ArmpTableSub(mainTable, ReadTable(reader, mainTable.TableInfo.ptrSubTable, version, baseARMPMemoryAddress));
             return mainTable;
         }
 
@@ -521,7 +528,7 @@ namespace LibARMP.IO
                 armpTableInfo.ptrColumnDataTypes = reader.ReadUInt32();
                 armpTableInfo.ptrColumnContentOffsetTable = reader.ReadUInt32();
                 armpTableInfo.TableID = reader.ReadInt24();
-                armpTableInfo.StorageMode = (StorageMode)reader.ReadByte();
+                byte tableFlags = reader.ReadByte();
                 armpTableInfo.ptrTextOffsetTable = reader.ReadUInt32();
                 armpTableInfo.ptrColumnNamesOffsetTable = reader.ReadUInt32();
                 armpTableInfo.ColumnValidator = reader.ReadInt32();
@@ -536,6 +543,15 @@ namespace LibARMP.IO
 
 
                 //Set flags
+                armpTableInfo.StorageMode = (StorageMode)(tableFlags & (1 << 0));
+                armpTableInfo.UnknownFlag1 = (tableFlags & (1 << 1)) != 0;
+                armpTableInfo.UnknownFlag2 = (tableFlags & (1 << 2)) != 0;
+                armpTableInfo.UnknownFlag3 = (tableFlags & (1 << 3)) != 0;
+                armpTableInfo.UnknownFlag4 = (tableFlags & (1 << 4)) != 0;
+                armpTableInfo.UnknownFlag5 = (tableFlags & (1 << 5)) != 0;
+                armpTableInfo.UnknownFlag6 = (tableFlags & (1 << 6)) != 0;
+                armpTableInfo.IsProcessedForMemory = (tableFlags & (1 << 7)) != 0;
+
                 if (armpTableInfo.TextCount > 0) armpTableInfo.HasText = true;
                 if (armpTableInfo.ptrSubTable > 0 && armpTableInfo.ptrSubTable < 0xFFFFFFFF) armpTableInfo.HasSubTable = true;
                 if (armpTableInfo.ptrEntryNamesOffsetTable > 0 && armpTableInfo.ptrEntryNamesOffsetTable < 0xFFFFFFFF) armpTableInfo.HasEntryNames = true;
@@ -561,6 +577,13 @@ namespace LibARMP.IO
                 Console.WriteLine("Pointer to Column Content Offset Table: " + armpTableInfo.ptrColumnContentOffsetTable);
                 Console.WriteLine("Table ID: " + armpTableInfo.TableID);
                 Console.WriteLine("Storage Mode: " + armpTableInfo.StorageMode);
+                Console.WriteLine("Unknown Flag 1: " + armpTableInfo.UnknownFlag1);
+                Console.WriteLine("Unknown Flag 2: " + armpTableInfo.UnknownFlag2);
+                Console.WriteLine("Unknown Flag 3: " + armpTableInfo.UnknownFlag3);
+                Console.WriteLine("Unknown Flag 4: " + armpTableInfo.UnknownFlag4);
+                Console.WriteLine("Unknown Flag 5: " + armpTableInfo.UnknownFlag5);
+                Console.WriteLine("Unknown Flag 6: " + armpTableInfo.UnknownFlag6);
+                Console.WriteLine("Flag 7 - IsProcessedForMemory: " + armpTableInfo.IsProcessedForMemory);
                 Console.WriteLine("Pointer to Text Offset Table: " + armpTableInfo.ptrTextOffsetTable);
                 Console.WriteLine("Pointer to Column Names Offset Table: " + armpTableInfo.ptrColumnNamesOffsetTable);
                 Console.WriteLine("Column Validator: " + armpTableInfo.ColumnValidator);
@@ -779,19 +802,39 @@ namespace LibARMP.IO
 
             else if (column.Type.CSType == typeof(string))
             {
-                int index = reader.ReadInt32();
-                if (index != -1 && table.TableInfo.HasText) //Some files have valid string ids despite not having any text.
-                    table.Entries[entryIndex].Data.Add(column.Name, table.Text[index]);
+                //This should only run if we are loading the armp from memory
+                if (table.TableInfo.IsProcessedForMemory)
+                {
+                    long ptrText = reader.ReadInt64();
+                    ptrText = ptrText - table.TableInfo.BaseARMPMemoryAddress;
+                    reader.Stream.PushToPosition(ptrText);
+                    string text = reader.ReadString();
+                    reader.Stream.PopPosition();
+                    table.Entries[entryIndex].Data.Add(column.Name, text);
+                }
                 else
-                    table.Entries[entryIndex].Data.Add(column.Name, null);
+                {
+                    int index = reader.ReadInt32();
+                    if (index != -1 && table.TableInfo.HasText) //Some files have valid string ids despite not having any text.
+                        table.Entries[entryIndex].Data.Add(column.Name, table.Text[index]);
+                    else
+                        table.Entries[entryIndex].Data.Add(column.Name, null);
+                }
             }
 
             else if (column.Type.CSType == typeof(ArmpTableMain))
             {
-                long tablepointer = reader.ReadInt64();
+                long ptrTable = reader.ReadInt64();
                 long currentpos = reader.Stream.Position;
-                if (tablepointer == 0 || tablepointer == -1) return;
-                ArmpTableMain tableValue = ReadTableMain(reader, tablepointer, version);
+                if (ptrTable == 0 || ptrTable == -1) return;
+
+                //This should only run if we are loading the armp from memory
+                if (table.TableInfo.IsProcessedForMemory)
+                {
+                    ptrTable = ptrTable - table.TableInfo.BaseARMPMemoryAddress;
+                }
+
+                ArmpTableMain tableValue = ReadTableMain(reader, ptrTable, version, table.TableInfo.BaseARMPMemoryAddress);
 
                 table.Entries[entryIndex].Data.Add(column.Name, tableValue);
                 reader.Stream.Position = currentpos; //Reset position to the offset table
