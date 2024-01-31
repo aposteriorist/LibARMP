@@ -960,5 +960,34 @@ namespace LibARMP
                 distance = column.Distance + column.Type.Size;
             }
         }
+
+
+        /// <summary>
+        /// Sets the <see cref="StorageMode"/> for this table and any tables contained within.
+        /// </summary>
+        /// <param name="storageMode">The <see cref="StorageMode"/> to set the table to.</param>
+        /// <remarks><b>Only perform this operation on the armp's main table.</b></remarks>
+        public void SetStorageMode (StorageMode storageMode)
+        {
+            TableInfo.StorageMode = storageMode;
+
+            //Storage mode needs to be the same for all tables inside
+            foreach (ArmpTableColumn column in GetColumnsByType<ArmpTableMain>())
+            {
+                if ((bool)column.IsValid)
+                {
+                    foreach (ArmpEntry e in Entries)
+                    {
+                        try
+                        {
+                            e.GetValueFromColumn<ArmpTableMain>(column);
+                        }
+                        catch { continue; }
+                        if (e.GetValueFromColumn<ArmpTableMain>(column) != null)
+                            e.GetValueFromColumn<ArmpTableMain>(column).TableInfo.StorageMode = storageMode;
+                    }
+                }
+            }
+        }
     }
 }
