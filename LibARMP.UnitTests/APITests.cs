@@ -213,6 +213,17 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
+        public void ArmpTable_GetColumnsByType()
+        {
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode0);
+            List<ArmpTableColumn> columns = armp.MainTable.GetColumnsByType(typeof(Int64));
+            Assert.AreEqual(3, columns.Count);
+            columns = armp.MainTable.GetColumnsByType<Int64>();
+            Assert.AreEqual(3, columns.Count);
+        }
+
+
+        [TestMethod]
         public void ArmpTable_GetColumnNamesByType()
         {
             ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode0);

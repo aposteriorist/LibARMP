@@ -332,6 +332,36 @@ namespace LibARMP
 
 
         /// <summary>
+        /// Gets a list of columns matching the type.
+        /// </summary>
+        /// <param name="type">The <see cref="Type"/> to look for.</param>
+        /// <returns>An <see cref="ArmpTableColumn"/> list.</returns>
+        public List<ArmpTableColumn> GetColumnsByType (Type type)
+        {
+            List<ArmpTableColumn> returnList = new List<ArmpTableColumn>();
+            foreach (ArmpTableColumn column in Columns)
+            {
+                if (column.Type.CSType == type)
+                    returnList.Add(column);
+            }
+
+            return returnList;
+        }
+
+
+        /// <summary>
+        /// Gets a list of columns matching the type.
+        /// </summary>
+        /// <typeparam name="T">The <see cref="Type"/> to look for.</typeparam>
+        /// <returns>An <see cref="ArmpTableColumn"/> list.</returns>
+        public List<ArmpTableColumn> GetColumnsByType<T>()
+        {
+            Type type = typeof(T);
+            return GetColumnsByType(type);
+        }
+
+
+        /// <summary>
         /// Gets a list of column names matching the type.
         /// </summary>
         /// <typeparam name="T">The <see cref="Type"/> to look for.</typeparam>
