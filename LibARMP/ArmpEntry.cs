@@ -313,6 +313,7 @@ namespace LibARMP
                 throw new TypeMismatchException(column.Type.CSType, value.GetType());
 
             Data[column.Name] = value;
+            if (value is string) ParentTable.TableInfo.HasText = true;
         }
     }
 }
