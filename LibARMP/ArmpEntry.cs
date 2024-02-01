@@ -17,7 +17,7 @@ namespace LibARMP
             ParentTable = parentTable;
 
             if (ParentTable.TableInfo.HasEntryIndices)
-                Index = ID;
+                Index = (int)ID;
 
             if (ParentTable.TableInfo.HasEntryValidity)
                 IsValid = true;
@@ -32,7 +32,7 @@ namespace LibARMP
         /// <param name="parentTable">The table that contains this entry.</param>
         /// <param name="id">The entry ID.</param>
         /// <param name="name">The entry name.</param>
-        internal ArmpEntry(ArmpTable parentTable, int id, string name) : this(parentTable)
+        internal ArmpEntry(ArmpTable parentTable, uint id, string name) : this(parentTable)
         {
             ID = id;
             Name = name;
@@ -45,7 +45,7 @@ namespace LibARMP
         /// <param name="id">The entry ID.</param>
         /// <param name="name">The entry name.</param>
         /// <param name="index">The entry index.</param>
-        internal ArmpEntry(ArmpTable parentTable, int id, string name, int index) : this(parentTable, id, name)
+        internal ArmpEntry(ArmpTable parentTable, uint id, string name, int index) : this(parentTable, id, name)
         {
             Index = index;
         }
@@ -54,7 +54,7 @@ namespace LibARMP
         /// <summary>
         /// Gets the entry ID.
         /// </summary>
-        public int ID { get; internal set; }
+        public uint ID { get; internal set; }
 
         /// <summary>
         /// Gets or sets the entry name.
@@ -199,26 +199,26 @@ namespace LibARMP
         /// <summary>
         /// Gets the value for the specified column.
         /// </summary>
-        /// <param name="columnIndex">The column index.</param>
+        /// <param name="columnID">The column ID.</param>
         /// <exception cref="ColumnNotFoundException">The column name doesn't match any columns in the table.</exception>
         /// <exception cref="ColumnNoDataException">The column has no data.</exception>
-        public object GetValueFromColumn (int columnIndex)
+        public object GetValueFromColumn (uint columnID)
         {
             List<string> keys = new List<string>(Data.Keys);
 
-            if (keys.Count > columnIndex)
+            if (keys.Count > columnID)
             {
                 try
                 {
-                    return Data[keys[columnIndex]];
+                    return Data[keys[(int)columnID]];
                 } catch (Exception)
                 {
-                    throw new ColumnNoDataException(columnIndex);
+                    throw new ColumnNoDataException((int)columnID);
                 }
             }
             else
             {
-                throw new ColumnNotFoundException(columnIndex);
+                throw new ColumnNotFoundException(columnID);
             }
         }
 
@@ -256,11 +256,11 @@ namespace LibARMP
         /// <summary>
         /// Gets the value for the specified column.
         /// </summary>
-        /// <param name="columnIndex">The column index.</param>
+        /// <param name="columnID">The column index.</param>
         /// <exception cref="InvalidTypeConversionException">The column type cannot be converted to the requested type.</exception>
-        public T GetValueFromColumn<T> (int columnIndex)
+        public T GetValueFromColumn<T> (uint columnID)
         {
-            object result = GetValueFromColumn(columnIndex);
+            object result = GetValueFromColumn(columnID);
             try
             {
                 return (T)result;

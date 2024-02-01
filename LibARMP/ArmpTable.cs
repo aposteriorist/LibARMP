@@ -73,7 +73,7 @@ namespace LibARMP
         /// PLACEHOLDER: Edited values for patcher.
         /// </summary>
         /// <remarks><para>[column : list of entry ids]</para></remarks>
-        internal Dictionary<string, List<int>> EditedValues = new Dictionary<string, List<int>>();
+        internal Dictionary<string, List<uint>> EditedValues = new Dictionary<string, List<uint>>();
 
 
 
@@ -114,11 +114,11 @@ namespace LibARMP
         /// <param name="id">The entry ID.</param>
         /// <returns>An <see cref="ArmpEntry"/>.</returns>
         /// <exception cref="EntryNotFoundException">The table has no entry with the specified ID.</exception>
-        public ArmpEntry GetEntry (int id)
+        public ArmpEntry GetEntry (uint id)
         {
             try
             {
-                return Entries[id];
+                return Entries[(int)id];
             }
             catch
             {
@@ -155,7 +155,7 @@ namespace LibARMP
             if (entry == null) throw new ArgumentNullException("Entry cannot be null.");
 
             //TODO need to check that the entry columns and data match the current table
-            Entries[entry.ID] = Util.DeepCopy<ArmpEntry>(entry);
+            Entries[(int)entry.ID] = Util.DeepCopy<ArmpEntry>(entry);
             return true; //PLACEHOLDER
         }
 
@@ -187,14 +187,14 @@ namespace LibARMP
         /// <returns>A <see cref="string"/>.</returns>
         /// <exception cref="EntryNameNotFoundException">The table has no entry names.</exception>
         /// <exception cref="EntryNotFoundException">The table has no entry with the specified ID.</exception>
-        public string GetEntryName (int id)
+        public string GetEntryName (uint id)
         {
             if (!TableInfo.HasEntryNames)
                 throw new EntryNameNotFoundException();
 
             try
             {
-                return Entries[id].Name;
+                return Entries[(int)id].Name;
             }
             catch
             {
@@ -227,11 +227,11 @@ namespace LibARMP
         /// <param name="id">The column ID.</param>
         /// <returns>An <see cref="ArmpTableColumn"/>.</returns>
         /// <exception cref="ColumnNotFoundException">The table has no column with the specified ID.</exception>
-        public ArmpTableColumn GetColumn (int id)
+        public ArmpTableColumn GetColumn (uint id)
         {
             try
             {
-                return Columns[id];
+                return Columns[(int)id];
             }
             catch
             {
@@ -284,11 +284,11 @@ namespace LibARMP
         /// <param name="id">The column ID.</param>
         /// <returns>A <see cref="string"/>.</returns>
         /// <exception cref="ColumnNotFoundException">The table has no column with the specified ID.</exception>
-        public string GetColumnName (int id)
+        public string GetColumnName (uint id)
         {
             try
             {
-                return Columns[id].Name;
+                return Columns[(int)id].Name;
             }
             catch
             {
@@ -374,13 +374,13 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Gets a list of column indices matching the type.
+        /// Gets a list of column IDs matching the type.
         /// </summary>
         /// <param name="type">The <see cref="Type"/> to look for.</param>
-        /// <returns>An <see cref="int"/> list.</returns>
-        public List<int> GetColumnIndicesByType (Type type)
+        /// <returns>A <see cref="uint"/> list.</returns>
+        public List<uint> GetColumnIDsByType (Type type)
         {
-            List<int> returnList = new List<int>();
+            List<uint> returnList = new List<uint>();
             foreach (ArmpTableColumn column in Columns)
             {
                 if (column.Type.CSType == type) returnList.Add(column.ID);
@@ -391,14 +391,14 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Gets a list of column indices matching the type.
+        /// Gets a list of column IDs matching the type.
         /// </summary>
         /// <typeparam name="T">The <see cref="Type"/> to look for.</typeparam>
-        /// <returns>An <see cref="int"/> list.</returns>
-        public List<int> GetColumnIndicesByType<T>()
+        /// <returns>An <see cref="uint"/> list.</returns>
+        public List<uint> GetColumnIDsByType<T>()
         {
             Type type = typeof(T);
-            return GetColumnIndicesByType(type);
+            return GetColumnIDsByType(type);
         }
 
 
@@ -408,7 +408,7 @@ namespace LibARMP
         /// <param name="columnName">The column name.</param>
         /// <returns>The column ID.</returns>
         /// <exception cref="ColumnNotFoundException">The table has no column with the specified name.</exception>
-        public int GetColumnID (string columnName)
+        public uint GetColumnID (string columnName)
         {
             if (ColumnNameCache.ContainsKey(columnName))
             {
@@ -425,13 +425,13 @@ namespace LibARMP
         /// <returns>The column index.</returns>
         /// <exception cref="ColumnNoIndexException">The table has no column indices.</exception>
         /// <exception cref="ColumnNotFoundException">The table has no column with the specified ID.</exception>
-        public int GetColumnIndex (int id)
+        public int GetColumnIndex (uint id)
         {
             if (!TableInfo.HasColumnIndices) throw new ColumnNoIndexException();
 
             try
             {
-                return Columns[id].Index;
+                return Columns[(int)id].Index;
             }
             catch
             {
@@ -466,13 +466,13 @@ namespace LibARMP
         /// <param name="newIndex">The new index.</param>
         /// <exception cref="ColumnNoIndexException">The table has no column indices.</exception>
         /// <exception cref="ColumnNotFoundException">The table has no column with the specified ID.</exception>
-        public void SetColumnIndex (int id, int newIndex)
+        public void SetColumnIndex (uint id, int newIndex)
         {
             if (!TableInfo.HasColumnIndices) throw new ColumnNoIndexException();
 
             try
             {
-                Columns[id].Index = newIndex;
+                Columns[(int)id].Index = newIndex;
             }
             catch
             {
@@ -494,8 +494,8 @@ namespace LibARMP
 
             try
             {
-                int index = GetColumnID(columnName);
-                Columns[index].Index = newIndex;
+                int id = (int)GetColumnID(columnName);
+                Columns[id].Index = newIndex;
             }
             catch
             {
@@ -511,13 +511,13 @@ namespace LibARMP
         /// <returns>A <see cref="Boolean"/>.</returns>
         /// <exception cref="ColumnNoValidityException">The table has no column validity.</exception>
         /// <exception cref="ColumnNotFoundException">The table has no column with the specified ID.</exception>
-        public bool IsColumnValid (int id)
+        public bool IsColumnValid (uint id)
         {
             if (!TableInfo.HasColumnValidity) throw new ColumnNoValidityException();
 
             try
             {
-                return (bool)Columns[id].IsValid;
+                return (bool)Columns[(int)id].IsValid;
             }
             catch
             {
@@ -647,10 +647,10 @@ namespace LibARMP
         /// <exception cref="TypeNotSupportedException">The provided C# type is not supported by the armp format.</exception>
         public ArmpTableColumn AddColumn (string columnName, Type columnType)
         {
-            int id = Columns.Count;
+            uint id = (uint)Columns.Count;
             ArmpType armpType = DataTypes.GetArmpTypeByCSType(columnType);
             ArmpTableColumn column = new ArmpTableColumn(id, columnName, armpType);
-            if (TableInfo.HasColumnIndices) column.Index = id;
+            if (TableInfo.HasColumnIndices) column.Index = (int)id;
             if (TableInfo.HasColumnValidity) column.IsValid = true;
             column.IsNoData = false;
 
@@ -782,9 +782,11 @@ namespace LibARMP
         /// <param name="name">The new entry name.</param>
         public ArmpEntry AddEntry (string name = "")
         {
-            int id = Entries.Count;
+            uint id = (uint)Entries.Count;
             ArmpEntry entry = new ArmpEntry(this, id, name);
             entry.SetDefaultColumnContent();
+            if (TableInfo.HasEntryIndices)
+                entry.Index = (int)id;
             Entries.Add(entry);
             return entry;
         }
@@ -796,17 +798,17 @@ namespace LibARMP
         /// <param name="id">The new entry ID.</param>
         /// <param name="name">The new entry name.</param>
         /// <exception cref="EntryInsertException">The specified ID is greater than the amount of entries in the table.</exception>
-        public ArmpEntry InsertEntry (int id, string name = "")
+        public ArmpEntry InsertEntry (uint id, string name = "")
         {
             if (id <= Entries.Count)
             {
                 ArmpEntry entry = new ArmpEntry(this, id, name);
                 entry.SetDefaultColumnContent();
-                Entries.Insert(id, entry);
+                Entries.Insert((int)id, entry);
 
                 if (Entries.Count > id)
                 {
-                    foreach (ArmpEntry e in Entries.GetRange(id + 1, Entries.Count - id - 1))
+                    foreach (ArmpEntry e in Entries.GetRange((int)id + 1, Entries.Count - (int)id - 1))
                     {
                         e.ID++;
                     }
@@ -815,7 +817,7 @@ namespace LibARMP
             }
             else
             {
-                throw new EntryInsertException(id);
+                throw new EntryInsertException((int)id);
             }
         }
 
@@ -824,7 +826,7 @@ namespace LibARMP
         /// Copy a specified entry.
         /// </summary>
         /// <param name="id">The entry to copy.</param>
-        public ArmpEntry CopyEntry (int id) //TODO rewrite this to copy from one table to another
+        public ArmpEntry CopyEntry (uint id) //TODO rewrite this to copy from one table to another
         {
             ArmpEntry entry;
             entry = GetEntry(id);
@@ -837,12 +839,12 @@ namespace LibARMP
         /// </summary>
         /// <param name="id">The ID of the entry to delete.</param>
         /// <exception cref="EntryNotFoundException">The table has no entry with the specified ID.</exception>
-        public void DeleteEntry (int id)
+        public void DeleteEntry (uint id)
         {
             if (id < Entries.Count)
             {
-                Entries.RemoveAt(id);
-                foreach (ArmpEntry entry in Entries.GetRange(id, Entries.Count - id))
+                Entries.RemoveAt((int)id);
+                foreach (ArmpEntry entry in Entries.GetRange((int)id, Entries.Count - (int)id))
                 {
                     entry.ID--;
                 }
@@ -881,7 +883,7 @@ namespace LibARMP
         /// <param name="value">The value to write.</param>
         /// <exception cref="TypeMismatchException">The column type does not match the type of the provided object.</exception>
         /// <exception cref="ColumnNotFoundException">The table has no column with the specified name.</exception>
-        public void SetValue (int id, string columnName, object value)
+        public void SetValue (uint id, string columnName, object value)
         {
             if (ColumnNameCache.ContainsKey(columnName))
             {
@@ -896,7 +898,7 @@ namespace LibARMP
                     {
                         if (!EditedValues.ContainsKey(column.Name))
                         {
-                            EditedValues.Add(column.Name, new List<int>());
+                            EditedValues.Add(column.Name, new List<uint>());
                         }
                         EditedValues[column.Name].Add(id);
                     }

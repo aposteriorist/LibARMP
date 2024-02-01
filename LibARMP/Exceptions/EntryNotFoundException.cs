@@ -33,7 +33,7 @@ namespace LibARMP.Exceptions
         /// Initializes a new instance of the <see cref="EntryNotFoundException"/> class.
         /// </summary>
         /// <param name="entryId">The entry ID.</param>
-        public EntryNotFoundException(int entryId)
+        public EntryNotFoundException(uint entryId)
             : base(GetMessage(entryId))
         {
 
@@ -50,7 +50,7 @@ namespace LibARMP.Exceptions
         }
 
 
-        private static string GetMessage(int entryId)
+        private static string GetMessage(uint entryId)
         {
             return string.Format(messageId, entryId);
         }

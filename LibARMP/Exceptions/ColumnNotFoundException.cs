@@ -33,7 +33,7 @@ namespace LibARMP.Exceptions
         /// Initializes a new instance of the <see cref="ColumnNotFoundException"/> class.
         /// </summary>
         /// <param name="columnId">The column ID.</param>
-        public ColumnNotFoundException(int columnId)
+        public ColumnNotFoundException(uint columnId)
             : base(GetMessage(columnId))
         {
 
@@ -50,7 +50,7 @@ namespace LibARMP.Exceptions
         }
 
 
-        private static string GetMessage(int columnId)
+        private static string GetMessage(uint columnId)
         {
             return string.Format(messageId, columnId);
         }

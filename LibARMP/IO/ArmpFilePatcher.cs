@@ -78,7 +78,7 @@ namespace LibARMP.IO
             {
                 if (table.EditedValues.ContainsKey(column.Name))
                 {
-                    foreach (int entryId in table.EditedValues[column.Name])
+                    foreach (uint entryId in table.EditedValues[column.Name])
                     {
                         object entryvalue = table.GetEntry(entryId).GetValueFromColumn(column.Name);
 

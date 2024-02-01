@@ -10,7 +10,7 @@ namespace LibARMP
         /// Initializes a new instance of the <see cref="ArmpTableColumn"/> class.
         /// </summary>
         /// <param name="id">The column ID.</param>
-        internal ArmpTableColumn(int id)
+        internal ArmpTableColumn(uint id)
         {
             this.ID = id;
             Children = new List<ArmpTableColumn>();
@@ -22,7 +22,7 @@ namespace LibARMP
         /// <param name="id">The column ID.</param>
         /// <param name="name">The column name.</param>
         /// <param name="type">The column type.</param>
-        internal ArmpTableColumn(int id, string name, ArmpType type) : this(id)
+        internal ArmpTableColumn(uint id, string name, ArmpType type) : this(id)
         {
             this.Name = name;
             this.Type = type;
@@ -31,7 +31,7 @@ namespace LibARMP
         /// <summary>
         /// Gets the column ID.
         /// </summary>
-        public int ID { get; internal set; }
+        public uint ID { get; internal set; }
 
         /// <summary>
         /// Gets the column name.
