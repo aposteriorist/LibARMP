@@ -78,6 +78,48 @@ namespace LibARMP
 
 
         /// <summary>
+        /// Creates a copy of this table.
+        /// </summary>
+        /// <param name="copyEntries">Should entries be copied? Default value is <see langword="true"/>.</param>
+        /// <returns>A copy of this <see cref="ArmpTable"/>.</returns>
+        public ArmpTable Copy (bool copyEntries = true)
+        {
+            ArmpTable copy = new ArmpTable();
+            copy.TableInfo = Util.DeepCopy(TableInfo);
+
+            foreach (ArmpTableColumn column in Columns)
+            {
+                ArmpTableColumn copyColumn = column.Copy();
+                copy.Columns.Add(copyColumn);
+
+                if (copyColumn.Name.Contains("[") && copyColumn.Name.Contains("]"))
+                {
+                    string baseName = copyColumn.Name.Split('[')[0];
+                    if (copy.ColumnNameCache.ContainsKey(baseName))
+                    {
+                        ArmpTableColumn parentColumn = copy.ColumnNameCache[baseName];
+                        parentColumn.Children.Add(copyColumn);
+                        parentColumn.SpecialSize += 1;
+                        copyColumn.Parent = parentColumn;
+                    }
+                }
+
+                copy.RefreshColumnNameCache();
+            }
+
+            if (copyEntries)
+            {
+                foreach(ArmpEntry entry in Entries)
+                {
+                    copy.Entries.Add(entry.Copy(copy));
+                }
+            }
+
+            return copy;
+        }
+
+
+        /// <summary>
         /// Refreshes the Column Name Cache.
         /// </summary>
         internal void RefreshColumnNameCache()
@@ -819,18 +861,6 @@ namespace LibARMP
             {
                 throw new EntryInsertException((int)id);
             }
-        }
-
-
-        /// <summary>
-        /// Copy a specified entry.
-        /// </summary>
-        /// <param name="id">The entry to copy.</param>
-        public ArmpEntry CopyEntry (uint id) //TODO rewrite this to copy from one table to another
-        {
-            ArmpEntry entry;
-            entry = GetEntry(id);
-            return Util.DeepCopy<ArmpEntry>(entry);
         }
 
 

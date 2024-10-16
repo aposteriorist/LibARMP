@@ -44,5 +44,18 @@ namespace LibARMP
         /// The parent table of this subtable (indexer).
         /// </summary>
         public ArmpTableMain ParentTable { get; internal set; }
+
+
+
+        /// <summary>
+        /// Creates a copy of this indexer table.
+        /// </summary>
+        /// <param name="copyEntries">Should entries be copied? Default value is <see langword="true"/>.</param>
+        /// <returns>A copy of this <see cref="ArmpTableSub"/>.</returns>
+        public new ArmpTableSub Copy (bool copyEntries = true)
+        {
+            ArmpTableSub copy = new ArmpTableSub(ParentTable, base.Copy(copyEntries));
+            return copy;
+        }
     }
 }

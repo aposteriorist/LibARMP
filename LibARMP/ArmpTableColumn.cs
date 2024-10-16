@@ -110,5 +110,23 @@ namespace LibARMP
         {
             return Type.CSType;
         }
+
+
+        /// <summary>
+        /// Creates a copy of this column.
+        /// </summary>
+        /// <returns>A copy of this <see cref="ArmpTableColumn"/>.</returns>
+        public ArmpTableColumn Copy()
+        {
+            ArmpTableColumn copy = new ArmpTableColumn(ID, Name, Type);
+            copy.Index = Index;
+            copy.IsValid = IsValid;
+            copy.IsNoData = IsNoData;
+            copy.IsSpecial = IsSpecial;
+            copy.UnknownMetadata0x40 = UnknownMetadata0x40;
+            copy.UnknownMetadata0x4C = UnknownMetadata0x4C;
+
+            return copy;
+        }
     }
 }

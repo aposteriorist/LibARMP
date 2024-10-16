@@ -98,6 +98,39 @@ namespace LibARMP
 
 
         /// <summary>
+        /// Creates a copy of this entry to use in a different table.
+        /// </summary>
+        /// <param name="parentTable">The table this copy is intended to.</param>
+        /// <returns>A copy of this <see cref="ArmpEntry"/>.</returns>
+        public ArmpEntry Copy (ArmpTable parentTable)
+        {
+            ArmpEntry copy = new ArmpEntry(parentTable, ID, Name, Index);
+            copy.IsValid = IsValid;
+            copy.Flags = Flags;
+            copy.Data = new Dictionary<string, object>(Data);
+            //Copy the table type column values since the dictionary copy does not apply to references
+            foreach(ArmpTableColumn column in ParentTable.GetColumnsByType<ArmpTableMain>())
+            {
+                if (Data.ContainsKey(column.Name))
+                {
+                    var originalObject = GetValueFromColumn(column);
+                    if (originalObject != null)
+                    {
+                        ArmpTableMain original = (ArmpTableMain)originalObject;
+                        copy.Data[column.Name] = original.Copy(true);
+                    }
+                    else
+                    {
+                        copy.Data[column.Name] = null;
+                    }
+                }
+            }
+
+            return copy;
+        }
+
+
+        /// <summary>
         /// Sets the value for the column to default.
         /// </summary>
         /// <param name="column">The <see cref="ArmpTableColumn"/>.</param>
