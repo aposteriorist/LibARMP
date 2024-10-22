@@ -329,24 +329,60 @@ namespace LibARMP
         /// <summary>
         /// Sets the value for the specified column.
         /// </summary>
-        /// <param name="columnName">The column name.</param>
-        /// <param name="value">The value to write. <c>null</c> will set the value to its default.</param>
-        /// <exception cref="TypeMismatchException">The column type does not match the type of the provided object.</exception>
-        public void SetValueFromColumn (string columnName, object value = null)
+        /// <param name="column">The column.</param>
+        /// <param name="value">The value to write. <see langword="null"/> will set the value to its default.</param>
+        /// <exception cref="TypeMismatchException">The column type does not match the type of the provided object and no cast is possible.</exception>
+        public void SetValueFromColumn (ArmpTableColumn column, object value = null)
         {
-            ArmpTableColumn column = ParentTable.GetColumn(columnName);
-
             if (value == null)
             {
                 Data[column.Name] = column.Type.DefaultValue;
                 return;
             }
 
+            // Try to convert the value before throwing an exception if the types dont match
             if (column.Type.CSType != value.GetType())
-                throw new TypeMismatchException(column.Type.CSType, value.GetType());
+            {
+                try
+                {
+                    value = Convert.ChangeType(value, column.Type.CSType);
+                }
+                catch
+                {
+                    throw new TypeMismatchException(column.Type.CSType, value.GetType());
+                }
+            }
 
             Data[column.Name] = value;
             if (value is string) ParentTable.TableInfo.HasText = true;
+        }
+
+
+        /// <summary>
+        /// Sets the value for the specified column.
+        /// </summary>
+        /// <param name="columnID">The column ID.</param>
+        /// <param name="value">The value to write. <see langword="null"/> will set the value to its default.</param>
+        /// <exception cref="TypeMismatchException">The column type does not match the type of the provided object and no cast is possible.</exception>
+        /// <exception cref="ColumnNotFoundException">The column does not exist.</exception>
+        public void SetValueFromColumn (uint columnID, object value = null)
+        {
+            ArmpTableColumn column = ParentTable.GetColumn(columnID);
+            SetValueFromColumn(column, value);
+        }
+
+
+        /// <summary>
+        /// Sets the value for the specified column.
+        /// </summary>
+        /// <param name="columnName">The column name.</param>
+        /// <param name="value">The value to write. <see langword="null"/> will set the value to its default.</param>
+        /// <exception cref="TypeMismatchException">The column type does not match the type of the provided object and no cast is possible.</exception>
+        /// <exception cref="ColumnNotFoundException">The column does not exist.</exception>
+        public void SetValueFromColumn (string columnName, object value = null)
+        {
+            ArmpTableColumn column = ParentTable.GetColumn(columnName);
+            SetValueFromColumn(column, value);
         }
     }
 }
