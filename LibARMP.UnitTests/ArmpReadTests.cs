@@ -8,9 +8,10 @@ namespace LibARMP.UnitTests
     public class ArmpReadTests
     {
         ///// V1 /////
+        #region v1
 
         [TestMethod]
-        public void ReadARMP_v1AllTypes()
+        public void ReadARMP_v1()
         {
             ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v1AllTypes);
             Assert.AreEqual(armp.Version, 1);
@@ -20,7 +21,7 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
-        public void u8_v1AllTypes()
+        public void u8_v1()
         {
             ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v1AllTypes);
             Assert.AreEqual(armp.MainTable.GetEntry(1).GetValueFromColumn("u8"), (byte)32); //value
@@ -30,7 +31,7 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
-        public void u16_v1AllTypes()
+        public void u16_v1()
         {
             ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v1AllTypes);
             Assert.AreEqual(armp.MainTable.GetEntry(1).GetValueFromColumn("u16"), (UInt16)800); //value
@@ -40,7 +41,7 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
-        public void u32_v1AllTypes()
+        public void u32_v1()
         {
             ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v1AllTypes);
             Assert.AreEqual(armp.MainTable.GetEntry(1).GetValueFromColumn("u32"), (uint)12345678); //value
@@ -50,7 +51,7 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
-        public void u64_v1AllTypes()
+        public void u64_v1()
         {
             ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v1AllTypes);
             Assert.AreEqual(armp.MainTable.GetEntry(1).GetValueFromColumn("u64"), (UInt64)1000000000000); //value
@@ -60,7 +61,7 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
-        public void s8_v1AllTypes()
+        public void s8_v1()
         {
             ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v1AllTypes);
             Assert.AreEqual(armp.MainTable.GetEntry(1).GetValueFromColumn("s8"), (sbyte)(-32)); //value
@@ -70,7 +71,7 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
-        public void s16_v1AllTypes()
+        public void s16_v1()
         {
             ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v1AllTypes);
             Assert.AreEqual(armp.MainTable.GetEntry(1).GetValueFromColumn("s16"), (Int16)(-800)); //value
@@ -80,7 +81,7 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
-        public void s32_v1AllTypes()
+        public void s32_v1()
         {
             ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v1AllTypes);
             Assert.AreEqual(armp.MainTable.GetEntry(1).GetValueFromColumn("s32"), (Int32)(-12345678)); //value
@@ -90,7 +91,7 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
-        public void s64_v1AllTypes()
+        public void s64_v1()
         {
             ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v1AllTypes);
             Assert.AreEqual(armp.MainTable.GetEntry(1).GetValueFromColumn("s64"), (Int64)(-1000000000000)); //value
@@ -100,7 +101,7 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
-        public void f32_v1AllTypes()
+        public void f32_v1()
         {
             ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v1AllTypes);
             Assert.AreEqual(armp.MainTable.GetEntry(1).GetValueFromColumn("f32"), (float)(112.6)); //value
@@ -108,7 +109,7 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
-        public void bool_v1AllTypes()
+        public void bool_v1()
         {
             ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v1AllTypes);
             Assert.IsTrue((bool)armp.MainTable.GetEntry(1).GetValueFromColumn("bool")); //value
@@ -116,7 +117,7 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
-        public void string_v1AllTypes()
+        public void string_v1()
         {
             ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v1AllTypes);
             Assert.AreEqual(armp.MainTable.GetEntry(1).GetValueFromColumn("string"), "test_string"); //value
@@ -124,7 +125,7 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
-        public void table_v1AllTypes()
+        public void table_v1()
         {
             ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v1AllTypes);
             ArmpTableMain table = (ArmpTableMain)armp.MainTable.GetEntry(1).GetValueFromColumn("table");
@@ -133,7 +134,7 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
-        public void entryValidity_v1AllTypes()
+        public void entryValidity_v1()
         {
             ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v1AllTypes);
             Assert.IsFalse(armp.MainTable.GetEntry(0).IsValid);
@@ -144,7 +145,7 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
-        public void entryIndex_v1AllTypes()
+        public void entryIndex_v1()
         {
             ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v1AllTypes);
             Assert.AreEqual(armp.MainTable.GetEntry(0).Index, 0);
@@ -155,7 +156,7 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
-        public void entryName_v1AllTypes()
+        public void entryName_v1()
         {
             ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v1AllTypes);
             Assert.AreEqual(armp.MainTable.GetEntry(0).Name, "");
@@ -166,7 +167,7 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
-        public void entryFlags_v1AllTypes()
+        public void entryFlags_v1()
         {
             ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v1AllTypes);
             Assert.IsFalse(armp.MainTable.GetEntry(1).Flags[0]);
@@ -196,15 +197,17 @@ namespace LibARMP.UnitTests
             Assert.IsTrue(armp.MainTable.GetEntry(3).Flags[6]);
             Assert.IsTrue(armp.MainTable.GetEntry(3).Flags[7]);
         }
+        #endregion
 
 
 
-        ///// V2 MODE 0 /////
+        ///// V2 MODE COLUMN /////
+        #region v2ModeColumn
 
         [TestMethod]
-        public void ReadARMP_v2AllTypesMode0()
+        public void ReadARMP_v2ModeColumn()
         {
-            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode0);
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesModeColumn);
             Assert.AreEqual(armp.Version, 2);
             Assert.AreEqual(armp.Revision, 0);
             Assert.AreEqual(armp.MainTable.TableInfo.StorageMode, StorageMode.Column);
@@ -212,9 +215,9 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
-        public void u8_v2AllTypesMode0()
+        public void u8_v2ModeColumn()
         {
-            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode0);
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesModeColumn);
             Assert.AreEqual(armp.MainTable.GetEntry(1).GetValueFromColumn("u8_"), (byte)32); //value
             Assert.AreEqual(armp.MainTable.GetEntry(2).GetValueFromColumn("u8_"), (byte)0); //min
             Assert.AreEqual(armp.MainTable.GetEntry(3).GetValueFromColumn("u8_"), (byte)255); //max
@@ -222,9 +225,9 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
-        public void u16_v2AllTypesMode0()
+        public void u16_v2ModeColumn()
         {
-            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode0);
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesModeColumn);
             Assert.AreEqual(armp.MainTable.GetEntry(1).GetValueFromColumn("u16_"), (UInt16)800); //value
             Assert.AreEqual(armp.MainTable.GetEntry(2).GetValueFromColumn("u16_"), (UInt16)0); //min
             Assert.AreEqual(armp.MainTable.GetEntry(3).GetValueFromColumn("u16_"), (UInt16)65535); //max
@@ -232,9 +235,9 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
-        public void u32_v2AllTypesMode0()
+        public void u32_v2ModeColumn()
         {
-            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode0);
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesModeColumn);
             Assert.AreEqual(armp.MainTable.GetEntry(1).GetValueFromColumn("u32_"), (uint)12345678); //value
             Assert.AreEqual(armp.MainTable.GetEntry(2).GetValueFromColumn("u32_"), (uint)0); //min
             Assert.AreEqual(armp.MainTable.GetEntry(3).GetValueFromColumn("u32_"), (uint)4294967295); //max
@@ -242,9 +245,9 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
-        public void u64_v2AllTypesMode0()
+        public void u64_v2ModeColumn()
         {
-            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode0);
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesModeColumn);
             Assert.AreEqual(armp.MainTable.GetEntry(1).GetValueFromColumn("u64_"), (UInt64)1000000000000); //value
             Assert.AreEqual(armp.MainTable.GetEntry(2).GetValueFromColumn("u64_"), (UInt64)0); //min
             Assert.AreEqual(armp.MainTable.GetEntry(3).GetValueFromColumn("u64_"), (UInt64)18446744073709551615); //max
@@ -252,9 +255,9 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
-        public void s8_v2AllTypesMode0()
+        public void s8_v2ModeColumn()
         {
-            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode0);
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesModeColumn);
             Assert.AreEqual(armp.MainTable.GetEntry(1).GetValueFromColumn("s8_"), (sbyte)(-32)); //value
             Assert.AreEqual(armp.MainTable.GetEntry(2).GetValueFromColumn("s8_"), (sbyte)(-128)); //min
             Assert.AreEqual(armp.MainTable.GetEntry(3).GetValueFromColumn("s8_"), (sbyte)127); //max
@@ -262,9 +265,9 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
-        public void s16_v2AllTypesMode0()
+        public void s16_v2ModeColumn()
         {
-            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode0);
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesModeColumn);
             Assert.AreEqual(armp.MainTable.GetEntry(1).GetValueFromColumn("s16_"), (Int16)(-800)); //value
             Assert.AreEqual(armp.MainTable.GetEntry(2).GetValueFromColumn("s16_"), (Int16)(-32768)); //min
             Assert.AreEqual(armp.MainTable.GetEntry(3).GetValueFromColumn("s16_"), (Int16)32767); //max
@@ -272,9 +275,9 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
-        public void s32_v2AllTypesMode0()
+        public void s32_v2ModeColumn()
         {
-            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode0);
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesModeColumn);
             Assert.AreEqual(armp.MainTable.GetEntry(1).GetValueFromColumn("s32_"), (Int32)(-12345678)); //value
             Assert.AreEqual(armp.MainTable.GetEntry(2).GetValueFromColumn("s32_"), (Int32)(-2147483648)); //min
             Assert.AreEqual(armp.MainTable.GetEntry(3).GetValueFromColumn("s32_"), (Int32)2147483647); //max
@@ -282,9 +285,9 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
-        public void s64_v2AllTypesMode0()
+        public void s64_v2ModeColumn()
         {
-            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode0);
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesModeColumn);
             Assert.AreEqual(armp.MainTable.GetEntry(1).GetValueFromColumn("s64_"), (Int64)(-1000000000000)); //value
             Assert.AreEqual(armp.MainTable.GetEntry(2).GetValueFromColumn("s64_"), (Int64)(-9223372036854770000)); //min
             Assert.AreEqual(armp.MainTable.GetEntry(3).GetValueFromColumn("s64_"), (Int64)9223372036854770000); //max
@@ -292,59 +295,59 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
-        public void f32_v2AllTypesMode0()
+        public void f32_v2ModeColumn()
         {
-            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode0);
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesModeColumn);
             Assert.AreEqual(armp.MainTable.GetEntry(1).GetValueFromColumn("f32_"), (float)(112.6)); //value
         }
 
 
         [TestMethod]
-        public void f64_v2AllTypesMode0()
+        public void f64_v2ModeColumn()
         {
-            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode0);
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesModeColumn);
             Assert.AreEqual(armp.MainTable.GetEntry(1).GetValueFromColumn("f64_"), (double)(123.8888)); //value
         }
 
 
         [TestMethod]
-        public void bool_v2AllTypesMode0()
+        public void bool_v2ModeColumn()
         {
-            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode0);
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesModeColumn);
             Assert.IsFalse((bool)armp.MainTable.GetEntry(1).GetValueFromColumn("bool_")); //value
         }
 
 
         [TestMethod]
-        public void string_v2AllTypesMode0()
+        public void string_v2ModeColumn()
         {
-            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode0);
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesModeColumn);
             Assert.AreEqual(armp.MainTable.GetEntry(1).GetValueFromColumn("string"), "a"); //value
         }
 
 
         [TestMethod]
-        public void table_v2AllTypesMode0()
+        public void table_v2ModeColumn()
         {
-            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode0);
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesModeColumn);
             ArmpTableMain table = (ArmpTableMain)armp.MainTable.GetEntry(1).GetValueFromColumn("table");
             Assert.AreEqual(table.GetEntry(2).GetValueFromColumn("u8"), (byte)64);
         }
 
 
         [TestMethod]
-        public void entryValidity_v2AllTypesMode0()
+        public void entryValidity_v2ModeColumn()
         {
-            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode0);
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesModeColumn);
             Assert.IsFalse(armp.MainTable.GetEntry(0).IsValid);
             Assert.IsTrue(armp.MainTable.GetEntry(1).IsValid);
         }
 
 
         [TestMethod]
-        public void entryIndex_v2AllTypesMode0()
+        public void entryIndex_v2ModeColumn()
         {
-            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode0);
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesModeColumn);
             Assert.AreEqual(armp.MainTable.GetEntry(0).Index, 0);
             Assert.AreEqual(armp.MainTable.GetEntry(1).Index, 1);
             Assert.AreEqual(armp.MainTable.GetEntry(2).Index, 2);
@@ -353,23 +356,25 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
-        public void entryName_v2AllTypesMode0()
+        public void entryName_v2ModeColumn()
         {
-            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode0);
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesModeColumn);
             Assert.AreEqual(armp.MainTable.GetEntry(0).Name, "");
             Assert.AreEqual(armp.MainTable.GetEntry(1).Name, "value");
             Assert.AreEqual(armp.MainTable.GetEntry(2).Name, "min_value");
             Assert.AreEqual(armp.MainTable.GetEntry(3).Name, "max_value");
         }
+        #endregion
 
 
 
-        ///// V2 MODE 1 /////
+        ///// V2 MODE ENTRY /////
+        #region v2ModeEntry
 
         [TestMethod]
-        public void ReadARMP_v2AllTypesMode1()
+        public void ReadARMP_v2ModeEntry()
         {
-            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode1);
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesModeEntry);
             Assert.AreEqual(armp.Version, 2);
             Assert.AreEqual(armp.Revision, 0);
             Assert.AreEqual(armp.MainTable.TableInfo.StorageMode, StorageMode.Entry);
@@ -377,9 +382,9 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
-        public void u8_v2AllTypesMode1()
+        public void u8_v2ModeEntry()
         {
-            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode1);
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesModeEntry);
             Assert.AreEqual(armp.MainTable.GetEntry(1).GetValueFromColumn("u8_"), (byte)32); //value
             Assert.AreEqual(armp.MainTable.GetEntry(2).GetValueFromColumn("u8_"), (byte)0); //min
             Assert.AreEqual(armp.MainTable.GetEntry(3).GetValueFromColumn("u8_"), (byte)255); //max
@@ -387,9 +392,9 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
-        public void u16_v2AllTypesMode1()
+        public void u16_v2ModeEntry()
         {
-            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode1);
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesModeEntry);
             Assert.AreEqual(armp.MainTable.GetEntry(1).GetValueFromColumn("u16_"), (UInt16)800); //value
             Assert.AreEqual(armp.MainTable.GetEntry(2).GetValueFromColumn("u16_"), (UInt16)0); //min
             Assert.AreEqual(armp.MainTable.GetEntry(3).GetValueFromColumn("u16_"), (UInt16)65535); //max
@@ -397,9 +402,9 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
-        public void u32_v2AllTypesMode1()
+        public void u32_v2ModeEntry()
         {
-            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode1);
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesModeEntry);
             Assert.AreEqual(armp.MainTable.GetEntry(1).GetValueFromColumn("u32_"), (uint)12345678); //value
             Assert.AreEqual(armp.MainTable.GetEntry(2).GetValueFromColumn("u32_"), (uint)0); //min
             Assert.AreEqual(armp.MainTable.GetEntry(3).GetValueFromColumn("u32_"), (uint)4294967295); //max
@@ -407,9 +412,9 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
-        public void u64_v2AllTypesMode1()
+        public void u64_v2ModeEntry()
         {
-            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode1);
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesModeEntry);
             Assert.AreEqual(armp.MainTable.GetEntry(1).GetValueFromColumn("u64_"), (UInt64)1000000000000); //value
             Assert.AreEqual(armp.MainTable.GetEntry(2).GetValueFromColumn("u64_"), (UInt64)0); //min
             Assert.AreEqual(armp.MainTable.GetEntry(3).GetValueFromColumn("u64_"), (UInt64)18446744073709551615); //max
@@ -417,9 +422,9 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
-        public void s8_v2AllTypesMode1()
+        public void s8_v2ModeEntry()
         {
-            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode1);
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesModeEntry);
             Assert.AreEqual(armp.MainTable.GetEntry(1).GetValueFromColumn("s8_"), (sbyte)(-32)); //value
             Assert.AreEqual(armp.MainTable.GetEntry(2).GetValueFromColumn("s8_"), (sbyte)(-128)); //min
             Assert.AreEqual(armp.MainTable.GetEntry(3).GetValueFromColumn("s8_"), (sbyte)127); //max
@@ -427,9 +432,9 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
-        public void s16_v2AllTypesMode1()
+        public void s16_v2ModeEntry()
         {
-            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode1);
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesModeEntry);
             Assert.AreEqual(armp.MainTable.GetEntry(1).GetValueFromColumn("s16_"), (Int16)(-800)); //value
             Assert.AreEqual(armp.MainTable.GetEntry(2).GetValueFromColumn("s16_"), (Int16)(-32768)); //min
             Assert.AreEqual(armp.MainTable.GetEntry(3).GetValueFromColumn("s16_"), (Int16)32767); //max
@@ -437,9 +442,9 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
-        public void s32_v2AllTypesMode1()
+        public void s32_v2ModeEntry()
         {
-            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode1);
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesModeEntry);
             Assert.AreEqual(armp.MainTable.GetEntry(1).GetValueFromColumn("s32_"), (Int32)(-12345678)); //value
             Assert.AreEqual(armp.MainTable.GetEntry(2).GetValueFromColumn("s32_"), (Int32)(-2147483648)); //min
             Assert.AreEqual(armp.MainTable.GetEntry(3).GetValueFromColumn("s32_"), (Int32)2147483647); //max
@@ -447,9 +452,9 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
-        public void s64_v2AllTypesMode1()
+        public void s64_v2ModeEntry()
         {
-            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode1);
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesModeEntry);
             Assert.AreEqual(armp.MainTable.GetEntry(1).GetValueFromColumn("s64_"), (Int64)(-1000000000000)); //value
             Assert.AreEqual(armp.MainTable.GetEntry(2).GetValueFromColumn("s64_"), (Int64)(-9223372036854770000)); //min
             Assert.AreEqual(armp.MainTable.GetEntry(3).GetValueFromColumn("s64_"), (Int64)9223372036854770000); //max
@@ -457,52 +462,53 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
-        public void f32_v2AllTypesMode1()
+        public void f32_v2ModeEntry()
         {
-            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode1);
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesModeEntry);
             Assert.AreEqual(armp.MainTable.GetEntry(1).GetValueFromColumn("f32_"), (float)(112.6)); //value
         }
 
 
         [TestMethod]
-        public void f64_v2AllTypesMode1()
+        public void f64_v2ModeEntry()
         {
-            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode1);
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesModeEntry);
             Assert.AreEqual(armp.MainTable.GetEntry(1).GetValueFromColumn("f64_"), (double)(123.8888)); //value
         }
 
 
         [TestMethod]
-        public void bool_v2AllTypesMode1()
+        public void bool_v2ModeEntry()
         {
-            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode1);
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesModeEntry);
             Assert.IsFalse((bool)armp.MainTable.GetEntry(1).GetValueFromColumn("bool_")); //value
         }
 
 
         [TestMethod]
-        public void string_v2AllTypesMode1()
+        public void string_v2ModeEntry()
         {
-            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode1);
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesModeEntry);
             Assert.AreEqual(armp.MainTable.GetEntry(1).GetValueFromColumn("string"), "a"); //value
         }
 
 
         [TestMethod]
-        public void table_v2AllTypesMode1()
+        public void table_v2ModeEntry()
         {
-            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode1);
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesModeEntry);
             ArmpTableMain table = (ArmpTableMain)armp.MainTable.GetEntry(1).GetValueFromColumn("table");
             Assert.AreEqual(table.GetEntry(2).GetValueFromColumn("u8"), (byte)64);
         }
 
 
         [TestMethod]
-        public void entryValidity_v2AllTypesMode1()
+        public void entryValidity_v2ModeEntry()
         {
-            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesMode1);
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesModeEntry);
             Assert.IsFalse(armp.MainTable.GetEntry(0).IsValid);
             Assert.IsTrue(armp.MainTable.GetEntry(1).IsValid);
         }
+        #endregion
     }
 }
