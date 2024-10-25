@@ -232,19 +232,19 @@ namespace LibARMP.UnitTests
             ArmpEntry resultEntry;
             bool resultBool = armp.MainTable.TryGetEntry(1, out resultEntry);
             Assert.IsTrue(resultBool);
-            Assert.AreEqual(resultEntry.Name, "value");
+            Assert.AreEqual("value", resultEntry.Name);
             resultEntry = null;
             resultBool = armp.MainTable.TryGetEntry("value", out resultEntry);
             Assert.IsTrue(resultBool);
-            Assert.AreEqual(resultEntry.Name, "value");
+            Assert.AreEqual("value", resultEntry.Name);
             resultEntry = null;
             resultBool = armp.MainTable.TryGetEntry("does_not_exist", out resultEntry);
             Assert.IsFalse(resultBool);
-            Assert.AreEqual(resultEntry, null);
+            Assert.AreEqual(null, resultEntry);
             resultEntry = null;
             resultBool = armp.MainTable.TryGetEntry(12345, out resultEntry);
             Assert.IsFalse(resultBool);
-            Assert.AreEqual(resultEntry, null);
+            Assert.AreEqual(null, resultEntry);
         }
 
 
