@@ -192,6 +192,49 @@ namespace LibARMP
         }
 
 
+        /// <summary>
+        /// Returns a specific entry in the table.
+        /// </summary>
+        /// <param name="id">The ID of the entry to get.</param>
+        /// <param name="entry">When this method returns, contains the entry associated with the specified ID, if the entry is found; otherwise, <see langword="null"/>. This parameter is passed uninitialized.</param>
+        /// <returns><see langword="true"/> if an entry with the specified ID exists; otherwise <see langword="false"/>.</returns>
+        public bool TryGetEntry (uint id, out ArmpEntry entry)
+        {
+            if (Entries.Count > id)
+            {
+                entry = Entries[(int)id];
+                return true;
+            }
+            else
+            {
+                entry = null;
+                return false;
+            }
+        }
+
+
+        /// <summary>
+        /// Returns a specific entry in the table.
+        /// </summary>
+        /// <param name="name">The name of the entry to get.</param>
+        /// <param name="entry">When this method returns, contains the entry associated with the specified name, if the entry is found; otherwise, <see langword="null"/>. This parameter is passed uninitialized.</param>
+        /// <returns><see langword="true"/> if an entry with the specified name exists; otherwise <see langword="false"/>.</returns>
+        public bool TryGetEntry (string name, out ArmpEntry entry)
+        {
+            foreach (ArmpEntry ae in Entries)
+            {
+                if (ae.Name == name)
+                {
+                    entry = ae;
+                    return true;
+                }
+            }
+
+            entry = null;
+            return false;
+        }
+
+
         public bool SetEntry (ArmpEntry entry)
         {
             if (entry == null) throw new ArgumentNullException("Entry cannot be null.");
