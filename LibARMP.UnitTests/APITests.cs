@@ -296,6 +296,29 @@ namespace LibARMP.UnitTests
 
 
         [TestMethod]
+        public void ArmpTable_TryGetColumn()
+        {
+            ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesModeColumn);
+            ArmpTableColumn resultColumn;
+            bool resultBool = armp.MainTable.TryGetColumn(1, out resultColumn);
+            Assert.IsTrue(resultBool);
+            Assert.AreEqual("u8_", resultColumn.Name);
+            resultColumn = null;
+            resultBool = armp.MainTable.TryGetColumn("string", out resultColumn);
+            Assert.IsTrue(resultBool);
+            Assert.AreEqual("string", resultColumn.Name);
+            resultColumn = null;
+            resultBool = armp.MainTable.TryGetColumn("does_not_exist", out resultColumn);
+            Assert.IsFalse(resultBool);
+            Assert.AreEqual(null, resultColumn);
+            resultColumn = null;
+            resultBool = armp.MainTable.TryGetColumn(12345, out resultColumn);
+            Assert.IsFalse(resultBool);
+            Assert.AreEqual(null, resultColumn);
+        }
+
+
+        [TestMethod]
         public void ArmpTable_GetColumnNames()
         {
             ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesModeColumn);
