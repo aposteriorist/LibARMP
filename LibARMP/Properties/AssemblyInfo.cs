@@ -9,14 +9,9 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 
-[assembly: AssemblyTitle("LibARMP")]
-[assembly: AssemblyDescription("Library to read/write Ryu Ga Gotoku Studio's proprietary armp file format.")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyTitle("Library to read/write Ryu Ga Gotoku Studio's proprietary \"armp\" file format.")]
 [assembly: AssemblyProduct("LibARMP")]
-[assembly: AssemblyCopyright("Copyright © 2021 Christopher Holzmann Pérez")]
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyCulture("")]
+[assembly: AssemblyCopyright("Copyright © 2024 Christopher Holzmann Pérez")]
 
 // Setting ComVisible to false makes the types in this assembly not visible to COM
 // components.  If you need to access a type in this assembly from COM, set the ComVisible
@@ -39,5 +34,4 @@ using System.Runtime.InteropServices;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 
-[assembly: AssemblyVersion("0.1.0.0")]
-[assembly: AssemblyFileVersion("0.1.0.0")]
+[assembly: AssemblyVersion("0.9.0.0")]
