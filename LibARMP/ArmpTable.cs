@@ -1071,6 +1071,24 @@ namespace LibARMP
 
 
         /// <summary>
+        /// Updates the internal text list for writing.
+        /// </summary>
+        internal void UpdateTextList()
+        {
+            Text = new List<string>();
+
+            foreach (ArmpTableColumn column in GetColumnsByType<string>())
+            {
+                foreach (ArmpEntry entry in Entries)
+                {
+                    string str = entry.GetValueFromColumn<string>(column);
+                    if (!Text.Contains(str) && str != null) Text.Add(str);
+                }
+            }
+        }
+
+
+        /// <summary>
         /// Sets the <see cref="StorageMode"/> for this table and any tables contained within.
         /// </summary>
         /// <param name="storageMode">The <see cref="StorageMode"/> to set the table to.</param>
