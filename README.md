@@ -3,13 +3,15 @@
 
 ![License](https://img.shields.io/badge/License-AGPLv3-blue.svg)
 
-LibARMP is a library to read and write _Ryu Ga Gotoku Studio_'s proprietary **armp** format.
+LibARMP is a library to read and write _Ryu Ga Gotoku Studio_'s proprietary **armp** file format.
 
 <br/>
 
 ## Project Status
 
 LibARMP is currently **not ready** for general use. As such, features may be missing or broken, the API may receive breaking changes and documentation will be unavailable until the project reaches a state where it is considered 'complete' (version 1.0).
+
+Basic usage information for the current (unfinished) version may be provided through the [wiki](../../wiki/) and it will be updated on a best effort basis.
 
 <br/>
 
