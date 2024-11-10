@@ -1,49 +1,35 @@
-# LibARMP
-Library for Ryu Ga Gotoku Studio's proprietary **armp** format
+![Banner](https://github.com/user-attachments/assets/e66bc074-920d-49f3-8deb-011f2eaaac5e)
+=====
 
-## WIP
-This repository is still work in progress
+![License](https://img.shields.io/badge/License-AGPLv3-blue.svg)
 
-## TO-DO
-### Dragon Engine v1
-- [x] Row Names
-- [x] Column Names
-- [x] Text
-- [x] Row Validity
-- [x] Column Validity
-- [x] Column Data Types
-- [x] Entry Content
-- [x] Row Indices
-- [x] Column Indices
-- [x] Entry Flags
-- [ ] Empty Value List
+LibARMP is a library to read and write _Ryu Ga Gotoku Studio_'s proprietary **armp** format.
 
+<br/>
 
-### Dragon Engine v2 (only read at the moment)
-- [x] Row Names
-- [x] Column Names
-- [x] Text
-- [x] Row Validity
-- [x] Column Validity
-- [x] Column Data Types
-- [x] Entry Content
-- [x] Row Indices
-- [x] Column Indices
-- [ ] Field Info
-- [ ] Empty Value List
+## Project Status
 
-### Old Engine v1
-- [ ] Row Names
-- [ ] Column Names
-- [ ] Text
-- [ ] Row Validity
-- [ ] Column Validity
-- [ ] Column Data Types
-- [ ] Entry Content
-- [ ] Row Indices
-- [ ] Column Indices
+LibARMP is currently **not ready** for general use. As such, features may be missing or broken, the API may receive breaking changes and documentation will be unavailable until the project reaches a state where it is considered 'complete' (version 1.0).
 
-### Wiki
-- [ ] Introduction
-- [ ] API
-- [ ] Examples
+<br/>
+
+## Licensing
+
+This software is licensed under the terms of the AGPLv3, with exemptions for specific projects noted below.
+
+You can find a copy of the license in the [LICENSE file](LICENSE).
+
+Exemptions:
+* **SEGA** is exempt from AGPLv3 licensing and may (at its option) instead license any source code authored for the LibARMP project under the Zero-Clause BSD license.
+
+<br/>
+
+## Credits
+
+Many thanks to the following, in no particular order, for their contributions to the project:
+
+* [SlowpokeVG](https://github.com/SlowpokeVG) for the initial research of the **armp** format
+* [Kent](https://github.com/Constasis) for the LibARMP project logo and graphics
+* [Jhrino](https://github.com/Fronkln) for testing and suggesting API improvements
+* [Violet](https://github.com/SamuraiOndo) for testing
+* [Timo654](https://github.com/Timo654) for testing
