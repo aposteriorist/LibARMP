@@ -1,9 +1,9 @@
-﻿using System;
+﻿using BinaryExtensions;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
-using Yarhl.IO;
 
 namespace LibARMP
 {
@@ -12,18 +12,19 @@ namespace LibARMP
         /// <summary>
         /// Stores a determined amount of offsets into a list.
         /// </summary>
-        /// <param name="reader">The <see cref="DataStream"/> Reader.</param>
+        /// <param name="reader">The <see cref="BinaryReader"/>.</param>
         /// <param name="ptrOffsetList">Pointer to the Offset List.</param>
         /// <param name="amount">Amount of offsets to store.</param>
+        /// <param name="isBigEndian"><see langword="true"/> to read as Big Endian, <see langword="false"/> for Little Endian.</param>
         /// <returns>A <see cref="uint"/> list.</returns>
-        internal static List<UInt32> IterateOffsetList (DataReader reader, UInt32 ptrOffsetList, int amount)
+        internal static List<UInt32> IterateOffsetList (BinaryReader reader, UInt32 ptrOffsetList, int amount, bool isBigEndian)
         {
             List<UInt32> offsetList = new List<UInt32>();
-            reader.Stream.Seek(ptrOffsetList);
+            reader.BaseStream.Seek(ptrOffsetList);
 
             for (int i=0; i < amount; i++)
             {
-                offsetList.Add(reader.ReadUInt32());
+                offsetList.Add(reader.ReadUInt32(isBigEndian));
             }
             return offsetList;
         }
@@ -32,17 +33,17 @@ namespace LibARMP
         /// <summary>
         /// Reads strings based on an offset list.
         /// </summary>
-        /// <param name="reader">The <see cref="DataReader"/>.</param>
+        /// <param name="reader">The <see cref="BinaryReader"/>.</param>
         /// <param name="offsetList">The String Offset List.</param>
         /// <returns>A <see cref="string"/> list.</returns>
-        internal static List<string> IterateStringList (DataReader reader, List<UInt32> offsetList, Encoding encoding = null)
+        internal static List<string> IterateStringList (BinaryReader reader, List<UInt32> offsetList)
         {
             List<string> stringList = new List<string>();
 
             foreach (int offset in offsetList) 
             {
-                reader.Stream.Seek(offset);
-                stringList.Add(reader.ReadString(encoding));
+                reader.BaseStream.Seek(offset);
+                stringList.Add(reader.ReadStringNullTerminated());
             }
             return stringList;
         }
@@ -51,19 +52,19 @@ namespace LibARMP
         /// <summary>
         /// Reads a bitmask.
         /// </summary>
-        /// <param name="reader">The <see cref="DataReader"/>.</param>
+        /// <param name="reader">The <see cref="BinaryReader"/>.</param>
         /// <param name="ptrBitmask">The pointer to the bitmask.</param>
         /// <param name="amount">The amount of values in the bitmask.</param>
         /// <returns>A <see cref="Boolean"/> list.</returns>
-        internal static List<bool> IterateBooleanBitmask (DataReader reader, UInt32 ptrBitmask, int amount)
+        internal static List<bool> IterateBooleanBitmask (BinaryReader reader, UInt32 ptrBitmask, int amount, bool isBigEndian)
         {
             List<bool> boolList = new List<bool>();
 
-            reader.Stream.Seek(ptrBitmask);
+            reader.BaseStream.Seek(ptrBitmask);
 
             for (int i = 0; i < Math.Ceiling((float)amount/8); i++)
             {
-                int bitmask = reader.ReadInt32();
+                int bitmask = reader.ReadInt32(isBigEndian);
 
                 for (int j = 0; j < 32 && boolList.Count < amount; j++)
                 {
@@ -91,18 +92,19 @@ namespace LibARMP
         /// <summary>
         /// Reads an array of type T.
         /// </summary>
-        /// <param name="reader">The <see cref="DataReader"/>.</param>
+        /// <param name="reader">The <see cref="BinaryReader"/>.</param>
         /// <param name="ptrArray">The pointer to the array.</param>
         /// <param name="amount">The amount of values in the array.</param>
+        /// <param name="isBigEndian"><see langword="true"/> to read as Big Endian, <see langword="false"/> for Little Endian.</param>
         /// <returns>A list of type T.</returns>
-        internal static dynamic IterateArray<T> (DataReader reader, UInt32 ptrArray, int amount)
+        internal static dynamic IterateArray<T> (BinaryReader reader, UInt32 ptrArray, int amount, bool isBigEndian)
         {
             List<T> returnList = new List<T>();
-            reader.Stream.Seek(ptrArray);
+            reader.BaseStream.Seek(ptrArray);
 
             for (int i=0; i<amount; i++)
             {
-                T val = reader.Read<T>();
+                T val = (T)reader.Read<T>(isBigEndian);
                 returnList.Add(val);
             } 
 
@@ -113,9 +115,9 @@ namespace LibARMP
         /// <summary>
         /// Writes a <see cref="Boolean"/> list to a stream.
         /// </summary>
-        /// <param name="writer">The <see cref="DataWriter"/>.</param>
+        /// <param name="writer">The <see cref="BinaryWriter"/>.</param>
         /// <param name="boolList">The <see cref="Boolean"/> list.</param>
-        internal static void WriteBooleanBitmask (DataWriter writer, List<bool> boolList)
+        internal static void WriteBooleanBitmask (BinaryWriter writer, List<bool> boolList, bool isBigEndian)
         {
             int index = 0;
 
@@ -132,7 +134,7 @@ namespace LibARMP
                     index++;
                 }
 
-                writer.Write(bitmask);
+                writer.Write(bitmask, isBigEndian);
             }
         }
 
@@ -140,24 +142,25 @@ namespace LibARMP
         /// <summary>
         /// Writes a text list and its offset table to the stream.
         /// </summary>
-        /// <param name="writer">The <see cref="DataWriter"/>.</param>
+        /// <param name="writer">The <see cref="BinaryWriter"/>.</param>
         /// <param name="textList">The text list.</param>
+        /// <param name="isBigEndian"><see langword="true"/> to write as Big Endian, <see langword="false"/> for Little Endian.</param>
         /// <returns>The pointer to the text offset table.</returns>
-        internal static int WriteText (DataWriter writer, List<string> textList, Encoding encoding = null)
+        internal static int WriteText (BinaryWriter writer, List<string> textList, bool isBigEndian)
         {
             List<int> ptrList = new List<int>();
             
             foreach (string text in textList)
             {
-                ptrList.Add((int)writer.Stream.Position);
-                writer.Write(text, true, encoding);
+                ptrList.Add((int)writer.BaseStream.Position);
+                writer.Write(text, true);
             }
             writer.WritePadding(0x00, 0x10);
-            int ptrOffsetTable = (int)writer.Stream.Position;
+            int ptrOffsetTable = (int)writer.BaseStream.Position;
 
             foreach(int pointer in ptrList)
             {
-                writer.Write(pointer);
+                writer.Write(pointer, isBigEndian);
             }
 
             return ptrOffsetTable;
@@ -201,67 +204,6 @@ namespace LibARMP
 
 
         ///// EXTENSIONS /////
-
-        /// <summary>
-        /// Writes the complete <see cref="DataStream"/> into a <see cref="Stream"/>.
-        /// </summary>
-        /// <param name="stream">The destination <see cref="Stream"/>.</param>
-        internal static void WriteTo(this DataStream ds, Stream stream)
-        {
-            ds.Seek(0);
-            byte[] temp = new byte[ds.Length];
-            ds.Read(temp, 0, (int)ds.Length);
-            stream.Write(temp, 0, temp.Length);
-            stream.Seek(0, SeekOrigin.Begin);
-        }
-
-
-        /// <summary>
-        /// Returns the contents of the <see cref="DataStream"/> as a byte array.
-        /// </summary>
-        internal static byte[] ToArray(this DataStream ds)
-        {
-            ds.Seek(0);
-            byte[] array = new byte[ds.Length];
-            ds.Read(array, 0, (int)ds.Length);
-            return array;
-        }
-
-
-        /// <summary>
-        /// Push the current position into a stack and move to a new one, write the specified 32-bit signed value,
-        /// pop the last position in the stack and move to it.
-        /// </summary>
-        /// <param name="dw">The DataWriter.</param>
-        /// <param name="val">32-bits signed value.</param>
-        /// <param name="shift">Distance to move position.</param>
-        /// <param name="mode">Mode to move position.</param>
-        internal static void PushWritePop(this DataWriter dw, int val, long shift, SeekMode mode = SeekMode.Start)
-        {
-            dw.Stream.PushToPosition(shift, mode);
-            dw.Write(val);
-            dw.Stream.PopPosition();
-        }
-
-
-        /// <summary>
-        /// Push the current position into a stack and move to a new one, write the specified 32-bit signed values,
-        /// pop the last position in the stack and move to it.
-        /// </summary>
-        /// <param name="dw">The DataWriter.</param>
-        /// <param name="vals">32-bits signed value array.</param>
-        /// <param name="shift">Distance to move position.</param>
-        /// <param name="mode">Mode to move position.</param>
-        internal static void PushWritePop(this DataWriter dw, int[] vals, long shift, SeekMode mode = SeekMode.Start)
-        {
-            dw.Stream.PushToPosition(shift, mode);
-            foreach (int val in vals)
-            {
-                dw.Write(val);
-            }
-            dw.Stream.PopPosition();
-        }
-
 
         /// <summary>
         /// Attempts to add the specified key and value to the dictionary.

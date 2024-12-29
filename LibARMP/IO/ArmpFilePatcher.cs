@@ -1,29 +1,24 @@
-﻿using System.IO;
+﻿using BinaryExtensions;
+using System.IO;
 using System.Reflection;
-using Yarhl.IO;
+using System.Text;
 
 namespace LibARMP.IO
 {
     public static class ArmpFilePatcher
     {
-        private static void PatchARMP(ARMP armp, DataStream outputDataStream)
+        static ArmpFilePatcher()
         {
-            var writer = new DataWriter(outputDataStream)
-            {
-                Endianness = EndiannessMode.LittleEndian,
-                DefaultEncoding = System.Text.Encoding.UTF8,
-            };
-            if (armp.FormatVersion == Version.OldEngine)
-            {
-                writer.Endianness = EndiannessMode.BigEndian;
-                writer.DefaultEncoding = System.Text.Encoding.GetEncoding(932);
-            }
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+        }
 
-            //Write the original file to the new DataStream before patching values
-            using (var originalFileDS = DataStreamFactory.FromStream(armp.File))
-            {
-                originalFileDS.WriteTo(writer.Stream);
-            }
+
+        private static void PatchARMP(ARMP armp, Stream outputStream)
+        {
+            var writer = new BinaryWriter(outputStream, Encoding.UTF8, true);
+
+            //Write the original file to the new stream before patching values
+            armp.File.WriteTo(outputStream);
 
             PatchTableRecursive(writer, armp.MainTable);
         }
@@ -36,9 +31,10 @@ namespace LibARMP.IO
         /// <param name="path">The destination file path.</param>
         public static void PatchARMPToFile(ARMP armp, string path)
         {
-            using (var datastream = DataStreamFactory.FromFile(path, FileOpenMode.Write))
+            using (Stream stream = new MemoryStream())
             {
-                PatchARMP(armp, datastream);
+                PatchARMP(armp, stream);
+                File.WriteAllBytes(path, stream.ToArray());
             }
         }
 
@@ -50,10 +46,8 @@ namespace LibARMP.IO
         /// <param name="armp">The ARMP to write.</param>
         public static Stream PatchARMPToStream(ARMP armp)
         {
-            MemoryStream stream = new MemoryStream();
-            DataStream tempds = DataStreamFactory.FromMemory();
-            PatchARMP(armp, tempds);
-            tempds.WriteTo(stream);
+            Stream stream = new MemoryStream();
+            PatchARMP(armp, stream);
             return stream;
         }
 
@@ -65,14 +59,16 @@ namespace LibARMP.IO
         /// <param name="armp"></param>
         public static byte[] PatchARMPToArray(ARMP armp)
         {
-            DataStream tempds = DataStreamFactory.FromMemory();
-            PatchARMP(armp, tempds);
-            return tempds.ToArray();
+            using (MemoryStream stream = new MemoryStream())
+            {
+                PatchARMP(armp, stream);
+                return stream.ToArray();
+            }
         }
 
 
         //PLACEHOLDER
-        private static void PatchTableRecursive(DataWriter writer, ArmpTable table)
+        private static void PatchTableRecursive(BinaryWriter writer, ArmpTable table)
         {
             foreach (ArmpTableColumn column in table.Columns)
             {
@@ -82,7 +78,7 @@ namespace LibARMP.IO
                     {
                         object entryvalue = table.GetEntry(entryId).GetValueFromColumn(column.Name);
 
-                        writer.Stream.Seek(table.GetEntry(entryId).ColumnValueOffsets[column.Name]);
+                        writer.BaseStream.Seek(table.GetEntry(entryId).ColumnValueOffsets[column.Name]);
 
                         MethodInfo methodinfo = typeof(ArmpFileWriter).GetMethod("WriteType", BindingFlags.NonPublic | BindingFlags.Static);
                         MethodInfo methodref = methodinfo.MakeGenericMethod(column.Type.CSType);
@@ -120,9 +116,9 @@ namespace LibARMP.IO
         /// <typeparam name="T">The type to read.</typeparam>
         /// <param name="writer">The DataWriter.</param>
         /// <param name="value">The value of type T to write.</param>
-        private static void WriteType<T>(DataWriter writer, object value)
+        private static void WriteType<T>(BinaryWriter writer, object value)
         {
-            writer.WriteOfType((T)value);
+            writer.WriteByType((T)value);
         }
     }
 }

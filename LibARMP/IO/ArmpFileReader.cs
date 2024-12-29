@@ -1,42 +1,43 @@
-﻿using System;
+﻿using BinaryExtensions;
+using System;
 using System.Text;
 using System.Collections.Generic;
-using Yarhl.IO;
 using System.IO;
 
 namespace LibARMP.IO
 {
     public static class ArmpFileReader
     {
+        static ArmpFileReader()
+        {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+        }
+
+
         /// <summary>
         /// Reads an armp file.
         /// </summary>
-        /// <param name="datastream">The armp file as <see cref="DataStream"/>.</param>
+        /// <param name="stream">The armp file as <see cref="Stream"/>.</param>
         /// <param name="baseARMPMemoryAddress">The memory address where the armp starts at. Only needed if reading from memory.</param>
         /// <returns>An <see cref="ARMP"/> object.</returns>
-        public static ARMP ReadARMP(DataStream datastream, IntPtr baseARMPMemoryAddress = default(IntPtr))
+        public static ARMP ReadARMP(Stream stream, IntPtr baseARMPMemoryAddress = default(IntPtr))
         {
-            var reader = new DataReader(datastream)
-            {
-                Endianness = EndiannessMode.LittleEndian,
-                DefaultEncoding = Encoding.UTF8,
-            };
+            BinaryReader reader = new BinaryReader(stream, Encoding.UTF8, true);
+            reader.BaseStream.Seek(0, SeekOrigin.Begin); // Ensure the position is at the start of the stream
 
             ARMP armp = new ARMP();
 
             char[] magic = reader.ReadChars(4);
-            int endianess = reader.ReadInt32(); //Only used in OE
+            int endianess = reader.ReadInt32(); // Only used in OE
             if (endianess == 258)
             {
-                reader.Endianness = EndiannessMode.BigEndian;
-                reader.DefaultEncoding = Encoding.GetEncoding(932);
                 armp.FormatVersion = Version.OldEngine;
             }
 
             if (armp.FormatVersion == Version.OldEngine)
             {
-                armp.Version = reader.ReadInt16();
-                armp.Revision = reader.ReadInt16();
+                armp.Version = reader.ReadInt16(true);
+                armp.Revision = reader.ReadInt16(true);
             }
             else
             {
@@ -49,14 +50,19 @@ namespace LibARMP.IO
             Console.WriteLine("Revision: " + armp.Revision);
 #endif
 
-            int fileSize = reader.ReadInt32(); //Only used in OE
+            int fileSize = reader.ReadInt32(); // Only used in OE
 
             if (armp.FormatVersion == Version.OldEngine)
             {
-                reader.Stream.PushToPosition(0xC, SeekMode.Current);
+                reader.BaseStream.PushToPosition(0xC, SeekOrigin.Current);
                 // This value, usually corresponding to the entry validity pointer, is unused in Ishin since it is instead found at 0x4
-                if (reader.ReadInt32() == 0) armp.FormatVersion = Version.OldEngineIshin;
-                reader.Stream.PopPosition();
+                if (reader.ReadInt32(true) == 0)
+                {
+                    armp.FormatVersion = Version.OldEngineIshin;
+                    reader.Dispose();
+                    reader = new BinaryReader(stream, Encoding.GetEncoding(932), true);
+                }
+                reader.BaseStream.PopPosition();
                 armp.MainTable = ReadTableMainOE(reader, armp.FormatVersion);
             }
             else
@@ -67,7 +73,8 @@ namespace LibARMP.IO
                 armp.MainTable = ReadTableMain(reader, ptrMainTable, armp.FormatVersion, baseARMPMemoryAddress.ToInt64());
             }
 
-            datastream.WriteTo(armp.File);
+            stream.CopyTo(armp.File);
+            reader.Dispose();
             return armp;
         }
 
@@ -84,25 +91,9 @@ namespace LibARMP.IO
         public static ARMP ReadARMP(byte[] fileBytes, int offset = 0, int length = 0, IntPtr baseARMPMemoryAddress = default(IntPtr))
         {
             if (length == 0) length = fileBytes.Length;
-            using (var datastream = DataStreamFactory.FromArray(fileBytes, offset, length))
+            using (var stream = new MemoryStream(fileBytes, offset, length))
             {
-                return ReadARMP(datastream, baseARMPMemoryAddress);
-            }
-        }
-
-
-
-        /// <summary>
-        /// Reads an armp file.
-        /// </summary>
-        /// <param name="stream">The armp file as <see cref="Stream"/>.</param>
-        /// <param name="baseARMPMemoryAddress">The memory address where the armp starts at. Only needed if reading from memory.</param>
-        /// <returns>An <see cref="ARMP"/> object.</returns>
-        public static ARMP ReadARMP(Stream stream, IntPtr baseARMPMemoryAddress = default(IntPtr))
-        {
-            using (var datastream = DataStreamFactory.FromStream(stream))
-            {
-                return ReadARMP(datastream, baseARMPMemoryAddress);
+                return ReadARMP(stream, baseARMPMemoryAddress);
             }
         }
 
@@ -116,9 +107,9 @@ namespace LibARMP.IO
         /// <returns>An <see cref="ARMP"/> object.</returns>
         public static ARMP ReadARMP(string path, IntPtr baseARMPMemoryAddress = default(IntPtr))
         {
-            using (var datastream = DataStreamFactory.FromFile(path, FileOpenMode.Read))
+            using (Stream stream = new MemoryStream(File.ReadAllBytes(path)))
             {
-                return ReadARMP(datastream, baseARMPMemoryAddress);
+                return ReadARMP(stream, baseARMPMemoryAddress);
             }
         }
 
@@ -127,14 +118,14 @@ namespace LibARMP.IO
         /// <summary>
         /// Reads a Dragon Engine armp table.
         /// </summary>
-        /// <param name="reader">The path to the armp file.</param>
+        /// <param name="reader">The <see cref="BinaryReader"/>.</param>
         /// <param name="ptrMainTable">The pointer to the main table.</param>
         /// <param name="baseARMPMemoryAddress">The memory address where the armp starts at. Only needed if reading from memory.</param>
         /// <returns>An <see cref="ArmpTable"/> object.</returns>
-        private static ArmpTable ReadTable(DataReader reader, long ptrMainTable, Version version, long baseARMPMemoryAddress)
+        private static ArmpTable ReadTable(BinaryReader reader, long ptrMainTable, Version version, long baseARMPMemoryAddress)
         {
             ArmpTable table = new ArmpTable();
-            reader.Stream.Seek(ptrMainTable);
+            reader.BaseStream.Seek(ptrMainTable);
             table.TableInfo = GetARMPTableInfo(reader, false);
             table.TableInfo.FormatVersion = version;
             table.TableInfo.BaseARMPMemoryAddress = baseARMPMemoryAddress;
@@ -146,11 +137,11 @@ namespace LibARMP.IO
             List<string> columnNames = new List<string>();
             if (table.TableInfo.HasColumnNames)
             {
-                columnNames = Util.IterateStringList(reader, Util.IterateOffsetList(reader, table.TableInfo.ptrColumnNamesOffsetTable, table.TableInfo.ColumnCount));
+                columnNames = Util.IterateStringList(reader, Util.IterateOffsetList(reader, table.TableInfo.ptrColumnNamesOffsetTable, table.TableInfo.ColumnCount, false));
             }
             else
             {
-                //Fill with numbers
+                // Fill with numbers
                 for (int c = 0; c < table.TableInfo.ColumnCount; c++)
                 {
                     columnNames.Add(c.ToString());
@@ -184,17 +175,17 @@ namespace LibARMP.IO
 
             ///// Column Validity /////
             List<bool> columnValidity = new List<bool>();
-            if (table.TableInfo.HasColumnValidity) columnValidity = Util.IterateBooleanBitmask(reader, table.TableInfo.ptrColumnValidity, table.TableInfo.ColumnCount);
+            if (table.TableInfo.HasColumnValidity) columnValidity = Util.IterateBooleanBitmask(reader, table.TableInfo.ptrColumnValidity, table.TableInfo.ColumnCount, false);
 
 
             ///// Column Indices /////
             List<int> columnIndices = new List<int>();
-            if (table.TableInfo.HasColumnIndices) columnIndices = Util.IterateArray<int>(reader, table.TableInfo.ptrColumnIndices, table.TableInfo.ColumnCount);
+            if (table.TableInfo.HasColumnIndices) columnIndices = Util.IterateArray<int>(reader, table.TableInfo.ptrColumnIndices, table.TableInfo.ColumnCount, false);
 
 
             ///// Column Metadata /////
             List<int> columnMetadata0x40 = new List<int>();
-            if (table.TableInfo.HasColumnMetadata) columnMetadata0x40 = Util.IterateArray<int>(reader, table.TableInfo.ptrColumnMetadata, table.TableInfo.ColumnCount);
+            if (table.TableInfo.HasColumnMetadata) columnMetadata0x40 = Util.IterateArray<int>(reader, table.TableInfo.ptrColumnMetadata, table.TableInfo.ColumnCount, false);
 
 
             ///// Create Columns /////
@@ -206,12 +197,12 @@ namespace LibARMP.IO
 
                 if (table.TableInfo.HasColumnDataTypesAux)
                 {
-                    //Use the aux type as main for v1. This is better than having to check for the correct type multiple times.
+                    // Use the aux type as main for v1. This is better than having to check for the correct type multiple times.
                     if (version == Version.DragonEngineV1)
                     {
                         column.Type = columnDataTypesAux[(int)c];
                     }
-                    else //v2
+                    else // v2
                     {
                         column.Type = columnDataTypes[(int)c];
                         column.Distance = columnDataTypesAuxTable[(int)c][1];
@@ -233,7 +224,7 @@ namespace LibARMP.IO
             }
 
 
-            //Assign special columns' children
+            // Assign special columns' children
             if (version == Version.DragonEngineV2)
             {
                 foreach (ArmpTableColumn column in table.Columns)
@@ -261,11 +252,11 @@ namespace LibARMP.IO
 
             if (table.TableInfo.HasEntryNames)
             {
-                table.EntryNames = Util.IterateStringList(reader, Util.IterateOffsetList(reader, table.TableInfo.ptrEntryNamesOffsetTable, table.TableInfo.EntryCount));
+                table.EntryNames = Util.IterateStringList(reader, Util.IterateOffsetList(reader, table.TableInfo.ptrEntryNamesOffsetTable, table.TableInfo.EntryCount, false));
             }
             else
             {
-                //Fill with blanks
+                // Fill with blanks
                 table.EntryNames = new List<string>();
                 for (int r = 0; r < table.TableInfo.EntryCount; r++)
                 {
@@ -276,22 +267,24 @@ namespace LibARMP.IO
 
 
             ///// Text /////
-            if (table.TableInfo.HasText) table.Text = Util.IterateStringList(reader, Util.IterateOffsetList(reader, table.TableInfo.ptrTextOffsetTable, table.TableInfo.TextCount));
+            if (table.TableInfo.HasText) table.Text = Util.IterateStringList(reader, Util.IterateOffsetList(reader, table.TableInfo.ptrTextOffsetTable, table.TableInfo.TextCount, false));
 
 
             ///// Entry Indices /////
-            if (table.TableInfo.HasEntryIndices) table.EntryIndices = Util.IterateArray<int>(reader, table.TableInfo.ptrEntryIndices, table.TableInfo.EntryCount);
+            if (table.TableInfo.HasEntryIndices) table.EntryIndices = Util.IterateArray<int>(reader, table.TableInfo.ptrEntryIndices, table.TableInfo.EntryCount, false);
+
 
             ///// Entry Data /////
             InitializeEntries(table);
             ReadColumnContents(reader, table.TableInfo.ptrColumnContentOffsetTable, table.TableInfo.StorageMode, version, table);
+
 
             ///// Entry Validity /////
             #region EntryValidity
 
             if (table.TableInfo.HasEntryValidity)
             {
-                table.EntryValidity = Util.IterateBooleanBitmask(reader, table.TableInfo.ptrEntryValidity, table.TableInfo.EntryCount);
+                table.EntryValidity = Util.IterateBooleanBitmask(reader, table.TableInfo.ptrEntryValidity, table.TableInfo.EntryCount, false);
                 SetEntryValidity(table.EntryValidity, table.Entries);
             }
             #endregion
@@ -302,7 +295,7 @@ namespace LibARMP.IO
 
             if (table.TableInfo.HasExtraFieldInfo)
             {
-                if (version == Version.DragonEngineV1) //Flags for each entry
+                if (version == Version.DragonEngineV1) // Flags for each entry
                 {
                     IterateEntryInfoFlags(reader, table.TableInfo.ptrExtraFieldInfo, table.Entries);
                 }
@@ -319,7 +312,7 @@ namespace LibARMP.IO
 
             if (table.TableInfo.HasEmptyValues)
             {
-                List<uint> emptyValuesOffsetList = Util.IterateOffsetList(reader, table.TableInfo.ptrEmptyValuesOffsetTable, table.TableInfo.ColumnCount);
+                List<uint> emptyValuesOffsetList = Util.IterateOffsetList(reader, table.TableInfo.ptrEmptyValuesOffsetTable, table.TableInfo.ColumnCount, false);
 
                 int columnIndex = -1;
                 foreach (uint offset in emptyValuesOffsetList)
@@ -335,7 +328,7 @@ namespace LibARMP.IO
                         table.EmptyValuesIsNegativeOffset.Add(false);
                         if (offset == 0) continue;
 
-                        table.EmptyValues.Add(columnIndex, Util.IterateBooleanBitmask(reader, offset, table.TableInfo.EntryCount));
+                        table.EmptyValues.Add(columnIndex, Util.IterateBooleanBitmask(reader, offset, table.TableInfo.EntryCount, false));
                     }
                 }
             }
@@ -351,12 +344,12 @@ namespace LibARMP.IO
         /// <summary>
         /// Reads a Dragon Engine armp table.
         /// </summary>
-        /// <param name="reader">The path to the armp file.</param>
+        /// <param name="reader">The <see cref="BinaryReader"/>.</param>
         /// <param name="ptrMainTable">The pointer to the main table.</param>
         /// <param name="version">The format version.</param>
         /// <param name="baseARMPMemoryAddress">The memory address where the armp starts at. Only needed if reading from memory.</param>
         /// <returns>An <see cref="ArmpTable"/> object.</returns>
-        private static ArmpTableMain ReadTableMain(DataReader reader, long ptrMainTable, Version version, long baseARMPMemoryAddress)
+        private static ArmpTableMain ReadTableMain(BinaryReader reader, long ptrMainTable, Version version, long baseARMPMemoryAddress)
         {
             ArmpTableMain mainTable = new ArmpTableMain(ReadTable(reader, ptrMainTable, version, baseARMPMemoryAddress));
             if (mainTable.TableInfo.HasSubTable) mainTable.SubTable = new ArmpTableSub(mainTable, ReadTable(reader, mainTable.TableInfo.ptrSubTable, version, baseARMPMemoryAddress));
@@ -368,10 +361,10 @@ namespace LibARMP.IO
         /// <summary>
         /// Reads an Old Engine armp table.
         /// </summary>
-        /// <param name="reader">The <see cref="DataReader"/>.</param>
+        /// <param name="reader">The <see cref="BinaryReader"/>.</param>
         /// <param name="version">The format version.</param>
         /// <returns>An <see cref="ArmpTable"/> object.</returns>
-        private static ArmpTable ReadTable(DataReader reader, Version version)
+        private static ArmpTable ReadTable(BinaryReader reader, Version version)
         {
             ArmpTable table = new ArmpTable();
 
@@ -385,11 +378,11 @@ namespace LibARMP.IO
             List<string> columnNames = new List<string>();
             if (table.TableInfo.HasColumnNames)
             {
-                columnNames = Util.IterateStringList(reader, Util.IterateOffsetList(reader, table.TableInfo.ptrColumnNamesOffsetTable, table.TableInfo.ColumnCount));
+                columnNames = Util.IterateStringList(reader, Util.IterateOffsetList(reader, table.TableInfo.ptrColumnNamesOffsetTable, table.TableInfo.ColumnCount, true));
             }
             else
             {
-                //Fill with numbers
+                // Fill with numbers
                 for (int c = 0; c < table.TableInfo.ColumnCount; c++)
                 {
                     columnNames.Add(c.ToString());
@@ -408,7 +401,7 @@ namespace LibARMP.IO
             List<int> columnMetadata = new List<int>();
             if (table.TableInfo.HasColumnMetadata)
             {
-                columnMetadata = Util.IterateArray<int>(reader, table.TableInfo.ptrColumnMetadata, table.TableInfo.ColumnCount);
+                columnMetadata = Util.IterateArray<int>(reader, table.TableInfo.ptrColumnMetadata, table.TableInfo.ColumnCount, true);
             }
             #endregion
 
@@ -431,11 +424,11 @@ namespace LibARMP.IO
 
             if (table.TableInfo.HasEntryNames)
             {
-                table.EntryNames = Util.IterateStringList(reader, Util.IterateOffsetList(reader, table.TableInfo.ptrEntryNamesOffsetTable, table.TableInfo.EntryCount));
+                table.EntryNames = Util.IterateStringList(reader, Util.IterateOffsetList(reader, table.TableInfo.ptrEntryNamesOffsetTable, table.TableInfo.EntryCount, true));
             }
             else
             {
-                //Fill with blanks
+                // Fill with blanks
                 table.EntryNames = new List<string>();
                 for (int r = 0; r < table.TableInfo.EntryCount; r++)
                 {
@@ -450,12 +443,8 @@ namespace LibARMP.IO
 
             if (table.TableInfo.HasText)
             {
-                List<uint> offsetList = Util.IterateOffsetList(reader, table.TableInfo.ptrTextOffsetTable, table.TableInfo.TextCount);
-                Encoding encoding = Encoding.UTF8;
-                if (version == Version.OldEngineIshin)
-                    encoding = Encoding.GetEncoding(932);
-
-                table.Text = Util.IterateStringList(reader, offsetList, encoding);
+                List<uint> offsetList = Util.IterateOffsetList(reader, table.TableInfo.ptrTextOffsetTable, table.TableInfo.TextCount, true);
+                table.Text = Util.IterateStringList(reader, offsetList);
             }
             #endregion
 
@@ -472,7 +461,7 @@ namespace LibARMP.IO
             {
                 if (version == Version.OldEngineIshin)
                 {
-                    List<uint> tempList = Util.IterateArray<uint>(reader, table.TableInfo.ptrEntryValidity, table.TableInfo.EntryCount);
+                    List<uint> tempList = Util.IterateArray<uint>(reader, table.TableInfo.ptrEntryValidity, table.TableInfo.EntryCount, true);
                     List<bool> boolList = new List<bool>();
                     foreach (uint integer in tempList)
                     {
@@ -483,7 +472,7 @@ namespace LibARMP.IO
                 }
                 else
                 {
-                    table.EntryValidity = Util.IterateBooleanBitmask(reader, table.TableInfo.ptrEntryValidity, table.TableInfo.EntryCount);
+                    table.EntryValidity = Util.IterateBooleanBitmask(reader, table.TableInfo.ptrEntryValidity, table.TableInfo.EntryCount, true);
                     SetEntryValidity(table.EntryValidity, table.Entries);
                 }
             }
@@ -499,10 +488,10 @@ namespace LibARMP.IO
         /// <summary>
         /// Reads an Old Engine armp's main table.
         /// </summary>
-        /// <param name="reader">The <see cref="DataReader"/>.</param>
+        /// <param name="reader">The <see cref="BinaryReader"/>.</param>
         /// <param name="version">The format version.</param>
         /// <returns>An <see cref="ArmpTableMain"/> object.</returns>
-        private static ArmpTableMain ReadTableMainOE(DataReader reader, Version version)
+        private static ArmpTableMain ReadTableMainOE(BinaryReader reader, Version version)
         {
             ArmpTable table = ReadTable(reader, version);
             return new ArmpTableMain(table);
@@ -513,19 +502,19 @@ namespace LibARMP.IO
         /// <summary>
         /// Reads the table information.
         /// </summary>
-        /// <param name="reader">The <see cref="DataReader"/>.</param>
+        /// <param name="reader">The <see cref="BinaryReader"/>.</param>
         /// <param name="IsOldEngine">If the format version is from Old Engine.</param>
         /// <returns>An <see cref="ArmpTableInfo"/> object.</returns>
-        private static ArmpTableInfo GetARMPTableInfo(DataReader reader, bool IsOldEngine)
+        private static ArmpTableInfo GetARMPTableInfo(BinaryReader reader, bool IsOldEngine)
         {
             ArmpTableInfo armpTableInfo = new ArmpTableInfo();
 
-            //Old Engine
+            // Old Engine
             if (IsOldEngine)
             {
-                armpTableInfo.EntryCount = reader.ReadInt32();
-                //Ishin check
-                uint check = reader.ReadUInt32();
+                armpTableInfo.EntryCount = reader.ReadInt32(true);
+                // Ishin check
+                uint check = reader.ReadUInt32(true);
                 if (check > 0)
                 {
                     armpTableInfo.FormatVersion = Version.OldEngineIshin;
@@ -535,19 +524,19 @@ namespace LibARMP.IO
                 {
                     armpTableInfo.FormatVersion = Version.OldEngine;
                 }
-                armpTableInfo.ptrEntryNamesOffsetTable = reader.ReadUInt32();
-                if (armpTableInfo.FormatVersion == Version.OldEngine) armpTableInfo.ptrEntryValidity = reader.ReadUInt32();
+                armpTableInfo.ptrEntryNamesOffsetTable = reader.ReadUInt32(true);
+                if (armpTableInfo.FormatVersion == Version.OldEngine) armpTableInfo.ptrEntryValidity = reader.ReadUInt32(true);
                 else reader.ReadBytes(0x4);
-                armpTableInfo.ColumnCount = reader.ReadInt32();
-                armpTableInfo.ptrColumnNamesOffsetTable = reader.ReadUInt32();
-                armpTableInfo.ptrColumnDataTypes = reader.ReadUInt32();
-                armpTableInfo.ptrColumnContentOffsetTable = reader.ReadUInt32();
+                armpTableInfo.ColumnCount = reader.ReadInt32(true);
+                armpTableInfo.ptrColumnNamesOffsetTable = reader.ReadUInt32(true);
+                armpTableInfo.ptrColumnDataTypes = reader.ReadUInt32(true);
+                armpTableInfo.ptrColumnContentOffsetTable = reader.ReadUInt32(true);
                 reader.ReadBytes(0x4);
-                armpTableInfo.ptrColumnMetadata = reader.ReadUInt32();
-                armpTableInfo.ptrTextOffsetTable = reader.ReadUInt32();
-                armpTableInfo.TextCount = reader.ReadInt32();
+                armpTableInfo.ptrColumnMetadata = reader.ReadUInt32(true);
+                armpTableInfo.ptrTextOffsetTable = reader.ReadUInt32(true);
+                armpTableInfo.TextCount = reader.ReadInt32(true);
 
-                //Set flags
+                // Set flags
                 if (armpTableInfo.TextCount > 0) armpTableInfo.HasText = true;
                 if (armpTableInfo.ptrEntryNamesOffsetTable > 0 && armpTableInfo.ptrEntryNamesOffsetTable < 0xFFFFFFFF) armpTableInfo.HasEntryNames = true;
                 if (armpTableInfo.ptrColumnNamesOffsetTable > 0 && armpTableInfo.ptrColumnNamesOffsetTable < 0xFFFFFFFF) armpTableInfo.HasColumnNames = true;
@@ -571,7 +560,7 @@ namespace LibARMP.IO
             //Dragon Engine
             else
             {
-                armpTableInfo.ptrMainTable = (uint)reader.Stream.Position; //DEBUG
+                armpTableInfo.ptrMainTable = (uint)reader.BaseStream.Position; //DEBUG
                 armpTableInfo.EntryCount = reader.ReadInt32();
                 armpTableInfo.ColumnCount = reader.ReadInt32();
                 armpTableInfo.TextCount = reader.ReadInt32();
@@ -660,13 +649,13 @@ namespace LibARMP.IO
         /// <summary>
         /// Reads the column data types.
         /// </summary>
-        /// <param name="reader">The <see cref="DataReader"/>.</param>
+        /// <param name="reader">The <see cref="BinaryReader"/>.</param>
         /// <param name="ptrDataTypes">The pointer to the column data type array.</param>
         /// <param name="amount">The amount of values in the array.</param>
         /// <param name="version">The format version.</param>
         /// <param name="isAuxiliary">Is it the auxiliary data types array?</param>
         /// <returns>An <see cref="ArmpType"/> list.</returns>
-        private static List<ArmpType> GetColumnDataTypes(DataReader reader, uint ptrDataTypes, int amount, Version version, bool isAuxiliary = false)
+        private static List<ArmpType> GetColumnDataTypes(BinaryReader reader, uint ptrDataTypes, int amount, Version version, bool isAuxiliary = false)
         {
             List<ArmpType> returnList = new List<ArmpType>();
 
@@ -676,13 +665,14 @@ namespace LibARMP.IO
                 typeIdCache.TryAdd(type.GetID(version, isAuxiliary), type);
             }
 
-            reader.Stream.Seek(ptrDataTypes);
+            reader.BaseStream.Seek(ptrDataTypes);
 
+            // OE type IDs are stored as int32
             if (version == Version.OldEngine || version == Version.OldEngineIshin)
             {
                 for (int i = 0; i < amount; i++)
                 {
-                    sbyte id = (sbyte)reader.ReadInt32();
+                    sbyte id = (sbyte)reader.ReadInt32(true);
                     if (typeIdCache.ContainsKey(id))
                         returnList.Add(typeIdCache[id]);
                 }
@@ -730,24 +720,24 @@ namespace LibARMP.IO
         /// <summary>
         /// Reads the column values for each entry.
         /// </summary>
-        /// <param name="reader">The <see cref="DataReader"/>.</param>
+        /// <param name="reader">The <see cref="BinaryReader"/>.</param>
         /// <param name="ptrOffsetTable">The pointer to the offset table.</param>
         /// <param name="storageMode">Storage mode used.</param>
         /// <param name="version">The format version.</param>
         /// <param name="table">The table where the data will be added to.</param>
         /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
-        private static void ReadColumnContents(DataReader reader, uint ptrOffsetTable, StorageMode storageMode, Version version, ArmpTable table)
+        private static void ReadColumnContents(BinaryReader reader, uint ptrOffsetTable, StorageMode storageMode, Version version, ArmpTable table)
         {
-            reader.Stream.Seek(ptrOffsetTable);
+            reader.BaseStream.Seek(ptrOffsetTable);
 
             if (storageMode == StorageMode.Column)
             {
                 foreach (ArmpTableColumn column in table.Columns)
                 {
-                    bool noData = false; //Only happens with boolean column types? Unsure. TODO: verify
+                    bool noData = false; // Only happens with boolean column types? Unsure. TODO: verify
 
                     uint ptrData = reader.ReadUInt32();
-                    long nextPtr = reader.Stream.Position;
+                    long nextPtr = reader.BaseStream.Position;
                     if (ptrData == 0xFFFFFFFF)
                     {
                         column.IsNoData = true;
@@ -757,30 +747,30 @@ namespace LibARMP.IO
                     }
                     else
                     {
-                        reader.Stream.Seek(ptrData);
+                        reader.BaseStream.Seek(ptrData);
                     }
 
-                    if (!noData) //TODO this is a placeholder fix
+                    if (!noData) // TODO this is a placeholder fix
                     {
 #if DEBUG
                         Console.WriteLine(column.Name + " ----> " + column.Type);
 #endif
-                        //Only storage mode 0
+                        // Only StorageMode.Column
                         List<bool> booleanColumnDataTemp = new List<bool>();
                         if (column.Type.CSType == typeof(bool))
                         {
-                            booleanColumnDataTemp = Util.IterateBooleanBitmask(reader, (uint)reader.Stream.Position, table.TableInfo.EntryCount);
+                            booleanColumnDataTemp = Util.IterateBooleanBitmask(reader, (uint)reader.BaseStream.Position, table.TableInfo.EntryCount, false);
                         }
 
                         foreach (ArmpEntry entry in table.Entries)
                         {
-                            entry.ColumnValueOffsets.Add(column.Name, (int)reader.Stream.Position);
+                            entry.ColumnValueOffsets.Add(column.Name, (int)reader.BaseStream.Position);
                             ReadValue(reader, table, version, entry, column, booleanColumnDataTemp);
                         }
 
                     }
 
-                    reader.Stream.Seek(nextPtr);
+                    reader.BaseStream.Seek(nextPtr);
                 }
             }
 
@@ -790,16 +780,16 @@ namespace LibARMP.IO
                 foreach (ArmpEntry entry in table.Entries)
                 {
                     int ptrData = reader.ReadInt32();
-                    long nextPtr = reader.Stream.Position;
+                    long nextPtr = reader.BaseStream.Position;
 
                     foreach (ArmpTableColumn column in table.Columns)
                     {
-                        reader.Stream.Seek(ptrData + column.Distance);
-                        entry.ColumnValueOffsets.Add(column.Name, (int)reader.Stream.Position);
+                        reader.BaseStream.Seek(ptrData + column.Distance);
+                        entry.ColumnValueOffsets.Add(column.Name, (int)reader.BaseStream.Position);
                         ReadValue(reader, table, version, entry, column);
                     }
 
-                    reader.Stream.Seek(nextPtr);
+                    reader.BaseStream.Seek(nextPtr);
                 }
             }
         }
@@ -809,13 +799,13 @@ namespace LibARMP.IO
         /// <summary>
         /// Reads a value corresponding to an entry and column.
         /// </summary>
-        /// <param name="reader">The <see cref="DataReader"/>.</param>
+        /// <param name="reader">The <see cref="BinaryReader"/>.</param>
         /// <param name="table"><see cref="ArmpTable"/> to save the data to.</param>
         /// <param name="version">The format version.</param>
         /// <param name="entry">The entry.</param>
         /// <param name="column">The column.</param>
         /// <param name="booleanColumnDataTemp">(Optional) The boolean column data if its using storage mode 0.</param>
-        private static void ReadValue(DataReader reader, ArmpTable table, Version version, ArmpEntry entry, ArmpTableColumn column, List<bool> booleanColumnDataTemp = null)
+        private static void ReadValue(BinaryReader reader, ArmpTable table, Version version, ArmpEntry entry, ArmpTableColumn column, List<bool> booleanColumnDataTemp = null)
         {
             if (column.Type.CSType == null) // Invalid
             {
@@ -847,20 +837,20 @@ namespace LibARMP.IO
 
             else if (column.Type.CSType == typeof(string))
             {
-                //This should only run if we are loading the armp from memory
+                // This should only run if we are loading the armp from memory
                 if (table.TableInfo.IsProcessedForMemory)
                 {
                     long ptrText = reader.ReadInt64();
                     ptrText = ptrText - table.TableInfo.BaseARMPMemoryAddress;
-                    reader.Stream.PushToPosition(ptrText);
+                    reader.BaseStream.PushToPosition(ptrText);
                     string text = reader.ReadString();
-                    reader.Stream.PopPosition();
+                    reader.BaseStream.PopPosition();
                     entry.Data.Add(column.Name, text);
                 }
                 else
                 {
                     int index = reader.ReadInt32();
-                    if (index != -1 && table.TableInfo.HasText) //Some files have valid string indices despite not having any text.
+                    if (index != -1 && table.TableInfo.HasText) // Some files have valid string indices despite not having any text.
                         entry.Data.Add(column.Name, table.Text[index]);
                     else
                         entry.Data.Add(column.Name, null);
@@ -870,10 +860,10 @@ namespace LibARMP.IO
             else if (column.Type.CSType == typeof(ArmpTableMain))
             {
                 long ptrTable = reader.ReadInt64();
-                long currentpos = reader.Stream.Position;
+                long currentpos = reader.BaseStream.Position;
                 if (ptrTable == 0 || ptrTable == -1) return;
 
-                //This should only run if we are loading the armp from memory
+                // This should only run if we are loading the armp from memory
                 if (table.TableInfo.IsProcessedForMemory)
                 {
                     ptrTable = ptrTable - table.TableInfo.BaseARMPMemoryAddress;
@@ -882,7 +872,7 @@ namespace LibARMP.IO
                 ArmpTableMain tableValue = ReadTableMain(reader, ptrTable, version, table.TableInfo.BaseARMPMemoryAddress);
 
                 entry.Data.Add(column.Name, tableValue);
-                reader.Stream.Position = currentpos; //Reset position to the offset table
+                reader.BaseStream.Position = currentpos; // Reset position to the offset table
             }
 
             else if (column.Type.CSType == typeof(float))
@@ -951,19 +941,19 @@ namespace LibARMP.IO
         /// <summary>
         /// Reads the column values for each entry.
         /// </summary>
-        /// <param name="reader">The <see cref="DataReader"/>.</param>
+        /// <param name="reader">The <see cref="BinaryReader"/>.</param>
         /// <param name="ptrOffsetTable">The pointer to the offset table.</param>
         /// <param name="table">The table where the data will be added to.</param>
         /// <remarks><para><b>OLD ENGINE ONLY</b></para></remarks>
-        private static void ReadColumnContents(DataReader reader, uint ptrOffsetTable, ArmpTable table)
+        private static void ReadColumnContents(BinaryReader reader, uint ptrOffsetTable, ArmpTable table)
         {
-            reader.Stream.Seek(ptrOffsetTable);
+            reader.BaseStream.Seek(ptrOffsetTable);
 
             foreach (ArmpTableColumn column in table.Columns)
             {
-                uint ptrData = reader.ReadUInt32();
-                long nextPtr = reader.Stream.Position;
-                reader.Stream.Seek(ptrData);
+                uint ptrData = reader.ReadUInt32(true);
+                long nextPtr = reader.BaseStream.Position;
+                reader.BaseStream.Seek(ptrData);
 
 
                 // Read operations based on column type
@@ -976,7 +966,7 @@ namespace LibARMP.IO
                 else if (column.Type.CSType == typeof(bool))
                 {
                     List<bool> booleanColumnDataTemp = new List<bool>();
-                    booleanColumnDataTemp = Util.IterateBooleanBitmask(reader, (uint)reader.Stream.Position, table.TableInfo.EntryCount);
+                    booleanColumnDataTemp = Util.IterateBooleanBitmask(reader, (uint)reader.BaseStream.Position, table.TableInfo.EntryCount, true);
                     foreach (ArmpEntry entry in table.Entries)
                         entry.Data.Add(column.Name, booleanColumnDataTemp[(int)entry.ID]);
                 }
@@ -1003,7 +993,7 @@ namespace LibARMP.IO
                 {
                     foreach (ArmpEntry entry in table.Entries)
                     {
-                        UInt16 value = reader.ReadUInt16();
+                        UInt16 value = reader.ReadUInt16(true);
                         entry.Data.Add(column.Name, value);
                     }
                 }
@@ -1012,7 +1002,7 @@ namespace LibARMP.IO
                 {
                     foreach (ArmpEntry entry in table.Entries)
                     {
-                        Int16 value = reader.ReadInt16();
+                        Int16 value = reader.ReadInt16(true);
                         entry.Data.Add(column.Name, value);
                     }
                 }
@@ -1021,7 +1011,7 @@ namespace LibARMP.IO
                 {
                     foreach (ArmpEntry entry in table.Entries)
                     {
-                        UInt32 value = reader.ReadUInt32();
+                        UInt32 value = reader.ReadUInt32(true);
                         entry.Data.Add(column.Name, value);
                     }
                 }
@@ -1030,12 +1020,12 @@ namespace LibARMP.IO
                 {
                     foreach (ArmpEntry entry in table.Entries)
                     {
-                        Int32 value = reader.ReadInt32();
+                        Int32 value = reader.ReadInt32(true);
                         entry.Data.Add(column.Name, value);
                     }
                 }
 
-                reader.Stream.Seek(nextPtr);
+                reader.BaseStream.Seek(nextPtr);
             }
         }
 
@@ -1061,13 +1051,13 @@ namespace LibARMP.IO
         /// <summary>
         /// Reads the Entry Info Flags. 
         /// </summary>
-        /// <param name="reader">The <see cref="DataReader"/>.</param>
+        /// <param name="reader">The <see cref="BinaryReader"/>.</param>
         /// <param name="ptrArray">The pointer to the array.</param>
         /// <param name="entries">The entry list.</param>
         /// <remarks><para><b>DRAGON ENGINE V1 ONLY</b></para></remarks>
-        private static void IterateEntryInfoFlags(DataReader reader, uint ptrArray, List<ArmpEntry> entries)
+        private static void IterateEntryInfoFlags(BinaryReader reader, uint ptrArray, List<ArmpEntry> entries)
         {
-            reader.Stream.Seek(ptrArray);
+            reader.BaseStream.Seek(ptrArray);
 
             for (int i = 0; i < entries.Count; i++)
             {
@@ -1093,31 +1083,31 @@ namespace LibARMP.IO
         /// <summary>
         /// Reads the additional Column Metadata.
         /// </summary>
-        /// <param name="reader">The <see cref="DataReader"/>.</param>
+        /// <param name="reader">The <see cref="BinaryReader"/>.</param>
         /// <param name="ptrEntryInfo">The pointer to the Entry Info section.</param>
         /// <param name="table">The table.</param>
         /// <remarks><para><b>DRAGON ENGINE V2 ONLY</b></para></remarks>
-        private static void ReadColumnUnknownMetadata0x4C(DataReader reader, uint ptrEntryInfo, ArmpTable table)
+        private static void ReadColumnUnknownMetadata0x4C(BinaryReader reader, uint ptrEntryInfo, ArmpTable table)
         {
-            reader.Stream.Seek(ptrEntryInfo);
+            reader.BaseStream.Seek(ptrEntryInfo);
 
             for (int i = 0; i < table.Columns.Count; i++)
             {
                 int size = reader.ReadInt32();
                 int ptrMetadata = reader.ReadInt32();
-                reader.ReadBytes(0x18); //Padding
+                reader.ReadBytes(0x18); // Padding
 
                 if (size > 0)
                 {
                     ArmpTableColumn column = table.Columns[i];
-                    reader.Stream.PushToPosition(ptrMetadata);
+                    reader.BaseStream.PushToPosition(ptrMetadata);
 
                     foreach (ArmpTableColumn child in column.Children)
                     {
                         child.UnknownMetadata0x4C = reader.ReadInt32();
                     }
 
-                    reader.Stream.PopPosition();
+                    reader.BaseStream.PopPosition();
                 }
             }
         }
@@ -1127,21 +1117,21 @@ namespace LibARMP.IO
         /// <summary>
         /// Reads the Column Data Types auxiliary table.
         /// </summary>
-        /// <param name="reader">The <see cref="DataReader"/>.</param>
+        /// <param name="reader">The <see cref="BinaryReader"/>.</param>
         /// <param name="ptrTable">The pointer to the auxiliary table.</param>
         /// <param name="columnAmount">The amount of columns in the table.</param>
-        private static List<List<int>> GetColumnDataTypesAuxTable(DataReader reader, uint ptrTable, int columnAmount)
+        private static List<List<int>> GetColumnDataTypesAuxTable(BinaryReader reader, uint ptrTable, int columnAmount)
         {
-            reader.Stream.Seek(ptrTable);
+            reader.BaseStream.Seek(ptrTable);
             List<List<int>> ColumnDataTypesAuxTable = new List<List<int>>();
 
             for (int i = 0; i < columnAmount; i++)
             {
                 List<int> list = new List<int>();
-                list.Add(reader.ReadInt32()); //Type
-                list.Add(reader.ReadInt32()); //Distance
-                list.Add(reader.ReadInt32()); //Array Size
-                list.Add(reader.ReadInt32()); //Unknown
+                list.Add(reader.ReadInt32()); // Type
+                list.Add(reader.ReadInt32()); // Distance
+                list.Add(reader.ReadInt32()); // Array Size
+                list.Add(reader.ReadInt32()); // Unknown
                 ColumnDataTypesAuxTable.Add(list);
             }
 

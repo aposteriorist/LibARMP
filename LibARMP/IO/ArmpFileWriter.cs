@@ -1,49 +1,52 @@
-﻿using System;
+﻿using BinaryExtensions;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using Yarhl.IO;
 
 namespace LibARMP.IO
 {
     public static class ArmpFileWriter
     {
+        static ArmpFileWriter()
+        {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+        }
+
+
         /// <summary>
-        /// Writes an <see cref="ARMP"/> to a <see cref="DataStream"/>.
+        /// Writes an <see cref="ARMP"/> to a <see cref="Stream"/>.
         /// </summary>
         /// <param name="armp">The <see cref="ARMP"/> to write.</param>
-        /// <param name="datastream">The destination <see cref="DataStream"/>.</param>
-        private static void WriteARMP(ARMP armp, DataStream datastream)
+        /// <param name="stream">The destination <see cref="Stream"/>.</param>
+        private static void WriteARMP(ARMP armp, Stream stream)
         {
             bool isOldEngine = false;
             if (armp.FormatVersion == Version.OldEngine || armp.FormatVersion == Version.OldEngineIshin)
                 isOldEngine = true;
 
-            var writer = new DataWriter(datastream)
-            {
-                Endianness = EndiannessMode.LittleEndian,
-                DefaultEncoding = Encoding.UTF8,
-            };
+            Encoding writerEncoding = Encoding.UTF8;
             if (isOldEngine)
             {
-                writer.Endianness = EndiannessMode.BigEndian;
-                writer.DefaultEncoding = Encoding.GetEncoding(932); // Shift JIS
+                writerEncoding = Encoding.GetEncoding(932); // Shift JIS
             }
 
+            BinaryWriter writer = new BinaryWriter(stream, writerEncoding, true);
+
             writer.Write("armp", false); //Magic
-            if (isOldEngine) writer.Write(0x02010000); //Endianness identifier for OE
-            else writer.WriteTimes(0x00, 0x4);
-            if (isOldEngine) //Version and Revision are flipped on different endianess. Presumably both values are read together as an int32
+            if (isOldEngine) writer.Write(0x02010000, true); // Endianness identifier for OE
+            else writer.Write(0);
+            if (isOldEngine) // Version and Revision are flipped on different endianess. Presumably both values are read together as an int32
             {
-                writer.Write(armp.Version);
-                writer.Write(armp.Revision);
+                writer.Write(armp.Version, true);
+                writer.Write(armp.Revision, true);
             }
             else
             {
                 writer.Write(armp.Revision);
                 writer.Write(armp.Version);
             }
-            writer.WriteTimes(0x00, 0x4); //File size (only used in OE, placeholder for now)
+            writer.Write(0); // File size (only used in OE, placeholder for now)
 
             if (isOldEngine)
             {
@@ -51,9 +54,9 @@ namespace LibARMP.IO
             }
             else
             {
-                writer.WriteTimes(0x00, 0x10); //Dummy main table pointer and padding
+                writer.WriteTimes(0x00, 0x10); // Dummy main table pointer and padding
                 uint mainPtr = WriteTableRecursive(writer, armp.MainTable);
-                writer.Stream.Seek(0x10);
+                writer.BaseStream.Seek(0x10);
                 writer.Write(mainPtr);
             }
         }
@@ -67,24 +70,23 @@ namespace LibARMP.IO
         /// <param name="path">The destination file path.</param>
         public static void WriteARMPToFile(ARMP armp, string path)
         {
-            using (var datastream = DataStreamFactory.FromFile(path, FileOpenMode.Write))
+            using (Stream stream = new MemoryStream())
             {
-                WriteARMP(armp, datastream);
+                WriteARMP(armp, stream);
+                File.WriteAllBytes(path, stream.ToArray());
             }
         }
 
 
 
         /// <summary>
-        /// Writes an <see cref="ARMP"/> to a stream.
+        /// Writes an <see cref="ARMP"/> to a <see cref="Stream"/>.
         /// </summary>
         /// <param name="armp">The <see cref="ARMP"/> to write.</param>
         public static Stream WriteARMPToStream(ARMP armp)
         {
-            MemoryStream stream = new MemoryStream();
-            DataStream tempds = DataStreamFactory.FromMemory();
-            WriteARMP(armp, tempds);
-            tempds.WriteTo(stream);
+            Stream stream = new MemoryStream();
+            WriteARMP(armp, stream);
             return stream;
         }
 
@@ -96,27 +98,29 @@ namespace LibARMP.IO
         /// <param name="armp">The <see cref="ARMP"/> to write.</param>
         public static byte[] WriteARMPToArray(ARMP armp)
         {
-            DataStream tempds = DataStreamFactory.FromMemory();
-            WriteARMP(armp, tempds);
-            return tempds.ToArray();
+            using (MemoryStream stream = new MemoryStream())
+            {
+                WriteARMP(armp, stream);
+                return stream.ToArray();
+            }
         }
 
 
 
         /// <summary>
-        /// Writes an OE table to the <see cref="DataStream"/>.
+        /// Writes an OE table to the <see cref="Stream"/>.
         /// </summary>
-        /// <param name="writer">The <see cref="DataWriter"/>.</param>
+        /// <param name="writer">The <see cref="BinaryWriter"/>.</param>
         /// <param name="table">The <see cref="ArmpTableMain"/> to write.</param>
-        private static void WriteTableOE(DataWriter writer, ArmpTableMain table)
+        private static void WriteTableOE(BinaryWriter writer, ArmpTableMain table)
         {
-            long baseOffset = writer.Stream.Position;
+            long baseOffset = writer.BaseStream.Position;
             int ptr = 0;
 
-            writer.WriteTimes(0x00, 0x40); //Placeholder table
+            writer.WriteTimes(0x00, 0x40); // Placeholder table
 
             ///// Entry Count /////
-            writer.PushWritePop(table.Entries.Count, baseOffset);
+            writer.WriteAtPosition(table.Entries.Count, baseOffset, true);
 
             ///// Entry Validity /////
             #region EntryValidity
@@ -124,7 +128,7 @@ namespace LibARMP.IO
             if (table.TableInfo.HasEntryValidity)
             {
                 List<bool> entryValidity = new List<bool>();
-                ptr = (int)writer.Stream.Position;
+                ptr = (int)writer.BaseStream.Position;
 
                 // Ishin
                 if (table.TableInfo.FormatVersion == Version.OldEngineIshin)
@@ -132,10 +136,10 @@ namespace LibARMP.IO
                     // Ishin stores these booleans as int32
                     foreach (ArmpEntry entry in table.Entries)
                     {
-                        writer.Write(entry.IsValid ? 1 : 0);
+                        writer.Write(entry.IsValid ? 1 : 0, true);
                     }
                     // Update the main table pointer at 0x4
-                    writer.PushWritePop(ptr, baseOffset + 0x4);
+                    writer.WriteAtPosition(ptr, baseOffset + 0x4, true);
                 }
                 // 0, K1, FOTNS
                 else
@@ -144,9 +148,9 @@ namespace LibARMP.IO
                     {
                         entryValidity.Add(entry.IsValid);
                     }
-                    Util.WriteBooleanBitmask(writer, entryValidity);
+                    Util.WriteBooleanBitmask(writer, entryValidity, true);
                     // Update the main table pointer at 0xC
-                    writer.PushWritePop(ptr, baseOffset + 0xC);
+                    writer.WriteAtPosition(ptr, baseOffset + 0xC, true);
                 }
 
                 writer.WritePadding(0x00, 0x10);
@@ -164,9 +168,9 @@ namespace LibARMP.IO
                 {
                     entryNames.Add(entry.Name);
                 }
-                ptr = Util.WriteText(writer, entryNames);
+                ptr = Util.WriteText(writer, entryNames, true);
                 // Update the main table pointer at 0x8
-                writer.PushWritePop(ptr, baseOffset + 0x8);
+                writer.WriteAtPosition(ptr, baseOffset + 0x8, true);
                 
                 writer.WritePadding(0x00, 0x10);
             }
@@ -178,9 +182,10 @@ namespace LibARMP.IO
 
             if (table.TableInfo.HasColumnNames)
             {
-                ptr = Util.WriteText(writer, table.GetColumnNames());
+                ptr = Util.WriteText(writer, table.GetColumnNames(), true);
                 // Update the main table column count at 0x10 and pointer to column names at 0x14
-                writer.PushWritePop(new int[] { table.Columns.Count, ptr }, baseOffset + 0x10);
+                writer.WriteAtPosition(table.Columns.Count, baseOffset + 0x10, true);
+                writer.WriteAtPosition(ptr, baseOffset + 0x14, true);
             }
             #endregion
 
@@ -192,13 +197,10 @@ namespace LibARMP.IO
             {
                 table.UpdateTextList();
 
-                Encoding encoding = Encoding.UTF8;
-                if (table.TableInfo.FormatVersion == Version.OldEngineIshin)
-                    encoding = Encoding.GetEncoding(932);
-
-                ptr = Util.WriteText(writer, table.Text, encoding);
+                ptr = Util.WriteText(writer, table.Text, true);
                 // Update the main table text offset table pointer at 0x28 and text count at 0x2C
-                writer.PushWritePop(new int[] { ptr, table.Text.Count }, baseOffset + 0x28);
+                writer.WriteAtPosition(ptr, baseOffset + 0x28, true);
+                writer.WriteAtPosition(table.Text.Count, baseOffset + 0x2C, true);
             }
             #endregion
 
@@ -206,14 +208,14 @@ namespace LibARMP.IO
             ///// Column Types /////
             #region ColumnTypes
 
-            ptr = (int)writer.Stream.Position;
+            ptr = (int)writer.BaseStream.Position;
             foreach (ArmpTableColumn column in table.Columns)
             {
                 int typeID = column.Type.GetID(table.TableInfo.FormatVersion);
-                writer.Write(typeID);
+                writer.Write(typeID, true);
             }
             // Update the main table pointer at 0x18
-            writer.PushWritePop(ptr, baseOffset + 0x18);
+            writer.WriteAtPosition(ptr, baseOffset + 0x18, true);
             #endregion
 
 
@@ -222,13 +224,13 @@ namespace LibARMP.IO
 
             if (table.TableInfo.HasColumnMetadata)
             {
-                ptr = (int)writer.Stream.Position;
+                ptr = (int)writer.BaseStream.Position;
                 foreach (ArmpTableColumn column in table.Columns)
                 {
-                    writer.Write(column.UnknownMetadata0x40);
+                    writer.Write(column.UnknownMetadata0x40, true);
                 }
                 // Update the main table pointer at 0x24
-                writer.PushWritePop(ptr, baseOffset + 0x24);
+                writer.WriteAtPosition(ptr, baseOffset + 0x24, true);
             }
             #endregion
 
@@ -245,7 +247,7 @@ namespace LibARMP.IO
                 }
                 else
                 {
-                    columnValueOffsets.Add((int)writer.Stream.Position);
+                    columnValueOffsets.Add((int)writer.BaseStream.Position);
 
                     // Write operations based on column type
                     if (column.Type.CSType == typeof(string))
@@ -256,11 +258,11 @@ namespace LibARMP.IO
                             if (value != null)
                             {
                                 int index = table.Text.IndexOf(value);
-                                writer.Write((short)index);
+                                writer.Write((short)index, true);
                             }
                             else
                             {
-                                writer.Write((short)-1);
+                                writer.Write((short)-1, true);
                             }
                         }
                     }
@@ -275,7 +277,7 @@ namespace LibARMP.IO
 
                         if (boolList.Count > 0)
                         {
-                            Util.WriteBooleanBitmask(writer, boolList);
+                            Util.WriteBooleanBitmask(writer, boolList, true);
                         }
                     }
 
@@ -294,25 +296,25 @@ namespace LibARMP.IO
                     else if (column.Type.CSType == typeof(UInt16))
                     {
                         foreach (ArmpEntry entry in table.Entries)
-                            writer.Write(entry.GetValueFromColumn<UInt16>(column.Name));
+                            writer.Write(entry.GetValueFromColumn<UInt16>(column.Name), true);
                     }
 
                     else if (column.Type.CSType == typeof(Int16))
                     {
                         foreach (ArmpEntry entry in table.Entries)
-                            writer.Write(entry.GetValueFromColumn<Int16>(column.Name));
+                            writer.Write(entry.GetValueFromColumn<Int16>(column.Name), true);
                     }
 
                     else if (column.Type.CSType == typeof(UInt32))
                     {
                         foreach (ArmpEntry entry in table.Entries)
-                            writer.Write(entry.GetValueFromColumn<UInt32>(column.Name));
+                            writer.Write(entry.GetValueFromColumn<UInt32>(column.Name), true);
                     }
 
                     else if (column.Type.CSType == typeof(Int32))
                     {
                         foreach (ArmpEntry entry in table.Entries)
-                            writer.Write(entry.GetValueFromColumn<Int32>(column.Name));
+                            writer.Write(entry.GetValueFromColumn<Int32>(column.Name), true);
                     }
                 }
             }
@@ -320,21 +322,21 @@ namespace LibARMP.IO
             writer.WritePadding(0x00, 0x4);
 
             // Write the column value offset table
-            int ptrColumnOffsetTable = (int)writer.Stream.Position;
+            int ptrColumnOffsetTable = (int)writer.BaseStream.Position;
             foreach (int offset in columnValueOffsets)
             {
-                writer.Write(offset);
+                writer.Write(offset, true);
             }
 
             writer.WritePadding(0x00, 0x10);
 
             // Update the main table pointer at 0x1C
-            writer.PushWritePop(ptrColumnOffsetTable, baseOffset + 0x1C);
+            writer.WriteAtPosition(ptrColumnOffsetTable, baseOffset + 0x1C, true);
             #endregion
 
 
             ///// Header File Size /////
-            writer.PushWritePop((int)writer.Stream.Length, 0xC);
+            writer.WriteAtPosition((int)writer.BaseStream.Length, 0xC, true);
         }
 
 
@@ -342,10 +344,10 @@ namespace LibARMP.IO
         /// <summary>
         /// Recursively writes tables from the lowest level upwards.
         /// </summary>
-        /// <param name="writer">The <see cref="DataWriter"/>.</param>
+        /// <param name="writer">The <see cref="BinaryWriter"/>.</param>
         /// <param name="table">The <see cref="ArmpTable"/> to write.</param>
         /// <returns>The pointer to the table.</returns>
-        private static uint WriteTableRecursive(DataWriter writer, ArmpTable table)
+        private static uint WriteTableRecursive(BinaryWriter writer, ArmpTable table)
         {
             List<string> tableColumns = table.GetColumnNamesByType<ArmpTableMain>();
             Dictionary<ArmpTable, uint> tablePointers = new Dictionary<ArmpTable, uint>();
@@ -380,50 +382,47 @@ namespace LibARMP.IO
                 }
             }
 
-            uint pointer = (uint)writer.Stream.Position;
+            uint pointer = (uint)writer.BaseStream.Position;
             WriteTable(writer, table, tablePointers);
             writer.WritePadding(0x00, 0x10);
-            writer.Stream.PushToPosition(pointer + 0x3C);
-            writer.Write(subtablePtr);
-            writer.Stream.PopPosition();
+            writer.WriteAtPosition(subtablePtr, pointer + 0x3C);
             return pointer;
         }
 
 
 
         /// <summary>
-        /// Writes a DE table to the <see cref="DataStream"/>.
+        /// Writes a DE table to the <see cref="Stream"/>.
         /// </summary>
-        /// <param name="writer">The <see cref="DataWriter"/>.</param>
+        /// <param name="writer">The <see cref="BinaryWriter"/>.</param>
         /// <param name="table">The <see cref="ArmpTable"/> to write.</param>
-        private static void WriteTable(DataWriter writer, ArmpTable table, Dictionary<ArmpTable, uint> tableValuePointers = null)
+        private static void WriteTable(BinaryWriter writer, ArmpTable table, Dictionary<ArmpTable, uint> tableValuePointers = null)
         {
-            long baseOffset = writer.Stream.Position;
+            long baseOffset = writer.BaseStream.Position;
             int ptr = 0;
 
-            writer.WriteTimes(0x00, 0x50); //Placeholder table
+            writer.WriteTimes(0x00, 0x50); // Placeholder table
 
 
             ///// Entry/Column Count /////
-            writer.Stream.PushToPosition(baseOffset);
+            writer.BaseStream.PushToPosition(baseOffset);
             writer.Write(table.Entries.Count);
             writer.Write(table.Columns.Count);
 
 
             ///// Table ID and Storage Mode /////
-            writer.Stream.Position = baseOffset + 0x20;
-            writer.Write(table.TableInfo.TableID);
-            writer.Stream.Position = baseOffset + 0x23;
+            writer.BaseStream.Seek(baseOffset + 0x20);
+            writer.WriteInt24(table.TableInfo.TableID);
             writer.Write((byte)table.TableInfo.StorageMode);
-            writer.Stream.PopPosition();
+            writer.BaseStream.PopPosition();
 
 
             ///// Entry Validator /////
-            writer.PushWritePop(table.TableInfo.EntryValidator, baseOffset + 0xC);
+            writer.WriteAtPosition(table.TableInfo.EntryValidator, baseOffset + 0xC);
 
 
             ///// Column Validator /////
-            writer.PushWritePop(table.TableInfo.ColumnValidator, baseOffset + 0x2C);
+            writer.WriteAtPosition(table.TableInfo.ColumnValidator, baseOffset + 0x2C);
 
 
             ///// Entry Validity //////
@@ -436,18 +435,18 @@ namespace LibARMP.IO
                 {
                     entryValidity.Add(entry.IsValid);
                 }
-                ptr = (int)writer.Stream.Position;
-                Util.WriteBooleanBitmask(writer, entryValidity);
+                ptr = (int)writer.BaseStream.Position;
+                Util.WriteBooleanBitmask(writer, entryValidity, false);
 
                 writer.WritePadding(0x00, 0x8);
 
                 // Update the main table pointer at 0x14
-                writer.PushWritePop(ptr, baseOffset + 0x14);
+                writer.WriteAtPosition(ptr, baseOffset + 0x14);
             }
             else
             {
                 // Update the main table pointer at 0x14
-                writer.PushWritePop(-1, baseOffset + 0x14);
+                writer.WriteAtPosition(-1, baseOffset + 0x14);
             }
             #endregion
 
@@ -462,18 +461,18 @@ namespace LibARMP.IO
                 {
                     columnValidity.Add((bool)column.IsValid);
                 }
-                ptr = (int)writer.Stream.Position;
-                Util.WriteBooleanBitmask(writer, columnValidity);
+                ptr = (int)writer.BaseStream.Position;
+                Util.WriteBooleanBitmask(writer, columnValidity, false);
 
                 writer.WritePadding(0x00, 0x4);
 
                 // Update the main table pointer at 0x38
-                writer.PushWritePop(ptr, baseOffset + 0x38);
+                writer.WriteAtPosition(ptr, baseOffset + 0x38);
             }
             else
             {
                 // Update the main table pointer at 0x38
-                writer.PushWritePop(-1, baseOffset + 0x38);
+                writer.WriteAtPosition(-1, baseOffset + 0x38);
             }
             #endregion
 
@@ -488,10 +487,10 @@ namespace LibARMP.IO
                 {
                     entryNames.Add(entry.Name);
                 }
-                ptr = Util.WriteText(writer, entryNames);
+                ptr = Util.WriteText(writer, entryNames, false);
 
                 // Update the main table pointer at 0x10
-                writer.PushWritePop(ptr, baseOffset + 0x10);
+                writer.WriteAtPosition(ptr, baseOffset + 0x10);
             }
             #endregion
 
@@ -501,10 +500,10 @@ namespace LibARMP.IO
 
             if (table.TableInfo.HasColumnNames)
             {
-                ptr = Util.WriteText(writer, table.GetColumnNames());
+                ptr = Util.WriteText(writer, table.GetColumnNames(), false);
 
                 // Update the main table pointer at 0x28
-                writer.PushWritePop(ptr, baseOffset + 0x28);
+                writer.WriteAtPosition(ptr, baseOffset + 0x28);
             }
             #endregion
 
@@ -516,12 +515,12 @@ namespace LibARMP.IO
             {
                 table.UpdateTextList();
 
-                ptr = Util.WriteText(writer, table.Text);
+                ptr = Util.WriteText(writer, table.Text, false);
 
                 // Update the main table text offset table pointer at 0x24
-                writer.PushWritePop(ptr, baseOffset + 0x24);
+                writer.WriteAtPosition(ptr, baseOffset + 0x24);
                 // Update the main table text count at 0x8
-                writer.PushWritePop(table.Text.Count, baseOffset + 0x8);
+                writer.WriteAtPosition(table.Text.Count, baseOffset + 0x8);
 
                 if (table.TableInfo.FormatVersion == Version.DragonEngineV2) writer.WritePadding(0x00, 0x8);
             }
@@ -535,7 +534,7 @@ namespace LibARMP.IO
             ///// Column Types /////
             #region ColumnTypes
 
-            ptr = (int)writer.Stream.Position;
+            ptr = (int)writer.BaseStream.Position;
             foreach (ArmpTableColumn column in table.Columns)
             {
                 sbyte typeID = column.Type.GetID(table.TableInfo.FormatVersion);
@@ -543,12 +542,12 @@ namespace LibARMP.IO
             }
             writer.WritePadding(0x00, 0x4);
             // Update the main table pointer at 0x18
-            writer.PushWritePop(ptr, baseOffset + 0x18);
+            writer.WriteAtPosition(ptr, baseOffset + 0x18);
 
             //Set the text ptr to column types if there is no text
             if (!table.TableInfo.HasText)
             {
-                writer.PushWritePop(ptr, baseOffset + 0x24);
+                writer.WriteAtPosition(ptr, baseOffset + 0x24);
             }
             #endregion
 
@@ -558,7 +557,7 @@ namespace LibARMP.IO
 
             if (table.TableInfo.FormatVersion == Version.DragonEngineV1)
             {
-                ptr = (int)writer.Stream.Position;
+                ptr = (int)writer.BaseStream.Position;
                 foreach (ArmpTableColumn column in table.Columns)
                 {
                     sbyte typeID = column.Type.GetIDAux(table.TableInfo.FormatVersion);
@@ -566,7 +565,7 @@ namespace LibARMP.IO
                 }
                 writer.WritePadding(0x00, 0x4);
                 // Update the main table pointer at 0x48
-                writer.PushWritePop(ptr, baseOffset + 0x48);
+                writer.WriteAtPosition(ptr, baseOffset + 0x48);
             }
             #endregion
 
@@ -592,7 +591,7 @@ namespace LibARMP.IO
                     {
                         writer.WritePadding(0x00, column.Type.Size);
 
-                        columnValueOffsets.Add((int)writer.Stream.Position);
+                        columnValueOffsets.Add((int)writer.BaseStream.Position);
 
                         if (table.TableInfo.FormatVersion == Version.DragonEngineV2 && column.IsSpecial) continue;
 
@@ -624,7 +623,7 @@ namespace LibARMP.IO
 
                             if (boolList.Count > 0)
                             {
-                                Util.WriteBooleanBitmask(writer, boolList);
+                                Util.WriteBooleanBitmask(writer, boolList, false);
                             }
                         }
 
@@ -720,14 +719,14 @@ namespace LibARMP.IO
 
                 // Write the column value offset table
                 writer.WritePadding(0x00, 0x4);
-                int ptrColumnOffsetTable = (int)writer.Stream.Position;
+                int ptrColumnOffsetTable = (int)writer.BaseStream.Position;
                 foreach (int offset in columnValueOffsets)
                 {
                     writer.Write(offset);
                 }
 
                 // Update the main table pointer at 0x1C
-                writer.PushWritePop(ptrColumnOffsetTable, baseOffset + 0x1C);
+                writer.WriteAtPosition(ptrColumnOffsetTable, baseOffset + 0x1C);
             }
             #endregion
 
@@ -744,7 +743,7 @@ namespace LibARMP.IO
                 List<int> entryValueOffsets = new List<int>();
                 foreach (ArmpEntry entry in table.Entries)
                 {
-                    int startOffset = (int)writer.Stream.Position;
+                    int startOffset = (int)writer.BaseStream.Position;
                     entryValueOffsets.Add(startOffset);
 
                     foreach (ArmpTableColumn column in table.Columns)
@@ -755,7 +754,7 @@ namespace LibARMP.IO
                         if (columnPaddingCache.ContainsKey(column.Name)) columnPadding = columnPaddingCache[column.Name];
                         else
                         {
-                            int amountWritten = (int)writer.Stream.Position - startOffset;
+                            int amountWritten = (int)writer.BaseStream.Position - startOffset;
                             columnPadding = column.Distance - amountWritten;
                             columnPaddingCache.Add(column.Name, columnPadding);
                         }
@@ -851,14 +850,14 @@ namespace LibARMP.IO
                 }
 
                 // Write the column value offset table
-                int ptrColumnOffsetTable = (int)writer.Stream.Position;
+                int ptrColumnOffsetTable = (int)writer.BaseStream.Position;
                 foreach (int offset in entryValueOffsets)
                 {
                     writer.Write(offset);
                 }
 
                 // Update the main table pointer at 0x1C
-                writer.PushWritePop(ptrColumnOffsetTable, baseOffset + 0x1C);
+                writer.WriteAtPosition(ptrColumnOffsetTable, baseOffset + 0x1C);
             }
             #endregion
 
@@ -868,13 +867,13 @@ namespace LibARMP.IO
 
             if (table.TableInfo.HasEntryIndices)
             {
-                ptr = (int)writer.Stream.Position;
+                ptr = (int)writer.BaseStream.Position;
                 foreach (ArmpEntry entry in table.Entries)
                 {
                     writer.Write(entry.Index);
                 }
                 // Update the main table pointer at 0x30
-                writer.PushWritePop(ptr, baseOffset + 0x30);
+                writer.WriteAtPosition(ptr, baseOffset + 0x30);
             }
             #endregion
 
@@ -884,13 +883,13 @@ namespace LibARMP.IO
 
             if (table.TableInfo.HasColumnIndices)
             {
-                ptr = (int)writer.Stream.Position;
+                ptr = (int)writer.BaseStream.Position;
                 foreach (ArmpTableColumn column in table.Columns)
                 {
                     writer.Write(column.Index);
                 }
                 // Update the main table pointer at 0x34
-                writer.PushWritePop(ptr, baseOffset + 0x34);
+                writer.WriteAtPosition(ptr, baseOffset + 0x34);
             }
             #endregion
 
@@ -900,13 +899,13 @@ namespace LibARMP.IO
 
             if (table.TableInfo.HasColumnMetadata)
             {
-                ptr = (int)writer.Stream.Position;
+                ptr = (int)writer.BaseStream.Position;
                 foreach (ArmpTableColumn column in table.Columns)
                 {
                     writer.Write(column.UnknownMetadata0x40);
                 }
                 // Update the main table pointer at 0x40
-                writer.PushWritePop(ptr, baseOffset + 0x40);
+                writer.WriteAtPosition(ptr, baseOffset + 0x40);
             }
             #endregion
 
@@ -916,7 +915,7 @@ namespace LibARMP.IO
 
             if (table.TableInfo.HasExtraFieldInfo && table.TableInfo.FormatVersion == Version.DragonEngineV1)
             {
-                ptr = (int)writer.Stream.Position;
+                ptr = (int)writer.BaseStream.Position;
                 foreach (ArmpEntry entry in table.Entries)
                 {
                     string bitstring = "";
@@ -928,7 +927,7 @@ namespace LibARMP.IO
                     writer.Write(value);
                 }
                 // Update the main table pointer at 0x4C
-                writer.PushWritePop(ptr, baseOffset + 0x4C);
+                writer.WriteAtPosition(ptr, baseOffset + 0x4C);
             }
             #endregion
 
@@ -941,12 +940,12 @@ namespace LibARMP.IO
                 Dictionary<int, int> offsetDictionary = new Dictionary<int, int>();
                 foreach (KeyValuePair<int, List<bool>> kvp in table.EmptyValues)
                 {
-                    offsetDictionary.Add(kvp.Key, (int)writer.Stream.Position);
-                    Util.WriteBooleanBitmask(writer, kvp.Value);
+                    offsetDictionary.Add(kvp.Key, (int)writer.BaseStream.Position);
+                    Util.WriteBooleanBitmask(writer, kvp.Value, false);
                     writer.WritePadding(0x00, 0x4);
                 }
 
-                ptr = (int)writer.Stream.Position;
+                ptr = (int)writer.BaseStream.Position;
                 for (int i = 0; i < table.TableInfo.ColumnCount; i++)
                 {
                     if (table.EmptyValuesIsNegativeOffset[i])
@@ -966,7 +965,7 @@ namespace LibARMP.IO
                     }
                 }
                 // Update the main table pointer at 0x44
-                writer.PushWritePop(ptr, baseOffset + 0x44);
+                writer.WriteAtPosition(ptr, baseOffset + 0x44);
             }
             #endregion
 
@@ -977,10 +976,10 @@ namespace LibARMP.IO
             if (table.TableInfo.FormatVersion == Version.DragonEngineV2 && table.TableInfo.HasColumnDataTypesAux)
             {
                 writer.WritePadding(0x00, 0x10);
-                ptr = (int)writer.Stream.Position;
+                ptr = (int)writer.BaseStream.Position;
                 WriteColumnDataTypesAuxTable(writer, table);
                 // Update the main table pointer at 0x48
-                writer.PushWritePop(ptr, baseOffset + 0x48);
+                writer.WriteAtPosition(ptr, baseOffset + 0x48);
             }
             #endregion
 
@@ -995,18 +994,18 @@ namespace LibARMP.IO
                 {
                     if (column.IsSpecial && column.SpecialSize > 0)
                     {
-                        offsets.Add((int)writer.Stream.Position);
+                        offsets.Add((int)writer.BaseStream.Position);
                         foreach (ArmpTableColumn child in column.Children)
                         {
                             writer.Write(child.UnknownMetadata0x4C);
                         }
                     }
                 }
-                offsets.Add((int)writer.Stream.Position);
+                offsets.Add((int)writer.BaseStream.Position);
                 writer.Write(0);
                 writer.WritePadding(0x00, 0x8);
 
-                ptr = (int)writer.Stream.Position;
+                ptr = (int)writer.BaseStream.Position;
 
                 foreach (ArmpTableColumn column in table.Columns)
                 {
@@ -1019,7 +1018,7 @@ namespace LibARMP.IO
                     }
                 }
                 // Update the main table pointer at 0x4C
-                writer.PushWritePop(ptr, baseOffset + 0x4C);
+                writer.WriteAtPosition(ptr, baseOffset + 0x4C);
             }
             #endregion
         }
@@ -1028,9 +1027,9 @@ namespace LibARMP.IO
         /// <summary>
         /// Writes the DE v2 Data Types Aux table.
         /// </summary>
-        /// <param name="writer">The <see cref="DataWriter"/>.</param>
+        /// <param name="writer">The <see cref="BinaryWriter"/>.</param>
         /// <param name="table">The <see cref="ArmpTable"/>.</param>
-        private static void WriteColumnDataTypesAuxTable(DataWriter writer, ArmpTable table)
+        private static void WriteColumnDataTypesAuxTable(BinaryWriter writer, ArmpTable table)
         {
             foreach (ArmpTableColumn column in table.Columns)
             {
@@ -1040,17 +1039,17 @@ namespace LibARMP.IO
                 if (column.IsSpecial)
                     size = Util.CountStringOccurrences($"{column.Name}[", table.GetColumnNames());
 
-                writer.Write((int)column.Type.GetIDAux(table.TableInfo.FormatVersion)); //Aux Type ID
+                writer.Write((int)column.Type.GetIDAux(table.TableInfo.FormatVersion)); // Aux Type ID
                 if (column.Type.CSType == null)
                 {
                     writer.Write(-1);
                 }
                 else
                 {
-                    writer.Write(column.Distance); //Distance from start
+                    writer.Write(column.Distance); // Distance from start
                 }
-                writer.Write(size); //Array size
-                writer.WriteTimes(0x00, 4); //Padding
+                writer.Write(size); // Array size
+                writer.WriteTimes(0x00, 4); // Padding
             }
         }
     }
