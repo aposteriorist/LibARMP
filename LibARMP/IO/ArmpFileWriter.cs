@@ -361,6 +361,7 @@ namespace LibARMP.IO
                         try
                         {
                             ArmpTable tableValue = (ArmpTable)entry.GetValueFromColumn(column);
+                            if (tableValue == null) continue;
                             uint tableValuePtr = WriteTableRecursive(writer, tableValue);
                             tablePointers.Add(tableValue, tableValuePtr);
                         }
