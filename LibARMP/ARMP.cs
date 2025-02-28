@@ -31,13 +31,24 @@ namespace LibARMP
         public Version FormatVersion { get; internal set; }
 
         /// <summary>
-        /// Gets the main table.
+        /// The <see cref="ARMP"/> file's main table.
         /// </summary>
-        public ArmpTableMain MainTable { get; internal set; }
+        internal ArmpTableMain MainTable { get; set; }
 
         /// <summary>
         /// Original armp file for patching.
         /// </summary>
         internal MemoryStream File = new MemoryStream();
+
+
+
+        /// <summary>
+        /// Gets this <see cref="ARMP"/> file's main table.
+        /// </summary>
+        /// <returns>An <see cref="ArmpTableMain"/> object.</returns>
+        public ArmpTableMain GetMainTable()
+        {
+            return MainTable;
+        }
     }
 }
