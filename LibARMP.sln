@@ -1,15 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35527.113 d17.12
+VisualStudioVersion = 17.12.35527.113
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibARMP", "LibARMP\LibARMP.csproj", "{C3F29DF3-1AA8-471A-BA7E-0DBB896FDC1F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "testApp", "testApp\testApp.csproj", "{911B43BB-C52A-4E50-832F-AE9ED092E803}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibARMP.UnitTests", "LibARMP.UnitTests\LibARMP.UnitTests.csproj", "{AED55797-7340-456F-BD99-9BBDE1CBEB75}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BinaryExtensions", "BinaryExtensions\BinaryExtensions\BinaryExtensions.csproj", "{A9BB56FC-875C-4012-A2C9-C7C861D6D274}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,10 +27,6 @@ Global
 		{AED55797-7340-456F-BD99-9BBDE1CBEB75}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AED55797-7340-456F-BD99-9BBDE1CBEB75}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AED55797-7340-456F-BD99-9BBDE1CBEB75}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A9BB56FC-875C-4012-A2C9-C7C861D6D274}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A9BB56FC-875C-4012-A2C9-C7C861D6D274}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A9BB56FC-875C-4012-A2C9-C7C861D6D274}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A9BB56FC-875C-4012-A2C9-C7C861D6D274}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
