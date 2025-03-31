@@ -59,6 +59,9 @@ namespace LibARMP.IO
                 writer.BaseStream.Seek(0x10);
                 writer.Write(mainPtr);
             }
+
+            // Reset the stream position
+            writer.BaseStream.Seek(0);
         }
 
 
