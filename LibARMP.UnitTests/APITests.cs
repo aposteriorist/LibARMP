@@ -205,7 +205,7 @@ namespace LibARMP.UnitTests
         public void ArmpTable_GetAllEntries()
         {
             ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesModeColumn);
-            List<ArmpEntry> entries = armp.GetMainTable().GetAllEntries();
+            IReadOnlyList<ArmpEntry> entries = armp.GetMainTable().GetAllEntries();
             Assert.AreEqual(4, entries.Count);
             Assert.AreEqual("", entries[0].Name);
             Assert.AreEqual("value", entries[1].Name);
@@ -274,7 +274,7 @@ namespace LibARMP.UnitTests
         public void ArmpTable_GetAllColumns()
         {
             ARMP armp = ArmpFileReader.ReadARMP(TestFiles.v2AllTypesModeColumn);
-            List<ArmpTableColumn> columns = armp.GetMainTable().GetAllColumns();
+            IReadOnlyList<ArmpTableColumn> columns = armp.GetMainTable().GetAllColumns();
             Assert.AreEqual(70, columns.Count);
             Assert.AreEqual("", columns[0].Name);
             Assert.AreEqual("u8_", columns[1].Name);

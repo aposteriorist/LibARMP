@@ -135,13 +135,13 @@ namespace LibARMP
         /// <summary>
         /// Returns all entries in the table.
         /// </summary>
-        /// <returns>An <see cref="ArmpEntry"/> list.</returns>
+        /// <returns>A read-only <see cref="ArmpEntry"/> list.</returns>
         /// <exception cref="EntryNotFoundException">The table has no entries.</exception>
-        public List<ArmpEntry> GetAllEntries()
+        public IReadOnlyList<ArmpEntry> GetAllEntries()
         {
             try
             {
-                return Entries;
+                return Entries.AsReadOnly();
             }
             catch
             {
@@ -291,13 +291,13 @@ namespace LibARMP
         /// <summary>
         /// Returns all columns in the table.
         /// </summary>
-        /// <returns>An <see cref="ArmpTableColumn"/> list.</returns>
+        /// <returns>A read-only <see cref="ArmpTableColumn"/> list.</returns>
         /// <exception cref="ColumnNotFoundException">The table has no columns.</exception>
-        public List<ArmpTableColumn> GetAllColumns()
+        public IReadOnlyList<ArmpTableColumn> GetAllColumns()
         {
             try
             {
-                return Columns;
+                return Columns.AsReadOnly();
             }
             catch
             {
