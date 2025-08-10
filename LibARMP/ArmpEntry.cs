@@ -11,7 +11,7 @@ namespace LibARMP
         /// Initializes a new instance of the <see cref="ArmpEntry"/> class.
         /// </summary>
         /// <param name="parentTable">The table that contains this entry.</param>
-        internal ArmpEntry(ArmpTable parentTable)
+        internal ArmpEntry(ArmpTableBase parentTable)
         {
             Data = new Dictionary<string, object>();
             ParentTable = parentTable;
@@ -32,7 +32,7 @@ namespace LibARMP
         /// <param name="parentTable">The table that contains this entry.</param>
         /// <param name="id">The entry ID.</param>
         /// <param name="name">The entry name.</param>
-        internal ArmpEntry(ArmpTable parentTable, uint id, string name) : this(parentTable)
+        internal ArmpEntry(ArmpTableBase parentTable, uint id, string name) : this(parentTable)
         {
             ID = id;
             Name = name;
@@ -45,7 +45,7 @@ namespace LibARMP
         /// <param name="id">The entry ID.</param>
         /// <param name="name">The entry name.</param>
         /// <param name="index">The entry index.</param>
-        internal ArmpEntry(ArmpTable parentTable, uint id, string name, int index) : this(parentTable, id, name)
+        internal ArmpEntry(ArmpTableBase parentTable, uint id, string name, int index) : this(parentTable, id, name)
         {
             Index = index;
         }
@@ -86,9 +86,9 @@ namespace LibARMP
         public bool[] Flags { get; set; }
 
         /// <summary>
-        /// The <see cref="ArmpTable"/> this entry belongs to.
+        /// The <see cref="ArmpTableBase"/> this entry belongs to.
         /// </summary>
-        internal ArmpTable ParentTable { get; set; }
+        internal ArmpTableBase ParentTable { get; set; }
 
         /// <summary>
         /// PLACEHOLDER: Offsets for column values used by the patcher.
@@ -102,21 +102,21 @@ namespace LibARMP
         /// </summary>
         /// <param name="parentTable">The table this copy is intended to.</param>
         /// <returns>A copy of this <see cref="ArmpEntry"/>.</returns>
-        public ArmpEntry Copy (ArmpTable parentTable)
+        public ArmpEntry Copy (ArmpTableBase parentTable)
         {
             ArmpEntry copy = new ArmpEntry(parentTable, ID, Name, Index);
             copy.IsValid = IsValid;
             copy.Flags = Flags;
             copy.Data = new Dictionary<string, object>(Data);
             //Copy the table type column values since the dictionary copy does not apply to references
-            foreach(ArmpTableColumn column in ParentTable.GetColumnsByType<ArmpTableMain>())
+            foreach(ArmpTableColumn column in ParentTable.GetColumnsByType<ArmpTable>())
             {
                 if (Data.ContainsKey(column.Name))
                 {
                     var originalObject = GetValueFromColumn(column);
                     if (originalObject != null)
                     {
-                        ArmpTableMain original = (ArmpTableMain)originalObject;
+                        ArmpTable original = (ArmpTable)originalObject;
                         copy.Data[column.Name] = original.Copy(true);
                     }
                     else

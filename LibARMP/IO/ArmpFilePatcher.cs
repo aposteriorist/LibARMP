@@ -68,7 +68,7 @@ namespace LibARMP.IO
 
 
         //PLACEHOLDER
-        private static void PatchTableRecursive(BinaryWriter writer, ArmpTable table)
+        private static void PatchTableRecursive(BinaryWriter writer, ArmpTableBase table)
         {
             foreach (ArmpTableColumn column in table.Columns)
             {
@@ -87,13 +87,13 @@ namespace LibARMP.IO
                     }
                 }
 
-                if (column.Type.CSType == typeof(ArmpTableMain))
+                if (column.Type.CSType == typeof(ArmpTable))
                 {
                     foreach (ArmpEntry entry in table.GetAllEntries())
                     {
                         try
                         {
-                            ArmpTableMain tablevalue = (ArmpTableMain)entry.GetValueFromColumn(column.Name);
+                            ArmpTable tablevalue = (ArmpTable)entry.GetValueFromColumn(column.Name);
                             PatchTableRecursive(writer, tablevalue);
                         }
                         catch { }
@@ -101,10 +101,10 @@ namespace LibARMP.IO
                 }
             }
 
-            if (table.TableInfo.HasSubTable)
+            if (table.TableInfo.HasIndexerTable)
             {
-                ArmpTableMain main = new ArmpTableMain(table);
-                PatchTableRecursive(writer, main.SubTable);
+                ArmpTable main = new ArmpTable(table);
+                PatchTableRecursive(writer, main.Indexer);
             }
         }
 

@@ -4,22 +4,24 @@ using System.Reflection;
 namespace LibARMP
 {
     [Serializable]
-    public class ArmpTableMain : ArmpTable
+    public class ArmpTableIndexer : ArmpTableBase
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ArmpTableMain"/> class.
+        /// Initializes a new instance of the <see cref="ArmpTableIndexer"/> class.
         /// </summary>
-        internal ArmpTableMain() : base()
+        /// <param name="parentTable">The parent <see cref="ArmpTable"/>.</param>
+        internal ArmpTableIndexer(ArmpTable parentTable) : base()
         {
-
+            this.ParentTable = parentTable;
         }
 
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ArmpTableMain"/> class and populates it with the properties of the source <see cref="ArmpTable"/>.
+        /// Initializes a new instance of the <see cref="ArmpTableIndexer"/> class and populates it with the properties of the source <see cref="ArmpTableBase"/>.
         /// </summary>
-        /// <param name="armpTable">The source <see cref="ArmpTable"/> object.</param>
-        internal ArmpTableMain(ArmpTable armpTable) : this()
+        /// <param name="parentTable">The parent <see cref="ArmpTable"/>.</param>
+        /// <param name="armpTable">The source <see cref="ArmpTableBase"/> object.</param>
+        internal ArmpTableIndexer(ArmpTable parentTable, ArmpTableBase armpTable) : this(parentTable)
         {
             var srcProperties = armpTable.GetType().GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
             var dstProperties = this.GetType().GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
@@ -39,26 +41,20 @@ namespace LibARMP
 
 
         /// <summary>
-        /// The subtable (indexer) of this table.
+        /// The parent table of this indexer table.
         /// </summary>
-        public ArmpTableSub SubTable { get; internal set; }
+        public ArmpTable ParentTable { get; internal set; }
 
 
 
         /// <summary>
-        /// Creates a copy of this table. This includes the indexer table if one exists.
+        /// Creates a copy of this indexer table.
         /// </summary>
         /// <param name="copyEntries">Should entries be copied? Default value is <see langword="true"/>.</param>
-        /// <returns>A copy of this <see cref="ArmpTableMain"/>.</returns>
-        public new ArmpTableMain Copy (bool copyEntries = true)
+        /// <returns>A copy of this <see cref="ArmpTableIndexer"/>.</returns>
+        public new ArmpTableIndexer Copy (bool copyEntries = true)
         {
-            ArmpTableMain copy = new ArmpTableMain(base.Copy(copyEntries));
-
-            if (copy.TableInfo.HasSubTable)
-            {
-                copy.SubTable = SubTable.Copy(copyEntries);
-            }
-
+            ArmpTableIndexer copy = new ArmpTableIndexer(ParentTable, base.Copy(copyEntries));
             return copy;
         }
     }

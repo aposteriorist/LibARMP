@@ -21,7 +21,7 @@ namespace LibARMP
             typeof(List<Int32>),
             typeof(List<Int64>),
             typeof(List<string>),
-            typeof(List<ArmpTableMain>),
+            typeof(List<ArmpTable>),
             typeof(List<float>),
             typeof(List<double>),
             typeof(float[]),
@@ -54,7 +54,7 @@ namespace LibARMP
             Types.Add(new ArmpType() { CSType = typeof(double), IDv1 = -1, IDAuxv1 = -1, IDv2 = 11, IDAuxv2 = 9, IDOE = -1, Size = 0x8, DefaultValue = (double) 0 }); //float64
             Types.Add(new ArmpType() { CSType = typeof(bool), IDv1 = 6, IDAuxv1 = 11, IDv2 = 6, IDAuxv2 = 4, IDOE = 6, Size = 0x1, DefaultValue = false }); //boolean
             Types.Add(new ArmpType() { CSType = typeof(string), IDv1 = 0, IDAuxv1 = 12, IDv2 = 13, IDAuxv2 = 12, IDOE = 1, Size = 0x8, DefaultValue = string.Empty }); //string
-            Types.Add(new ArmpType() { CSType = typeof(ArmpTableMain), IDv1 = 9, IDAuxv1 = 13, IDv2 = 9, IDAuxv2 = 13, IDOE = -1, Size = 0x8, DefaultValue = null }); //table
+            Types.Add(new ArmpType() { CSType = typeof(ArmpTable), IDv1 = 9, IDAuxv1 = 13, IDv2 = 9, IDAuxv2 = 13, IDOE = -1, Size = 0x8, DefaultValue = null }); //table
 
             Types.Add(new ArmpType() { CSType = typeof(List<byte>), IDv1 = -1, IDAuxv1 = -1, IDv2 = 14, IDAuxv2 = 14, IDOE = -1, Size = 0x0, DefaultValue = null }); //uint8 array
             Types.Add(new ArmpType() { CSType = typeof(List<UInt16>), IDv1 = -1, IDAuxv1 = -1, IDv2 = 15, IDAuxv2 = 15, IDOE = -1, Size = 0x0, DefaultValue = null }); //uint16 array
@@ -65,7 +65,7 @@ namespace LibARMP
             Types.Add(new ArmpType() { CSType = typeof(List<Int32>), IDv1 = -1, IDAuxv1 = -1, IDv2 = 20, IDAuxv2 = 20, IDOE = -1, Size = 0x0, DefaultValue = null }); //int32 array
             Types.Add(new ArmpType() { CSType = typeof(List<Int64>), IDv1 = -1, IDAuxv1 = -1, IDv2 = 21, IDAuxv2 = 21, IDOE = -1, Size = 0x0, DefaultValue = null }); //int64 array
             Types.Add(new ArmpType() { CSType = typeof(List<string>), IDv1 = -1, IDAuxv1 = -1, IDv2 = 22, IDAuxv2 = 25, IDOE = -1, Size = 0x0, DefaultValue = null }); //string array
-            Types.Add(new ArmpType() { CSType = typeof(List<ArmpTableMain>), IDv1 = -1, IDAuxv1 = -1, IDv2 = 23, IDAuxv2 = 26, IDOE = -1, Size = 0x0, DefaultValue = null }); //table array
+            Types.Add(new ArmpType() { CSType = typeof(List<ArmpTable>), IDv1 = -1, IDAuxv1 = -1, IDv2 = 23, IDAuxv2 = 26, IDOE = -1, Size = 0x0, DefaultValue = null }); //table array
             Types.Add(new ArmpType() { CSType = typeof(List<float>), IDv1 = -1, IDAuxv1 = -1, IDv2 = 25, IDAuxv2 = 23, IDOE = -1, Size = 0x0, DefaultValue = null }); //float32 array
             Types.Add(new ArmpType() { CSType = typeof(List<double>), IDv1 = -1, IDAuxv1 = -1, IDv2 = 26, IDAuxv2 = 24, IDOE = -1, Size = 0x0, DefaultValue = null }); //float64 array
             Types.Add(new ArmpType() { CSType = typeof(float[]), IDv1 = -1, IDAuxv1 = -1, IDv2 = 27, IDAuxv2 = 27, IDOE = -1, Size = 0x0, DefaultValue = null }); //VF128

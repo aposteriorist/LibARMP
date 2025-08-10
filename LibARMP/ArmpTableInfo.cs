@@ -29,7 +29,7 @@ namespace LibARMP
             this.ptrEntryIndices = 0;
             this.ptrColumnIndices = 0;
             this.ptrColumnValidity = 0;
-            this.ptrSubTable = 0;
+            this.ptrIndexerTable = 0;
             this.ptrEmptyValuesOffsetTable = 0;
             this.ptrColumnDataTypesAux = 0;
             this.ptrExtraFieldInfo = 0;
@@ -37,7 +37,7 @@ namespace LibARMP
 
             //Flags
             this.HasText = false;
-            this.HasSubTable = false;
+            this.HasIndexerTable = false;
             this.HasEntryNames = false;
             this.HasColumnNames = false;
             this.HasColumnDataTypesAux = false;
@@ -170,10 +170,10 @@ namespace LibARMP
         internal UInt32 ptrColumnValidity { get; set; }
 
         /// <summary>
-        /// Gets or sets the pointer to the SubTable.
+        /// Gets or sets the pointer to the Indexer table.
         /// </summary>
         /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
-        internal UInt32 ptrSubTable { get; set; }
+        internal UInt32 ptrIndexerTable { get; set; }
 
         /// <summary>
         /// Gets or sets the pointer to the Empty Values Offset Table.
@@ -208,10 +208,10 @@ namespace LibARMP
         public bool HasText { get; internal set; }
 
         /// <summary>
-        /// Gets a boolean indicating if the table has a SubTable.
+        /// Gets a boolean indicating if the table has an Indexer table.
         /// </summary>
         /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
-        public bool HasSubTable { get; internal set; }
+        public bool HasIndexerTable { get; internal set; }
 
         /// <summary>
         /// Gets a boolean indicating if the table has entry names.

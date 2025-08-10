@@ -33,7 +33,7 @@ namespace LibARMP
         /// <summary>
         /// The <see cref="ARMP"/> file's main table.
         /// </summary>
-        internal ArmpTableMain MainTable { get; set; }
+        internal ArmpTable MainTable { get; set; }
 
         /// <summary>
         /// Original armp file for patching.
@@ -45,8 +45,8 @@ namespace LibARMP
         /// <summary>
         /// Gets this <see cref="ARMP"/> file's main table.
         /// </summary>
-        /// <returns>An <see cref="ArmpTableMain"/> object.</returns>
-        public ArmpTableMain GetMainTable()
+        /// <returns>An <see cref="ArmpTable"/> object.</returns>
+        public ArmpTable GetMainTable()
         {
             return MainTable;
         }

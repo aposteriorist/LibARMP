@@ -114,8 +114,8 @@ namespace LibARMP.IO
         /// Writes an OE table to the <see cref="Stream"/>.
         /// </summary>
         /// <param name="writer">The <see cref="BinaryWriter"/>.</param>
-        /// <param name="table">The <see cref="ArmpTableMain"/> to write.</param>
-        private static void WriteTableOE(BinaryWriter writer, ArmpTableMain table)
+        /// <param name="table">The <see cref="ArmpTable"/> to write.</param>
+        private static void WriteTableOE(BinaryWriter writer, ArmpTable table)
         {
             long baseOffset = writer.BaseStream.Position;
             int ptr = 0;
@@ -348,12 +348,12 @@ namespace LibARMP.IO
         /// Recursively writes tables from the lowest level upwards.
         /// </summary>
         /// <param name="writer">The <see cref="BinaryWriter"/>.</param>
-        /// <param name="table">The <see cref="ArmpTable"/> to write.</param>
+        /// <param name="table">The <see cref="ArmpTableBase"/> to write.</param>
         /// <returns>The pointer to the table.</returns>
-        private static uint WriteTableRecursive(BinaryWriter writer, ArmpTable table)
+        private static uint WriteTableRecursive(BinaryWriter writer, ArmpTableBase table)
         {
-            List<string> tableColumns = table.GetColumnNamesByType<ArmpTableMain>();
-            Dictionary<ArmpTable, uint> tablePointers = new Dictionary<ArmpTable, uint>();
+            List<string> tableColumns = table.GetColumnNamesByType<ArmpTable>();
+            Dictionary<ArmpTableBase, uint> tablePointers = new Dictionary<ArmpTableBase, uint>();
 
             if (tableColumns.Count > 0)
             {
@@ -363,7 +363,7 @@ namespace LibARMP.IO
                     {
                         try
                         {
-                            ArmpTable tableValue = (ArmpTable)entry.GetValueFromColumn(column);
+                            ArmpTableBase tableValue = (ArmpTableBase)entry.GetValueFromColumn(column);
                             if (tableValue == null) continue;
                             uint tableValuePtr = WriteTableRecursive(writer, tableValue);
                             tablePointers.Add(tableValue, tableValuePtr);
@@ -375,13 +375,13 @@ namespace LibARMP.IO
                 }
             }
 
-            uint subtablePtr = 0;
-            if (table.GetType() == typeof(ArmpTableMain))
+            uint indexerTablePtr = 0;
+            if (table.GetType() == typeof(ArmpTable))
             {
-                ArmpTableMain tableMain = (ArmpTableMain)table;
-                if (tableMain.SubTable != null)
+                ArmpTable tableMain = (ArmpTable)table;
+                if (tableMain.Indexer != null)
                 {
-                    subtablePtr = WriteTableRecursive(writer, tableMain.SubTable);
+                    indexerTablePtr = WriteTableRecursive(writer, tableMain.Indexer);
                     writer.WritePadding(0x00, 0x10);
                 }
             }
@@ -389,7 +389,7 @@ namespace LibARMP.IO
             uint pointer = (uint)writer.BaseStream.Position;
             WriteTable(writer, table, tablePointers);
             writer.WritePadding(0x00, 0x10);
-            writer.WriteAtPosition(subtablePtr, pointer + 0x3C);
+            writer.WriteAtPosition(indexerTablePtr, pointer + 0x3C);
             return pointer;
         }
 
@@ -399,8 +399,8 @@ namespace LibARMP.IO
         /// Writes a DE table to the <see cref="Stream"/>.
         /// </summary>
         /// <param name="writer">The <see cref="BinaryWriter"/>.</param>
-        /// <param name="table">The <see cref="ArmpTable"/> to write.</param>
-        private static void WriteTable(BinaryWriter writer, ArmpTable table, Dictionary<ArmpTable, uint> tableValuePointers = null)
+        /// <param name="table">The <see cref="ArmpTableBase"/> to write.</param>
+        private static void WriteTable(BinaryWriter writer, ArmpTableBase table, Dictionary<ArmpTableBase, uint> tableValuePointers = null)
         {
             long baseOffset = writer.BaseStream.Position;
             int ptr = 0;
@@ -631,7 +631,7 @@ namespace LibARMP.IO
                             }
                         }
 
-                        else if (column.Type.CSType == typeof(ArmpTableMain))
+                        else if (column.Type.CSType == typeof(ArmpTable))
                         {
                             if (tableValuePointers != null)
                             {
@@ -639,7 +639,7 @@ namespace LibARMP.IO
                                 {
                                     if (entry.Data.ContainsKey(column.Name))
                                     {
-                                        ArmpTableMain tableValue = (ArmpTableMain)entry.GetValueFromColumn(column.Name);
+                                        ArmpTable tableValue = (ArmpTable)entry.GetValueFromColumn(column.Name);
                                         if (tableValue != null)
                                         {
                                             uint tablePtr;
@@ -786,11 +786,11 @@ namespace LibARMP.IO
                                 writer.Write(Convert.ToByte(val));
                             }
 
-                            else if (column.Type.CSType == typeof(ArmpTableMain))
+                            else if (column.Type.CSType == typeof(ArmpTable))
                             {
                                 try
                                 {
-                                    ulong tablePtr = tableValuePointers[(ArmpTableMain)entry.GetValueFromColumn(column.Name)];
+                                    ulong tablePtr = tableValuePointers[(ArmpTable)entry.GetValueFromColumn(column.Name)];
                                     writer.Write(tablePtr);
                                 }
                                 catch
@@ -1032,8 +1032,8 @@ namespace LibARMP.IO
         /// Writes the DE v2 Data Types Aux table.
         /// </summary>
         /// <param name="writer">The <see cref="BinaryWriter"/>.</param>
-        /// <param name="table">The <see cref="ArmpTable"/>.</param>
-        private static void WriteColumnDataTypesAuxTable(BinaryWriter writer, ArmpTable table)
+        /// <param name="table">The <see cref="ArmpTableBase"/>.</param>
+        private static void WriteColumnDataTypesAuxTable(BinaryWriter writer, ArmpTableBase table)
         {
             foreach (ArmpTableColumn column in table.Columns)
             {
