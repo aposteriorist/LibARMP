@@ -770,7 +770,7 @@ namespace LibARMP
             ArmpTableColumn column = new ArmpTableColumn(id, columnName, armpType);
             if (TableInfo.HasColumnIndices) column.Index = (int)id;
             if (TableInfo.HasColumnValidity) column.IsValid = true;
-            column.IsNoData = false;
+            column.ShortcutType = ColumnShortcutType.None;
 
             if (TableInfo.FormatVersion == Version.DragonEngineV2)
             {

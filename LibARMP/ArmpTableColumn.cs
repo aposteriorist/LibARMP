@@ -56,9 +56,10 @@ namespace LibARMP
         public bool? IsValid { get; set; }
 
         /// <summary>
-        /// Gets or sets if the column contains no data despite being valid.
+        /// Gets or sets if a data shortcut is used instead of a pointer.
         /// </summary>
-        internal bool IsNoData { get; set; }
+        /// <remarks><para></para>Only relevant for StorageMode.Column.</para></remarks>
+        internal ColumnShortcutType ShortcutType { get; set; }
 
         /// <summary>
         /// Gets if the column is special.
@@ -121,7 +122,7 @@ namespace LibARMP
             ArmpTableColumn copy = new ArmpTableColumn(ID, Name, Type);
             copy.Index = Index;
             copy.IsValid = IsValid;
-            copy.IsNoData = IsNoData;
+            copy.ShortcutType = ShortcutType;
             copy.IsSpecial = IsSpecial;
             copy.UnknownMetadata0x40 = UnknownMetadata0x40;
             copy.UnknownMetadata0x4C = UnknownMetadata0x4C;

@@ -734,24 +734,19 @@ namespace LibARMP.IO
             {
                 foreach (ArmpTableColumn column in table.Columns)
                 {
-                    bool noData = false; // Only happens with boolean column types? Unsure. TODO: verify
-
-                    uint ptrData = reader.ReadUInt32();
+                    int ptrData = reader.ReadInt32();
                     long nextPtr = reader.BaseStream.Position;
-                    if (ptrData == 0xFFFFFFFF)
+                    if (ptrData == -1 || ptrData == 0)
                     {
-                        column.IsNoData = true;
+                        column.ShortcutType = (ColumnShortcutType)ptrData;
 #if DEBUG
                         Console.WriteLine(String.Format("No data column -- > {0}", column.Name));
 #endif
                     }
-                    else
+                    else if (ptrData > 0)
                     {
+                        column.ShortcutType = ColumnShortcutType.None;
                         reader.BaseStream.Seek(ptrData);
-                    }
-
-                    if (!noData) // TODO this is a placeholder fix
-                    {
 #if DEBUG
                         Console.WriteLine(column.Name + " ----> " + column.Type);
 #endif

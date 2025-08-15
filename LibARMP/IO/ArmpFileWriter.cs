@@ -583,8 +583,9 @@ namespace LibARMP.IO
                 foreach (ArmpTableColumn column in table.Columns)
                 {
                     if (column.IsNoData)
+                    if (column.ShortcutType != ColumnShortcutType.None)
                     {
-                        columnValueOffsets.Add(-1);
+                        columnValueOffsets.Add((int)column.ShortcutType);
                     }
                     else if (table.TableInfo.HasColumnValidity && column.IsValid == false)
                     {
