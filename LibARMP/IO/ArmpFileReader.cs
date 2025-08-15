@@ -736,16 +736,19 @@ namespace LibARMP.IO
                 {
                     int ptrData = reader.ReadInt32();
                     long nextPtr = reader.BaseStream.Position;
-                    if (ptrData == -1 || ptrData == 0)
+                    if (column.Type.CSType == typeof(bool) && ptrData == -1 || ptrData == 0)
                     {
-                        column.ShortcutType = (ColumnShortcutType)ptrData;
+                        bool value = ptrData == -1;
+                        foreach (ArmpEntry entry in table.Entries)
+                    {
+                            entry.Data.Add(column.Name, value);
+                        }
 #if DEBUG
-                        Console.WriteLine(String.Format("No data column -- > {0}", column.Name));
+                        Console.WriteLine(String.Format("Bool shortcut column -- > {0}", column.Name));
 #endif
                     }
                     else if (ptrData > 0)
                     {
-                        column.ShortcutType = ColumnShortcutType.None;
                         reader.BaseStream.Seek(ptrData);
 #if DEBUG
                         Console.WriteLine(column.Name + " ----> " + column.Type);

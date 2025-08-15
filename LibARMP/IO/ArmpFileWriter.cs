@@ -404,6 +404,7 @@ namespace LibARMP.IO
         {
             long baseOffset = writer.BaseStream.Position;
             int ptr = 0;
+            bool allTrue, allFalse;
 
             writer.WriteTimes(0x00, 0x50); // Placeholder table
 
@@ -582,23 +583,45 @@ namespace LibARMP.IO
                 List<int> columnValueOffsets = new List<int>();
                 foreach (ArmpTableColumn column in table.Columns)
                 {
-                    if (column.IsNoData)
-                    if (column.ShortcutType != ColumnShortcutType.None)
-                    {
-                        columnValueOffsets.Add((int)column.ShortcutType);
-                    }
-                    else if (table.TableInfo.HasColumnValidity && column.IsValid == false)
+                    if (column.IsValid == false)
                     {
                         columnValueOffsets.Add(0);
                     }
                     // The column has data
                     else
                     {
-                        writer.WritePadding(0x00, column.Type.Size);
-
-                        columnValueOffsets.Add((int)writer.BaseStream.Position);
-
                         if (table.TableInfo.FormatVersion == Version.DragonEngineV2 && column.IsSpecial) continue;
+
+                        if (column.Type.CSType == typeof(bool))
+                        {
+                            writer.WritePadding(0x00, 8);
+
+                            List<bool> boolList = new List<bool>();
+                            allTrue = true;
+                            allFalse = true;
+                            bool temp;
+                            foreach (ArmpEntry entry in table.Entries)
+                            {
+                                temp = (bool)entry.GetValueFromColumn(column.Name);
+                                boolList.Add(temp);
+                                allTrue &= temp;
+                                allFalse &= !temp;
+                            }
+
+                            if (boolList.Count > 0)
+                            {
+                                if (allTrue) columnValueOffsets.Add(-1);
+                                else if (allFalse) columnValueOffsets.Add(0);
+                                else
+                                {
+                                    columnValueOffsets.Add((int)writer.BaseStream.Position);
+                                    Util.WriteBooleanBitmask(writer, boolList, false);
+                                }
+                            }
+                        }
+                        else
+                        {
+                        columnValueOffsets.Add((int)writer.BaseStream.Position);
 
                         // Write operations based on column type
                         if (column.Type.CSType == typeof(string))
@@ -615,20 +638,6 @@ namespace LibARMP.IO
                                 {
                                     writer.Write(-1);
                                 }
-                            }
-                        }
-
-                        else if (column.Type.CSType == typeof(bool))
-                        {
-                            List<bool> boolList = new List<bool>();
-                            foreach (ArmpEntry entry in table.Entries)
-                            {
-                                boolList.Add((bool)entry.GetValueFromColumn(column.Name));
-                            }
-
-                            if (boolList.Count > 0)
-                            {
-                                Util.WriteBooleanBitmask(writer, boolList, false);
                             }
                         }
 
@@ -720,6 +729,7 @@ namespace LibARMP.IO
                                 writer.Write(entry.GetValueFromColumn<Int64>(column.Name));
                         }
                     }
+                }
                 }
 
                 // Write the column value offset table

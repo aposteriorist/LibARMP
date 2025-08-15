@@ -769,8 +769,7 @@ namespace LibARMP
             ArmpType armpType = DataTypes.GetArmpTypeByCSType(columnType);
             ArmpTableColumn column = new ArmpTableColumn(id, columnName, armpType);
             if (TableInfo.HasColumnIndices) column.Index = (int)id;
-            if (TableInfo.HasColumnValidity) column.IsValid = true;
-            column.ShortcutType = ColumnShortcutType.None;
+            column.IsValid = true;
 
             if (TableInfo.FormatVersion == Version.DragonEngineV2)
             {
