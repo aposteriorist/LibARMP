@@ -42,7 +42,6 @@ namespace LibARMP
             this.HasColumnNames = false;
             this.HasColumnDataTypesAux = false;
             this.HasEntryValidity = false;
-            this.HasColumnValidity = false;
             this.HasEntryIndices = false;
             this.HasColumnIndices = false;
             this.HasExtraFieldInfo = false;
@@ -234,12 +233,6 @@ namespace LibARMP
         /// </summary>
         /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
         public bool HasEntryValidity { get; internal set; }
-
-        /// <summary>
-        /// Gets a boolean indicating if the table has validity flags for columns.
-        /// </summary>
-        /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
-        public bool HasColumnValidity { get; internal set; }
 
         /// <summary>
         /// Gets a boolean indicating if the table has entry indices.

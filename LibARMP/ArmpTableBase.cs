@@ -627,15 +627,12 @@ namespace LibARMP
         /// </summary>
         /// <param name="id">The column ID.</param>
         /// <returns>A <see cref="Boolean"/>.</returns>
-        /// <exception cref="ColumnNoValidityException">The table has no column validity.</exception>
         /// <exception cref="ColumnNotFoundException">The table has no column with the specified ID.</exception>
         public bool IsColumnValid (uint id)
         {
-            if (!TableInfo.HasColumnValidity) throw new ColumnNoValidityException();
-
             try
             {
-                return (bool)Columns[(int)id].IsValid;
+                return Columns[(int)id].IsValid;
             }
             catch
             {
@@ -649,15 +646,12 @@ namespace LibARMP
         /// </summary>
         /// <param name="columnName">The column name.</param>
         /// <returns>A <see cref="Boolean"/>.</returns>
-        /// <exception cref="ColumnNoValidityException">The table has no column validity.</exception>
         /// <exception cref="ColumnNotFoundException">The table has no column with the specified name.</exception>
         public bool IsColumnValid (string columnName)
         {
-            if (!TableInfo.HasColumnValidity) throw new ColumnNoValidityException();
-
             try
             {
-                return (bool)ColumnNameCache[columnName].IsValid;
+                return ColumnNameCache[columnName].IsValid;
             }
             catch
             {
@@ -672,11 +666,8 @@ namespace LibARMP
         /// </summary>
         /// <param name="column">The <see cref="ArmpTableColumn"/>.</param>
         /// <param name="isValid">The new column validity.</param>
-        /// <exception cref="ColumnNoValidityException">The table has no column validity.</exception>
         public void SetColumnValidity (ArmpTableColumn column, bool isValid)
         {
-            if (TableInfo.HasColumnValidity)
-            {
                 if (isValid) //Set all values to default
                 {
                     foreach(ArmpEntry entry in Entries)
@@ -694,11 +685,6 @@ namespace LibARMP
                     column.IsValid = false;
                 }
             }
-            else
-            {
-                throw new ColumnNoValidityException();
-            }
-        }
 
 
         /// <summary>
@@ -1099,7 +1085,7 @@ namespace LibARMP
             //Storage mode needs to be the same for all tables inside
             foreach (ArmpTableColumn column in GetColumnsByType<ArmpTable>())
             {
-                if ((bool)column.IsValid)
+                if (column.IsValid)
                 {
                     foreach (ArmpEntry e in Entries)
                     {

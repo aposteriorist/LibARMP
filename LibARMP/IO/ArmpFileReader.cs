@@ -174,8 +174,24 @@ namespace LibARMP.IO
 
 
             ///// Column Validity /////
+            #region ColumnValidity
+
             List<bool> columnValidity = new List<bool>();
-            if (table.TableInfo.HasColumnValidity) columnValidity = Util.IterateBooleanBitmask(reader, table.TableInfo.ptrColumnValidity, table.TableInfo.ColumnCount, false);
+            if (table.TableInfo.ptrColumnValidity != 0 && table.TableInfo.ptrColumnValidity != 0xFFFFFFFF)
+            {
+                columnValidity = Util.IterateBooleanBitmask(reader, table.TableInfo.ptrColumnValidity, table.TableInfo.ColumnCount, false);
+            }
+            else
+            {
+                columnValidity.Capacity = table.TableInfo.ColumnCount;
+                bool[] values = new bool[table.TableInfo.ColumnCount];
+                if (table.TableInfo.ptrColumnValidity == 0xFFFFFFFF)
+                {
+                    for (int i = 0; i < table.TableInfo.ColumnCount; i++) values[i] = true;
+                }
+                columnValidity.AddRange(values);
+            }
+            #endregion
 
 
             ///// Column Indices /////
@@ -210,7 +226,7 @@ namespace LibARMP.IO
                     }
                 }
 
-                if (table.TableInfo.HasColumnValidity) column.IsValid = columnValidity[(int)c];
+                column.IsValid = columnValidity[(int)c];
                 if (table.TableInfo.HasColumnIndices) column.Index = columnIndices[(int)c];
                 if (table.TableInfo.HasColumnMetadata) column.UnknownMetadata0x40 = columnMetadata0x40[(int)c];
 
@@ -282,11 +298,21 @@ namespace LibARMP.IO
             ///// Entry Validity /////
             #region EntryValidity
 
-            if (table.TableInfo.HasEntryValidity)
+            if (table.TableInfo.ptrEntryValidity != 0 && table.TableInfo.ptrEntryValidity != 0xFFFFFFFF)
             {
                 table.EntryValidity = Util.IterateBooleanBitmask(reader, table.TableInfo.ptrEntryValidity, table.TableInfo.EntryCount, false);
-                SetEntryValidity(table.EntryValidity, table.Entries);
             }
+            else
+            {
+                table.EntryValidity = new List<bool>(table.TableInfo.EntryCount);
+                bool[] values = new bool[table.TableInfo.EntryCount];
+                if (table.TableInfo.ptrEntryValidity == 0xFFFFFFFF)
+                {
+                    for (int i = 0; i < table.TableInfo.EntryCount; i++) values[i] = true;
+                }
+                table.EntryValidity.AddRange(values);
+            }
+                SetEntryValidity(table.EntryValidity, table.Entries);
             #endregion
 
 

@@ -19,7 +19,6 @@ namespace LibARMP
             if (ParentTable.TableInfo.HasEntryIndices)
                 Index = (int)ID;
 
-            if (ParentTable.TableInfo.HasEntryValidity)
                 IsValid = true;
 
             if (ParentTable.TableInfo.HasExtraFieldInfo && ParentTable.TableInfo.FormatVersion == Version.DragonEngineV1)

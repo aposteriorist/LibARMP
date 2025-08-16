@@ -433,52 +433,56 @@ namespace LibARMP.IO
             ///// Entry Validity //////
             #region EntryValidity
 
-            if (table.TableInfo.HasEntryValidity)
-            {
                 List<bool> entryValidity = new List<bool>();
+            allTrue = true;
+            allFalse = true;
                 foreach (ArmpEntry entry in table.Entries)
                 {
                     entryValidity.Add(entry.IsValid);
+                allTrue &= entry.IsValid;
+                allFalse &= !entry.IsValid;
                 }
+
+            if (allTrue) ptr = -1;
+            else if (allFalse) ptr = 0;
+            else
+            {
                 ptr = (int)writer.BaseStream.Position;
                 Util.WriteBooleanBitmask(writer, entryValidity, false);
 
                 writer.WritePadding(0x00, 0x8);
+            }
 
                 // Update the main table pointer at 0x14
                 writer.WriteAtPosition(ptr, baseOffset + 0x14);
-            }
-            else
-            {
-                // Update the main table pointer at 0x14
-                writer.WriteAtPosition(-1, baseOffset + 0x14);
-            }
             #endregion
 
 
             ///// Column Validity /////
             #region ColumnValidity
 
-            if (table.TableInfo.HasColumnValidity)
-            {
                 List<bool> columnValidity = new List<bool>();
+            allTrue = true;
+            allFalse = true;
                 foreach (ArmpTableColumn column in table.Columns)
                 {
-                    columnValidity.Add((bool)column.IsValid);
+                columnValidity.Add(column.IsValid);
+                allTrue &= column.IsValid;
+                allFalse &= !column.IsValid;
                 }
+
+            if (allTrue) ptr = -1;
+            else if (allFalse) ptr = 0;
+            else
+            {
                 ptr = (int)writer.BaseStream.Position;
                 Util.WriteBooleanBitmask(writer, columnValidity, false);
 
                 writer.WritePadding(0x00, 0x4);
+            }
 
                 // Update the main table pointer at 0x38
                 writer.WriteAtPosition(ptr, baseOffset + 0x38);
-            }
-            else
-            {
-                // Update the main table pointer at 0x38
-                writer.WriteAtPosition(-1, baseOffset + 0x38);
-            }
             #endregion
 
 
@@ -776,7 +780,7 @@ namespace LibARMP.IO
                         writer.WriteTimes(0x00, columnPadding);
 
                         // Write operations based on column type
-                        if (table.TableInfo.HasColumnValidity && table.IsColumnValid(column.Name))
+                        if (table.IsColumnValid(column.Name))
                         {
                             if (column.Type.CSType == typeof(string))
                             {

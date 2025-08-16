@@ -53,7 +53,7 @@ namespace LibARMP
         /// Gets or sets if the column is valid.
         /// </summary>
         /// <remarks><para>Can be null if unused.</para></remarks>
-        public bool? IsValid { get; set; }
+        public bool IsValid { get; set; }
 
         /// <summary>
         /// Gets if the column is special.
