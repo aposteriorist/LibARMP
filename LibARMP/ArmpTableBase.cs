@@ -45,7 +45,7 @@ namespace LibARMP
         /// <summary>
         /// Entry indices.
         /// </summary>
-        internal List<int> EntryIndices { get; set; }
+        internal List<uint> EntryIndices { get; set; }
 
         /// <summary>
         /// Columns.
@@ -668,23 +668,23 @@ namespace LibARMP
         /// <param name="isValid">The new column validity.</param>
         public void SetColumnValidity (ArmpTableColumn column, bool isValid)
         {
-                if (isValid) //Set all values to default
+            if (isValid) //Set all values to default
+            {
+                foreach(ArmpEntry entry in Entries)
                 {
-                    foreach(ArmpEntry entry in Entries)
-                    {
-                        entry.SetDefaultColumnContent(column.Name);
-                    }
-                    column.IsValid = true;
+                    entry.SetDefaultColumnContent(column.Name);
                 }
-                else //Remove all values
-                {
-                    foreach (ArmpEntry entry in Entries)
-                    {
-                        entry.RemoveColumnContent(column.Name);
-                    }
-                    column.IsValid = false;
-                }
+                column.IsValid = true;
             }
+            else //Remove all values
+            {
+                foreach (ArmpEntry entry in Entries)
+                {
+                    entry.RemoveColumnContent(column.Name);
+                }
+                column.IsValid = false;
+            }
+        }
 
 
         /// <summary>
@@ -889,7 +889,7 @@ namespace LibARMP
             ArmpEntry entry = new ArmpEntry(this, id, name);
             entry.SetDefaultColumnContent();
             if (TableInfo.HasEntryIndices)
-                entry.Index = (int)id;
+                entry.Index = id;
             Entries.Add(entry);
             return entry;
         }

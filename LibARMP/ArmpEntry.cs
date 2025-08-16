@@ -17,7 +17,7 @@ namespace LibARMP
             ParentTable = parentTable;
 
             if (ParentTable.TableInfo.HasEntryIndices)
-                Index = (int)ID;
+                Index = ID;
 
                 IsValid = true;
 
@@ -44,7 +44,7 @@ namespace LibARMP
         /// <param name="id">The entry ID.</param>
         /// <param name="name">The entry name.</param>
         /// <param name="index">The entry index.</param>
-        internal ArmpEntry(ArmpTableBase parentTable, uint id, string name, int index) : this(parentTable, id, name)
+        internal ArmpEntry(ArmpTableBase parentTable, uint id, string name, uint index) : this(parentTable, id, name)
         {
             Index = index;
         }
@@ -69,13 +69,11 @@ namespace LibARMP
         /// <summary>
         /// Gets or sets the entry index.
         /// </summary>
-        /// <remarks><para>Can be null if unused.</para></remarks>
-        public int Index { get; set; }
+        public uint Index { get; set; }
 
         /// <summary>
         /// Gets or sets if the entry is valid.
         /// </summary>
-        /// <remarks><para>Can be null if unused.</para></remarks>
         public bool IsValid { get; set; }
 
         /// <summary>

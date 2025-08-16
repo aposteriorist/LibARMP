@@ -287,7 +287,7 @@ namespace LibARMP.IO
 
 
             ///// Entry Indices /////
-            if (table.TableInfo.HasEntryIndices) table.EntryIndices = Util.IterateArray<int>(reader, table.TableInfo.ptrEntryIndices, table.TableInfo.EntryCount, false);
+            if (table.TableInfo.HasEntryIndices) table.EntryIndices = Util.IterateArray<uint>(reader, table.TableInfo.ptrEntryIndices, table.TableInfo.EntryCount, false);
 
 
             ///// Entry Data /////
@@ -625,8 +625,6 @@ namespace LibARMP.IO
                 if (armpTableInfo.ptrEntryNamesOffsetTable > 0 && armpTableInfo.ptrEntryNamesOffsetTable < 0xFFFFFFFF) armpTableInfo.HasEntryNames = true;
                 if (armpTableInfo.ptrColumnNamesOffsetTable > 0 && armpTableInfo.ptrColumnNamesOffsetTable < 0xFFFFFFFF) armpTableInfo.HasColumnNames = true;
                 if (armpTableInfo.ptrColumnDataTypesAux > 0 && armpTableInfo.ptrColumnDataTypesAux < 0xFFFFFFFF) armpTableInfo.HasColumnDataTypesAux = true;
-                if (armpTableInfo.ptrEntryValidity > 0 && armpTableInfo.ptrEntryValidity < 0xFFFFFFFF) armpTableInfo.HasEntryValidity = true;
-                if (armpTableInfo.ptrColumnValidity > 0 && armpTableInfo.ptrColumnValidity < 0xFFFFFFFF) armpTableInfo.HasColumnValidity = true;
                 if (armpTableInfo.ptrEntryIndices > 0 && armpTableInfo.ptrEntryIndices < 0xFFFFFFFF) armpTableInfo.HasEntryIndices = true;
                 if (armpTableInfo.ptrColumnIndices > 0 && armpTableInfo.ptrColumnIndices < 0xFFFFFFFF) armpTableInfo.HasColumnIndices = true;
                 if (armpTableInfo.ptrEmptyValuesOffsetTable > 0 && armpTableInfo.ptrEmptyValuesOffsetTable < 0xFFFFFFFF) armpTableInfo.HasEmptyValues = true;
@@ -728,13 +726,13 @@ namespace LibARMP.IO
             {
                 if (!table.TableInfo.HasEntryIndices)
                 {
-                    ArmpEntry entry = new ArmpEntry(table, i, table.EntryNames[(int)i]);
+                    ArmpEntry entry = new ArmpEntry(table, i, table.EntryNames[(int)i], i);
                     entry.ParentTable = table;
                     table.Entries.Add(entry);
                 }
                 else
                 {
-                    ArmpEntry entry = new ArmpEntry(table, i, table.EntryNames[(int)i], table.EntryIndices[(int)i]);
+                    ArmpEntry entry = new ArmpEntry(table, i, table.EntryNames[(int)i], (uint)table.EntryIndices.IndexOf(i));
                     entry.ParentTable = table;
                     table.Entries.Add(entry);
                 }

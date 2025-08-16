@@ -357,10 +357,12 @@ namespace LibARMP.IO
 
             if (tableColumns.Count > 0)
             {
+                if (table.TableInfo.HasEntryIndices)
+                    table.Entries.Sort((x, y) => x.Index.CompareTo(y.Index));
+                foreach (ArmpEntry entry in table.GetAllEntries())
+                {
                 foreach (string column in tableColumns)
                 {
-                    foreach (ArmpEntry entry in table.GetAllEntries())
-                    {
                         try
                         {
                             ArmpTableBase tableValue = (ArmpTableBase)entry.GetValueFromColumn(column);
@@ -373,6 +375,8 @@ namespace LibARMP.IO
                         }
                     }
                 }
+                if (table.TableInfo.HasEntryIndices)
+                    table.Entries.Sort((x, y) => x.ID.CompareTo(y.ID));
             }
 
             uint indexerTablePtr = 0;
@@ -887,10 +891,17 @@ namespace LibARMP.IO
             if (table.TableInfo.HasEntryIndices)
             {
                 ptr = (int)writer.BaseStream.Position;
+                uint[] indices = new uint[table.TableInfo.EntryCount];
                 foreach (ArmpEntry entry in table.Entries)
                 {
-                    writer.Write(entry.Index);
+                    indices[entry.Index] = entry.ID;
                 }
+
+                foreach (uint entryIndex in indices)
+                {
+                    writer.Write(entryIndex);
+                }
+
                 // Update the main table pointer at 0x30
                 writer.WriteAtPosition(ptr, baseOffset + 0x30);
             }
