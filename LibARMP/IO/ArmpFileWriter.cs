@@ -357,10 +357,14 @@ namespace LibARMP.IO
 
             if (tableColumns.Count > 0)
             {
-                if (table.TableInfo.HasEntryIndices)
-                    table.Entries.Sort((x, y) => x.Index.CompareTo(y.Index));
-                foreach (ArmpEntry entry in table.GetAllEntries())
+                ArmpEntry entry;
+                for (int i = 0; i < table.TableInfo.EntryCount; i++)
                 {
+                    if (!table.TableInfo.HasEntryIndices)
+                        entry = table.Entries[i];
+                    else
+                        entry = table.Entries[(int)table.EntryIndices[i]];
+
                 foreach (string column in tableColumns)
                 {
                         try
@@ -375,8 +379,6 @@ namespace LibARMP.IO
                         }
                     }
                 }
-                if (table.TableInfo.HasEntryIndices)
-                    table.Entries.Sort((x, y) => x.ID.CompareTo(y.ID));
             }
 
             uint indexerTablePtr = 0;
