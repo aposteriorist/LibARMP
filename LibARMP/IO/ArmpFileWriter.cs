@@ -358,12 +358,13 @@ namespace LibARMP.IO
             if (tableColumns.Count > 0)
             {
                 ArmpEntry entry;
+                IReadOnlyList<ArmpEntry> entries = table.GetAllEntries();
                 for (int i = 0; i < table.TableInfo.EntryCount; i++)
                 {
                     if (!table.TableInfo.HasEntryIndices)
-                        entry = table.Entries[i];
+                        entry = entries[i];
                     else
-                        entry = table.Entries[(int)table.EntryIndices[i]];
+                        entry = entries[(int)table.EntryIndices[i]];
 
                 foreach (string column in tableColumns)
                 {
