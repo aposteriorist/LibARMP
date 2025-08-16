@@ -647,7 +647,7 @@ namespace LibARMP.IO
                                 }
                                 else
                                 {
-                                    writer.Write(-1);
+                                        writer.Write(0);
                                 }
                             }
                         }
