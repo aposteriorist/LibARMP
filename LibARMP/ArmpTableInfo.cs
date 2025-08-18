@@ -31,7 +31,7 @@ namespace LibARMP
             this.ptrColumnValidity = 0;
             this.ptrIndexerTable = 0;
             this.ptrEmptyValuesOffsetTable = 0;
-            this.ptrColumnDataTypesAux = 0;
+            this.ptrMemberInfo = 0;
             this.ptrExtraFieldInfo = 0;
             this.ptrColumnMetadata = 0;
 
@@ -40,7 +40,7 @@ namespace LibARMP
             this.HasIndexerTable = false;
             this.HasEntryNames = false;
             this.HasColumnNames = false;
-            this.HasColumnDataTypesAux = false;
+            this.HasMemberInfo = false;
             this.HasEntryValidity = false;
             this.HasEntryIndices = false;
             this.HasColumnIndices = false;
@@ -184,7 +184,7 @@ namespace LibARMP
         /// Gets or sets the pointer to the Auxiliary Column Data Type Table.
         /// </summary>
         /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
-        internal UInt32 ptrColumnDataTypesAux { get; set; }
+        internal UInt32 ptrMemberInfo { get; set; }
 
         /// <summary>
         /// Gets or sets the pointer to the additional Field Info.
@@ -226,7 +226,7 @@ namespace LibARMP
         /// Gets or sets the boolean indicating if the table has an auxiliary column data types list.
         /// </summary>
         /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
-        internal bool HasColumnDataTypesAux { get; set; }
+        internal bool HasMemberInfo { get; set; }
 
         /// <summary>
         /// Gets a boolean indicating if the table has validity flags for entries.

@@ -43,6 +43,8 @@ namespace LibARMP
         /// </summary>
         internal ArmpType Type { get; set; }
 
+        internal ArmpType MemberType { get; set; }
+
         /// <summary>
         /// Gets or sets the column index.
         /// </summary>
@@ -58,30 +60,25 @@ namespace LibARMP
         /// <summary>
         /// Gets if the column is special.
         /// </summary>
-        public bool IsSpecial { get; internal set; }
+        public bool IsArray { get; internal set; }
 
         /// <summary>
-        /// Amount of elements in the array if the column is special.
+        /// Amount of elements in the array, if the column is an array.
         /// </summary>
-        // TODO: Remove this. Equivalent to Children.Count
-        internal int SpecialSize { get; set; }
+        internal int ArraySize { get; set; }
+
+        internal List<int> ArrayIndices { get; set; }
 
         /// <summary>
         /// Distance between data if the table uses StorageMode 1.
         /// </summary>
-        internal int Distance { get; set; }
+        internal int Position { get; set; }
 
         /// <summary>
         /// Gets or sets the unknown metadata.
         /// </summary>
         /// <remarks><para>TODO</para></remarks>
         public int UnknownMetadata0x40 { get; set; }
-
-        /// <summary>
-        /// Gets or sets the unknown metadata.
-        /// </summary>
-        /// <remarks><para>TODO</para></remarks>
-        public int UnknownMetadata0x4C { get; set; }
 
         /// <summary>
         /// Gets or sets the column's children.
@@ -116,9 +113,8 @@ namespace LibARMP
             ArmpTableColumn copy = new ArmpTableColumn(ID, Name, Type);
             copy.Index = Index;
             copy.IsValid = IsValid;
-            copy.IsSpecial = IsSpecial;
+            copy.IsArray = IsArray;
             copy.UnknownMetadata0x40 = UnknownMetadata0x40;
-            copy.UnknownMetadata0x4C = UnknownMetadata0x4C;
 
             return copy;
         }

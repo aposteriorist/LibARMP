@@ -99,7 +99,7 @@ namespace LibARMP
                     {
                         ArmpTableColumn parentColumn = copy.ColumnNameCache[baseName];
                         parentColumn.Children.Add(copyColumn);
-                        parentColumn.SpecialSize += 1;
+                        parentColumn.ArraySize += 1;
                         copyColumn.Parent = parentColumn;
                     }
                 }
@@ -388,7 +388,7 @@ namespace LibARMP
 
             foreach (ArmpTableColumn column in Columns)
             {
-                if (column.IsSpecial && !includeSpecials) continue;
+                if (column.IsArray && !includeSpecials) continue;
                 returnList.Add(column.Name);
             }
 
@@ -723,7 +723,7 @@ namespace LibARMP
         {
             if (ColumnNameCache.ContainsKey(columnName))
             {
-                return ColumnNameCache[columnName].IsSpecial;
+                return ColumnNameCache[columnName].IsArray;
             }
             throw new ColumnNotFoundException(columnName);
         }
@@ -762,8 +762,8 @@ namespace LibARMP
                 //If the type is special
                 if (DataTypes.SpecialTypes.Contains(armpType.CSType))
                 {
-                    column.IsSpecial = true;
-                    column.SpecialSize = 0; //currently empty
+                    column.IsArray = true;
+                    column.ArraySize = 0; //currently empty
                     column.Children = new List<ArmpTableColumn>();
                 }
 
@@ -776,7 +776,7 @@ namespace LibARMP
                     {
                         ArmpTableColumn parentColumn = ColumnNameCache[baseName];
                         parentColumn.Children.Add(column);
-                        parentColumn.SpecialSize += 1;
+                        parentColumn.ArraySize += 1;
                         column.Parent = parentColumn;
                     }
                 }
@@ -818,7 +818,7 @@ namespace LibARMP
                 if (column.Parent != null)
                 {
                     column.Parent.Children.Remove(column);
-                    column.Parent.SpecialSize -= 1;
+                    column.Parent.ArraySize -= 1;
                     column.Parent = null;
                 }
 
@@ -1044,13 +1044,13 @@ namespace LibARMP
             {
                 if (column.Type.Size == 0)
                 {
-                    column.Distance = distance;
+                    column.Position = distance;
                     continue;
                 }
 
                 int padding = distance % column.Type.Size;
-                column.Distance = distance + padding;
-                distance = column.Distance + column.Type.Size;
+                column.Position = distance + padding;
+                distance = column.Position + column.Type.Size;
             }
         }
 

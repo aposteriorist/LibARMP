@@ -133,7 +133,7 @@ namespace LibARMP
         /// <param name="column">The <see cref="ArmpTableColumn"/>.</param>
         internal void SetDefaultColumnContent (ArmpTableColumn column)
         {
-            if (!column.IsSpecial)
+            if (!column.IsArray)
             {
                 SetValueFromColumn(column.Name, column.Type.DefaultValue);
             }
