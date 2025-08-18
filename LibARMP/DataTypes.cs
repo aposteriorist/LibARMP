@@ -7,10 +7,10 @@ namespace LibARMP
     internal class DataTypes
     {
 
-        internal static List<ArmpType> Types = new List<ArmpType>();
+        internal static List<ArmpType> Types = new List<ArmpType>(30);
 
 
-        internal static List<Type> SpecialTypes = new List<Type>()
+        internal static List<Type> SpecialTypes = new List<Type>(15)
         {
             typeof(List<byte>),
             typeof(List<UInt16>),
