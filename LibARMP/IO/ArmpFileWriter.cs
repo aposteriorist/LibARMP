@@ -1048,7 +1048,7 @@ namespace LibARMP.IO
 
 
         /// <summary>
-        /// Writes the DE v2 Data Types Aux table.
+        /// Writes the Member Info table.
         /// </summary>
         /// <param name="writer">The <see cref="BinaryWriter"/>.</param>
         /// <param name="table">The <see cref="ArmpTableBase"/>.</param>
@@ -1056,9 +1056,7 @@ namespace LibARMP.IO
         {
             foreach (ArmpTableColumn column in table.Columns)
             {
-                sbyte typeID = column.MemberType.GetID(table.TableInfo.FormatVersion);
-
-                writer.Write((int)column.MemberType.GetIDAux(table.TableInfo.FormatVersion)); // Aux Type ID
+                writer.Write((int)column.MemberType.GetIDAux(table.TableInfo.FormatVersion)); // Member type
                 writer.Write(column.Position); // Position
                 writer.Write(column.ArraySize); // Array size
                 writer.WriteTimes(0x00, 4); // Padding

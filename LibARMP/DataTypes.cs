@@ -50,6 +50,7 @@ namespace LibARMP
             Types.Add(new ArmpType() { CSType = typeof(Int16), IDv1 = 4, IDAuxv1 = 5, IDv2 = 4, IDAuxv2 = 7, IDOE = 1, Size = 0x2, DefaultValue = (Int16) 0 }); //int16
             Types.Add(new ArmpType() { CSType = typeof(Int32), IDv1 = 3, IDAuxv1 = 6, IDv2 = 3, IDAuxv2 = 6, IDOE = 0, Size = 0x4, DefaultValue = (Int32) 0 }); //int32
             Types.Add(new ArmpType() { CSType = typeof(Int64), IDv1 = 10, IDAuxv1 = 7, IDv2 = 10, IDAuxv2 = 5, IDOE = -1, Size = 0x8, DefaultValue = (Int64) 0 }); //int64
+            // Missing: float16 and float16 array types
             Types.Add(new ArmpType() { CSType = typeof(float), IDv1 = 7, IDAuxv1 = 9, IDv2 = 7, IDAuxv2 = 10, IDOE = -1, Size = 0x4, DefaultValue = (float) 0 }); //float32
             Types.Add(new ArmpType() { CSType = typeof(double), IDv1 = -1, IDAuxv1 = -1, IDv2 = 11, IDAuxv2 = 9, IDOE = -1, Size = 0x8, DefaultValue = (double) 0 }); //float64
             Types.Add(new ArmpType() { CSType = typeof(bool), IDv1 = 6, IDAuxv1 = 11, IDv2 = 6, IDAuxv2 = 4, IDOE = 6, Size = 0x1, DefaultValue = false }); //boolean

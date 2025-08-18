@@ -301,7 +301,7 @@ namespace LibARMP.IO
                 }
                 if (version == Version.DragonEngineV2)
                 {
-                    ReadColumnUnknownMetadata0x4C(reader, table.TableInfo.ptrExtraFieldInfo, table);
+                    ReadArrayInfoTable(reader, table.TableInfo.ptrExtraFieldInfo, table);
                 }
             }
             #endregion
@@ -1074,28 +1074,28 @@ namespace LibARMP.IO
         /// Reads the additional Column Metadata.
         /// </summary>
         /// <param name="reader">The <see cref="BinaryReader"/>.</param>
-        /// <param name="ptrEntryInfo">The pointer to the Entry Info section.</param>
+        /// <param name="ptrArrayInfo">The pointer to the Array Info section.</param>
         /// <param name="table">The table.</param>
         /// <remarks><para><b>DRAGON ENGINE V2 ONLY</b></para></remarks>
-        private static void ReadColumnUnknownMetadata0x4C(BinaryReader reader, uint ptrEntryInfo, ArmpTableBase table)
+        private static void ReadArrayInfoTable(BinaryReader reader, uint ptrArrayInfo, ArmpTableBase table)
         {
-            reader.BaseStream.Seek(ptrEntryInfo);
+            reader.BaseStream.Seek(ptrArrayInfo);
 
             for (int i = 0; i < table.Columns.Count; i++)
             {
-                int size = reader.ReadInt32();
-                int ptrMetadata = reader.ReadInt32();
+                int arraySize = reader.ReadInt32();
+                int ptrArrayIndices = reader.ReadInt32();
                 reader.ReadBytes(0x18); // Padding
 
-                if (size > 0)
+                if (arraySize > 0)
                 {
                     ArmpTableColumn column = table.Columns[i];
-                    reader.BaseStream.PushToPosition(ptrMetadata);
+                    reader.BaseStream.PushToPosition(ptrArrayIndices);
 
-                    foreach (ArmpTableColumn child in column.Children)
-                    {
-                        child.UnknownMetadata0x4C = reader.ReadInt32();
-                    }
+                    column.ArrayIndices = new List<int>(arraySize);
+                    for (int j = 0; j < arraySize; j++)
+                        column.ArrayIndices.Add(reader.ReadInt32());
+
 
                     reader.BaseStream.PopPosition();
                 }
