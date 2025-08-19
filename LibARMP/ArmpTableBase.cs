@@ -58,6 +58,11 @@ namespace LibARMP
         internal List<ArmpEntry> Entries { get; set; }
 
         /// <summary>
+        /// List of member info specifications (for Storage Mode 1) which together define a structure.
+        /// </summary>
+        internal List<ArmpMemberInfo> MemberInfo { get; set; }
+
+        /// <summary>
         /// Values marked as empty for specific columns (despite actually having a value).
         /// </summary>
         /// <remarks><para>[column index : list<bool> (length = entry count)]</para></remarks>

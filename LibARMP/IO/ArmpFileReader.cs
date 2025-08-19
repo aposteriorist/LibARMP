@@ -156,14 +156,13 @@ namespace LibARMP.IO
 
             ///// Member Info /////
             #region MemberInfo
-            List<int[]> memberInfoTable = null;
+
             List<ArmpType> memberTypes = new List<ArmpType>();
             if (table.TableInfo.HasMemberInfo)
             {
                 if (version == Version.DragonEngineV2)
                 {
-                    memberInfoTable = ReadMemberInfoTable(reader, table.TableInfo.ptrMemberInfo, table.TableInfo.ColumnCount);
-                    memberTypes = ParseMemberInfoTable(memberInfoTable, version);
+                    table.MemberInfo = ReadMemberInfoTable(reader, table.TableInfo.ptrMemberInfo, table.TableInfo.ColumnCount);
                 }
                 else
                 {
@@ -220,11 +219,8 @@ namespace LibARMP.IO
                     }
                     else // v2
                     {
-                        // Type already set in the constructor above
-                        column.MemberType = memberTypes[c];
-                        column.Position = memberInfoTable[c][1];
-                        column.ArraySize = memberInfoTable[c][2];
-                        column.IsArray = column.ArraySize > 0;
+                        table.MemberInfo[c].ColumnIndex = c;
+                        column.IsArray = table.MemberInfo[c].ArraySize > 0;
                     }
                 }
 
@@ -773,17 +769,19 @@ namespace LibARMP.IO
 
             else if (storageMode == StorageMode.Entry)
             {
+                ArmpTableColumn column;
                 foreach (ArmpEntry entry in table.Entries)
                 {
                     int ptrData = reader.ReadInt32();
                     long nextPtr = reader.BaseStream.Position;
 
-                    foreach (ArmpTableColumn column in table.Columns)
+                    foreach (ArmpMemberInfo memberInfo in table.MemberInfo)
                     {
-                        if (!column.IsValid || column.Position < 0) continue;
-                        reader.BaseStream.Seek(ptrData + column.Position);
+                        column = table.Columns[memberInfo.ColumnIndex];
+                        if (!column.IsValid || memberInfo.Position < 0) continue;
+                        reader.BaseStream.Seek(ptrData + memberInfo.Position);
                         entry.ColumnValueOffsets.Add(column.Name, (int)reader.BaseStream.Position);
-                        ReadValue(reader, table, version, entry, column, column.MemberType);
+                        ReadValue(reader, table, version, entry, column, memberInfo.Type);
                     }
 
                     reader.BaseStream.Seek(nextPtr);
@@ -819,9 +817,7 @@ namespace LibARMP.IO
                 else
                 {
                     byte value = reader.ReadByte();
-                    bool boolValue = true;
-                    if (value == 0) boolValue = false;
-                    entry.Data.Add(column.Name, boolValue);
+                    entry.Data.Add(column.Name, value != 0);
                 }
             }
 
@@ -1081,7 +1077,7 @@ namespace LibARMP.IO
         {
             reader.BaseStream.Seek(ptrArrayInfo);
 
-            for (int i = 0; i < table.Columns.Count; i++)
+            for (int i = 0; i < table.MemberInfo.Count; i++)
             {
                 int arraySize = reader.ReadInt32();
                 int ptrArrayIndices = reader.ReadInt32();
@@ -1089,12 +1085,16 @@ namespace LibARMP.IO
 
                 if (arraySize > 0)
                 {
-                    ArmpTableColumn column = table.Columns[i];
+                    ArmpMemberInfo memberInfo = table.MemberInfo[i];
                     reader.BaseStream.PushToPosition(ptrArrayIndices);
 
-                    column.ArrayIndices = new List<int>(arraySize);
+                    int index;
+                    memberInfo.ArrayIndices = new List<int>(arraySize);
                     for (int j = 0; j < arraySize; j++)
-                        column.ArrayIndices.Add(reader.ReadInt32());
+                    {
+                        index = reader.ReadInt32();
+                        memberInfo.ArrayIndices.Add(index);
+                    }
 
 
                     reader.BaseStream.PopPosition();
@@ -1105,25 +1105,33 @@ namespace LibARMP.IO
 
 
         /// <summary>
-        /// Reads the Column Data Types auxiliary table.
+        /// Reads the Member Info table.
         /// </summary>
         /// <param name="reader">The <see cref="BinaryReader"/>.</param>
         /// <param name="ptrTable">The pointer to the auxiliary table.</param>
         /// <param name="columnAmount">The amount of columns in the table.</param>
-        private static List<int[]> ReadMemberInfoTable(BinaryReader reader, uint ptrTable, int columnAmount)
+        private static List<ArmpMemberInfo> ReadMemberInfoTable(BinaryReader reader, uint ptrTable, int columnAmount)
         {
             reader.BaseStream.Seek(ptrTable);
-            List<int[]> MemberInfoTable = new List<int[]>(columnAmount);
+            List<ArmpMemberInfo> MemberInfoTable = new List<ArmpMemberInfo>(columnAmount);
 
+            int type;
             for (int i = 0; i < columnAmount; i++)
             {
-                int[] memberInfo =
+                ArmpMemberInfo memberInfo = new ArmpMemberInfo();
+                type = reader.ReadInt32();
+                foreach (ArmpType armpType in DataTypes.Types)
                 {
-                    reader.ReadInt32(), // Type
-                    reader.ReadInt32(), // Position
-                    reader.ReadInt32(), // Array Size
-                    reader.ReadInt32(), // Reserved
-                };
+                    if (armpType.GetIDAux(Version.DragonEngineV2) == type)
+                {
+                        memberInfo.Type = armpType;
+                        break;
+                    }
+                }
+                memberInfo.Position = reader.ReadInt32(); // Position
+                memberInfo.ArraySize = reader.ReadUInt32(); // Array Size
+                reader.ReadInt32(); // Reserved
+
                 MemberInfoTable.Add(memberInfo);
             }
 

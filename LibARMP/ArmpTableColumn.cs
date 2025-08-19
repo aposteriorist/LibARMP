@@ -43,8 +43,6 @@ namespace LibARMP
         /// </summary>
         internal ArmpType Type { get; set; }
 
-        internal ArmpType MemberType { get; set; }
-
         /// <summary>
         /// Gets or sets the column index.
         /// </summary>
@@ -58,21 +56,9 @@ namespace LibARMP
         public bool IsValid { get; set; }
 
         /// <summary>
-        /// Gets if the column is special.
+        /// Gets if the column begins an array.
         /// </summary>
         public bool IsArray { get; internal set; }
-
-        /// <summary>
-        /// Amount of elements in the array, if the column is an array.
-        /// </summary>
-        internal int ArraySize { get; set; }
-
-        internal List<int> ArrayIndices { get; set; }
-
-        /// <summary>
-        /// Distance between data if the table uses StorageMode 1.
-        /// </summary>
-        internal int Position { get; set; }
 
         /// <summary>
         /// Gets or sets the unknown metadata.
