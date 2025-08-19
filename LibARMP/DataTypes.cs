@@ -10,26 +10,6 @@ namespace LibARMP
         internal static List<ArmpType> Types = new List<ArmpType>(30);
 
 
-        internal static List<Type> SpecialTypes = new List<Type>(15)
-        {
-            typeof(List<byte>),
-            typeof(List<UInt16>),
-            typeof(List<UInt32>),
-            typeof(List<UInt64>),
-            typeof(List<sbyte>),
-            typeof(List<Int16>),
-            typeof(List<Int32>),
-            typeof(List<Int64>),
-            typeof(List<string>),
-            typeof(List<ArmpTable>),
-            typeof(List<float>),
-            typeof(List<double>),
-            typeof(float[]),
-            typeof(double[]),
-            typeof(List<bool>),
-        };
-
-
         static DataTypes()
         {
             Init();
