@@ -767,7 +767,7 @@ namespace LibARMP.IO
             }
 
 
-            else if (storageMode == StorageMode.Entry)
+            else if (storageMode == StorageMode.Structured)
             {
                 foreach (ArmpEntry entry in table.Entries)
                 {

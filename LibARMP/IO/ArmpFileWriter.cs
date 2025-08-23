@@ -755,9 +755,9 @@ namespace LibARMP.IO
             #endregion
 
 
-            #region ColumnContentsModeEntry
+            #region ColumnContentsModeStructured
 
-            else if (table.TableInfo.StorageMode == StorageMode.Entry)
+            else if (table.TableInfo.StorageMode == StorageMode.Structured)
             {
                 List<int> entryValueOffsets = new List<int>();
                 ArmpTableColumn column;
