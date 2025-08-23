@@ -385,15 +385,15 @@ namespace LibARMP
         /// <summary>
         /// Gets the column names.
         /// </summary>
-        /// <param name="includeSpecials">Include special columns? (Array data types. These columns do not contain data)</param>
+        /// <param name="includeArrayHeaders">Include array headers, which contain no data.</param>
         /// <returns>A <see cref="string"/> list.</returns>
-        public List<string> GetColumnNames (bool includeSpecials = true)
+        public List<string> GetColumnNames (bool includeArrayHeaders = true)
         {
-            List<string> returnList = new List<string>();
+            List<string> returnList = new List<string>(TableInfo.ColumnCount);
 
             foreach (ArmpTableColumn column in Columns)
             {
-                if (column.IsArray && !includeSpecials) continue;
+                if (column.Type.IsArray && !includeArrayHeaders) continue;
                 returnList.Add(column.Name);
             }
 
@@ -688,6 +688,7 @@ namespace LibARMP
                     entry.RemoveColumnContent(column.Name);
                 }
                 column.IsValid = false;
+                if (column.MemberInfo != null) column.MemberInfo.Position = -1;
             }
         }
 
@@ -724,11 +725,11 @@ namespace LibARMP
         /// <param name="columnName">The column name.</param>
         /// <returns>A <see cref="Boolean"/></returns>
         /// <exception cref="ColumnNotFoundException">The table has no column with the specified name.</exception>
-        public bool IsColumnSpecial (string columnName)
+        public bool IsColumnArray (string columnName)
         {
             if (ColumnNameCache.ContainsKey(columnName))
             {
-                return ColumnNameCache[columnName].IsArray;
+                return ColumnNameCache[columnName].Type.IsArray;
             }
             throw new ColumnNotFoundException(columnName);
         }
@@ -761,31 +762,19 @@ namespace LibARMP
             ArmpTableColumn column = new ArmpTableColumn(id, columnName, armpType);
             if (TableInfo.HasColumnIndices) column.Index = (int)id;
             column.IsValid = true;
+            if (armpType.IsArray) column.Children = new List<ArmpTableColumn>();
 
-            if (TableInfo.FormatVersion == Version.DragonEngineV2)
+            if (TableInfo.HasMemberInfo)
             {
-                //If the type is special
-                if (DataTypes.SpecialTypes.Contains(armpType.CSType))
+                ArmpMemberInfo info = new ArmpMemberInfo()
                 {
-                    column.IsArray = true;
-                    column.ArraySize = 0; //currently empty
-                    column.Children = new List<ArmpTableColumn>();
+                    Type = armpType,    // Fine for now but not strictly correct
+                    Position = -1,
+                };
+                MemberInfo.Add(info);
+                column.MemberInfo = info;
+                info.Column = column;
                 }
-
-                //Check if the name matches an existing special column and assign parent/child
-                //NOTE: unsure if allowing the creation of a column with child naming but no parent will cause problems down the line.
-                if (columnName.Contains("[") && columnName.Contains("]"))
-                {
-                    string baseName = columnName.Split('[')[0];
-                    if (ColumnNameCache.ContainsKey(baseName))
-                    {
-                        ArmpTableColumn parentColumn = ColumnNameCache[baseName];
-                        parentColumn.Children.Add(column);
-                        parentColumn.ArraySize += 1;
-                        column.Parent = parentColumn;
-                    }
-                }
-            }
 
             Columns.Add(column);
             RefreshColumnNameCache();
@@ -819,17 +808,30 @@ namespace LibARMP
             {
                 ArmpTableColumn column = ColumnNameCache[columnName];
 
-                //Remove column from parent and children
+                // Replace column in parent array with null reference
                 if (column.Parent != null)
                 {
-                    column.Parent.Children.Remove(column);
-                    column.Parent.ArraySize -= 1;
+                    int index = column.Parent.Children.IndexOf(column);
+                    column.Parent.Children[index] = null;
                     column.Parent = null;
                 }
 
+                // Remove column as parent from array elements
+                if (column.Children?.Count > 0)
+                {
                 foreach (ArmpTableColumn child in column.Children)
                 {
                     child.Parent = null;
+                }
+                    column.Children.Clear();
+                }
+
+                // Delete member info if it exists
+                if (TableInfo.HasMemberInfo)
+                {
+                    column.MemberInfo.Column = null;
+                    MemberInfo.Remove(column.MemberInfo);
+                    column.MemberInfo = null;
                 }
 
                 Columns.Remove(column);

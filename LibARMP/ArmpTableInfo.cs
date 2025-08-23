@@ -181,7 +181,7 @@ namespace LibARMP
         internal UInt32 ptrEmptyValuesOffsetTable { get; set; }
 
         /// <summary>
-        /// Gets or sets the pointer to the Auxiliary Column Data Type Table.
+        /// Gets or sets the pointer to the Member Info table.
         /// </summary>
         /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
         internal UInt32 ptrMemberInfo { get; set; }

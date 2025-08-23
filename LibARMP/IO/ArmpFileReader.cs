@@ -331,6 +331,10 @@ namespace LibARMP.IO
             #endregion
 
 
+            // Now that file reading is over, MemberInfo should be sorted by position to facilitate editing later.
+            if (table.TableInfo.HasMemberInfo)
+                table.MemberInfo.Sort((x, y) => x.Position.CompareTo(y.Position));
+
             table.RefreshColumnNameCache();
             return table;
         }
