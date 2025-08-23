@@ -564,7 +564,7 @@ namespace LibARMP.IO
                 armpTableInfo.EntryCount = reader.ReadInt32();
                 armpTableInfo.ColumnCount = reader.ReadInt32();
                 armpTableInfo.TextCount = reader.ReadInt32();
-                armpTableInfo.EntryValidator = reader.ReadInt32();
+                armpTableInfo.DefaultEntryIndex = reader.ReadInt32();
                 armpTableInfo.ptrEntryNamesOffsetTable = reader.ReadUInt32();
                 armpTableInfo.ptrEntryValidity = reader.ReadUInt32();
                 armpTableInfo.ptrColumnDataTypes = reader.ReadUInt32();
@@ -573,7 +573,7 @@ namespace LibARMP.IO
                 byte tableFlags = reader.ReadByte();
                 armpTableInfo.ptrTextOffsetTable = reader.ReadUInt32();
                 armpTableInfo.ptrColumnNamesOffsetTable = reader.ReadUInt32();
-                armpTableInfo.ColumnValidator = reader.ReadInt32();
+                armpTableInfo.DefaultColumnIndex = reader.ReadInt32();
                 armpTableInfo.ptrEntryIndices = reader.ReadUInt32();
                 armpTableInfo.ptrColumnIndices = reader.ReadUInt32();
                 armpTableInfo.ptrColumnValidity = reader.ReadUInt32();
@@ -590,8 +590,8 @@ namespace LibARMP.IO
                 armpTableInfo.UnknownFlag2 = (tableFlags & (1 << 2)) != 0;
                 armpTableInfo.UnknownFlag3 = (tableFlags & (1 << 3)) != 0;
                 armpTableInfo.UnknownFlag4 = (tableFlags & (1 << 4)) != 0;
-                armpTableInfo.UnknownFlag5 = (tableFlags & (1 << 5)) != 0;
-                armpTableInfo.UnknownFlag6 = (tableFlags & (1 << 6)) != 0;
+                armpTableInfo.DoNotUseRaw = (tableFlags & (1 << 5)) != 0;
+                armpTableInfo.MembersWellFormatted = (tableFlags & (1 << 6)) != 0;
                 armpTableInfo.IsProcessedForMemory = (tableFlags & (1 << 7)) != 0;
 
                 if (armpTableInfo.TextCount > 0) armpTableInfo.HasText = true;

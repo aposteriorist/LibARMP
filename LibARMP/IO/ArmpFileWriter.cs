@@ -429,12 +429,12 @@ namespace LibARMP.IO
             writer.BaseStream.PopPosition();
 
 
-            ///// Entry Validator /////
-            writer.WriteAtPosition(table.TableInfo.EntryValidator, baseOffset + 0xC);
+            ///// Default Entry Index /////
+            writer.WriteAtPosition(table.TableInfo.DefaultEntryIndex, baseOffset + 0xC);
 
 
-            ///// Column Validator /////
-            writer.WriteAtPosition(table.TableInfo.ColumnValidator, baseOffset + 0x2C);
+            ///// Default Column Index /////
+            writer.WriteAtPosition(table.TableInfo.DefaultColumnIndex, baseOffset + 0x2C);
 
 
             ///// Entry Validity //////

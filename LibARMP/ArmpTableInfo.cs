@@ -14,8 +14,8 @@ namespace LibARMP
             this.EntryCount = 0;
             this.ColumnCount = 0;
             this.TextCount = 0;
-            this.EntryValidator = 0;
-            this.ColumnValidator = 0;
+            this.DefaultEntryIndex = -1;
+            this.DefaultColumnIndex = -1;
             this.TableID = 0;
             this.StorageMode = 0;
 
@@ -69,16 +69,16 @@ namespace LibARMP
         public Int32 TextCount { get; internal set; }
 
         /// <summary>
-        /// Gets a value indicating the validity of entries.
+        /// Gets the index of the default entry, if one exists.
         /// </summary>
         /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
-        public Int32 EntryValidator { get; internal set; }
+        public Int32 DefaultEntryIndex { get; internal set; }
 
         /// <summary>
-        /// Gets a value indicating the validity of columns.
+        /// Gets the index of the default column, if one exists.
         /// </summary>
         /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
-        public Int32 ColumnValidator { get; internal set; }
+        public Int32 DefaultColumnIndex { get; internal set; }
 
         /// <summary>
         /// Gets the table ID (Int24).
@@ -96,16 +96,24 @@ namespace LibARMP
         public bool UnknownFlag2 { get; internal set; } //Flag 2
         public bool UnknownFlag3 { get; internal set; } //Flag 3
         public bool UnknownFlag4 { get; internal set; } //Flag 4
-        public bool UnknownFlag5 { get; internal set; } //Flag 5
 
         /// <summary>
-        /// Purpose unknown. Gets set when the armp is loaded into memory. It does not get set with modded/resaved armps. Are we missing data?
+        /// When set, signals not to point directly to raw entries within the armp in memory.
+        /// In other words, this flag forces code to ignore flag 6.
         /// </summary>
-        /// <remarks>Flag 6</remarks>
-        public bool UnknownFlag6 { get; internal set; } //Flag 6
+        public bool DoNotUseRaw { get; internal set; } //Flag 5
 
         /// <summary>
-        /// Are the text indices and table type offsets processed? (Turned into memory pointers)
+        /// When set, signals that member info in the armp (loaded into memory) has been verified to be formatted as expected.
+        /// The game's code will then treat armp entries as valid structs where applicable.
+        /// </summary>
+        /// <remarks>Cannot be set without flag 7.</remarks>
+        public bool MembersWellFormatted { get; internal set; } //Flag 6
+
+        /// <summary>
+        /// When set, signals that the armp table in memory has been initialized.
+        /// In Storage Mode 1, initialization includes string and table pointer adjustments, as well as member info verification.
+        /// In Storage Mode 0, this flag is only a rubber stamp.
         /// </summary>
         /// <remarks>Flag 7</remarks>
         public bool IsProcessedForMemory { get; internal set; } //Flag 7
