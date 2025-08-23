@@ -157,7 +157,7 @@ namespace LibARMP.IO
             ///// Member Info /////
             #region MemberInfo
 
-            List<ArmpType> memberTypes = new List<ArmpType>();
+            List<ArmpType> memberTypes = null;
             if (table.TableInfo.HasMemberInfo)
             {
                 if (version == Version.DragonEngineV2)
@@ -175,14 +175,14 @@ namespace LibARMP.IO
             ///// Column Validity /////
             #region ColumnValidity
 
-            List<bool> columnValidity = new List<bool>();
+            List<bool> columnValidity = null;
             if (table.TableInfo.ptrColumnValidity != 0 && table.TableInfo.ptrColumnValidity != 0xFFFFFFFF)
             {
                 columnValidity = Util.IterateBooleanBitmask(reader, table.TableInfo.ptrColumnValidity, table.TableInfo.ColumnCount, false);
             }
             else
             {
-                columnValidity.Capacity = table.TableInfo.ColumnCount;
+                columnValidity = new List<bool>(table.TableInfo.ColumnCount);
                 bool[] values = new bool[table.TableInfo.ColumnCount];
                 if (table.TableInfo.ptrColumnValidity == 0xFFFFFFFF)
                 {
@@ -194,12 +194,12 @@ namespace LibARMP.IO
 
 
             ///// Column Indices /////
-            List<int> columnIndices = new List<int>();
+            List<int> columnIndices = null;
             if (table.TableInfo.HasColumnIndices) columnIndices = Util.IterateArray<int>(reader, table.TableInfo.ptrColumnIndices, table.TableInfo.ColumnCount, false);
 
 
             ///// Column Metadata /////
-            List<int> columnMetadata0x40 = new List<int>();
+            List<int> columnMetadata0x40 = null;
             if (table.TableInfo.HasColumnMetadata) columnMetadata0x40 = Util.IterateArray<int>(reader, table.TableInfo.ptrColumnMetadata, table.TableInfo.ColumnCount, false);
 
 
