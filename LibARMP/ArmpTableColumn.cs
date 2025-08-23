@@ -56,11 +56,6 @@ namespace LibARMP
         public bool IsValid { get; set; }
 
         /// <summary>
-        /// Gets if the column begins an array.
-        /// </summary>
-        public bool IsArray { get; internal set; }
-
-        /// <summary>
         /// Gets or sets the unknown metadata.
         /// </summary>
         /// <remarks><para>TODO</para></remarks>
@@ -99,7 +94,6 @@ namespace LibARMP
             ArmpTableColumn copy = new ArmpTableColumn(ID, Name, Type);
             copy.Index = Index;
             copy.IsValid = IsValid;
-            copy.IsArray = IsArray;
             copy.UnknownMetadata0x40 = UnknownMetadata0x40;
 
             return copy;

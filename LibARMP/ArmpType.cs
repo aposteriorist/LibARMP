@@ -49,6 +49,11 @@ namespace LibARMP
         /// </summary>
         internal sbyte Size { get; set; }
 
+        /// <summary>
+        /// If this represents an array type (in formats that support arrays).
+        /// </summary>
+        internal bool IsArray { get; set; }
+
 
         
         internal sbyte GetID (Version version)
