@@ -770,15 +770,15 @@ namespace LibARMP.IO
 
                     foreach (ArmpMemberInfo memberInfo in table.MemberInfo)
                     {
-                        column = table.Columns[memberInfo.ColumnIndex];
-                        if (!column.IsValid || memberInfo.Position < 0) continue;
+                        column = memberInfo.Column;
+                        if (!column.IsValid || memberInfo.Type.IsArray || memberInfo.Position < 0) continue;
 
                         writer.BaseStream.Position = startOffset + memberInfo.Position;
 
                         // Write operations based on column type
                         if (table.IsColumnValid(column.Name))
                         {
-                            if (memberInfo.Type.CSType == typeof(string) || memberInfo.Type.CSType == typeof(List<string>))
+                            if (memberInfo.Type.CSType == typeof(string))
                             {
                                 if (entry.GetValueFromColumn(column.Name) != null)
                                 {
@@ -791,13 +791,13 @@ namespace LibARMP.IO
                                 }
                             }
 
-                            else if (memberInfo.Type.CSType == typeof(bool) || memberInfo.Type.CSType == typeof(List<bool>))
+                            else if (memberInfo.Type.CSType == typeof(bool))
                             {
                                 bool val = (bool)entry.GetValueFromColumn(column.Name);
                                 writer.Write(Convert.ToByte(val));
                             }
 
-                            else if (memberInfo.Type.CSType == typeof(ArmpTable) || memberInfo.Type.CSType == typeof(List<ArmpTable>))
+                            else if (memberInfo.Type.CSType == typeof(ArmpTable))
                             {
                                 try
                                 {
@@ -810,52 +810,52 @@ namespace LibARMP.IO
                                 }
                             }
 
-                            else if (memberInfo.Type.CSType == typeof(float) || memberInfo.Type.CSType == typeof(List<float>))
+                            else if (memberInfo.Type.CSType == typeof(float))
                             {
                                     writer.Write(entry.GetValueFromColumn<float>(column.Name));
                             }
 
-                            else if (memberInfo.Type.CSType == typeof(double) || memberInfo.Type.CSType == typeof(List<double>))
+                            else if (memberInfo.Type.CSType == typeof(double))
                             {
                                     writer.Write(entry.GetValueFromColumn<double>(column.Name));
                             }
 
-                            else if (memberInfo.Type.CSType == typeof(byte) || memberInfo.Type.CSType == typeof(List<byte>))
+                            else if (memberInfo.Type.CSType == typeof(byte))
                             {
                                     writer.Write(entry.GetValueFromColumn<byte>(column.Name));
                             }
 
-                            else if (memberInfo.Type.CSType == typeof(sbyte) || memberInfo.Type.CSType == typeof(List<sbyte>))
+                            else if (memberInfo.Type.CSType == typeof(sbyte))
                             {
                                     writer.Write(entry.GetValueFromColumn<sbyte>(column.Name));
                             }
 
-                            else if (memberInfo.Type.CSType == typeof(UInt16) || memberInfo.Type.CSType == typeof(List<UInt16>))
+                            else if (memberInfo.Type.CSType == typeof(UInt16))
                             {
                                     writer.Write(entry.GetValueFromColumn<UInt16>(column.Name));
                             }
 
-                            else if (memberInfo.Type.CSType == typeof(Int16) || memberInfo.Type.CSType == typeof(List<Int16>))
+                            else if (memberInfo.Type.CSType == typeof(Int16))
                             {
                                     writer.Write(entry.GetValueFromColumn<Int16>(column.Name));
                             }
 
-                            else if (memberInfo.Type.CSType == typeof(UInt32) || memberInfo.Type.CSType == typeof(List<UInt32>))
+                            else if (memberInfo.Type.CSType == typeof(UInt32))
                             {
                                     writer.Write(entry.GetValueFromColumn<UInt32>(column.Name));
                             }
 
-                            else if (memberInfo.Type.CSType == typeof(Int32) || memberInfo.Type.CSType == typeof(List<Int32>))
+                            else if (memberInfo.Type.CSType == typeof(Int32))
                             {
                                     writer.Write(entry.GetValueFromColumn<Int32>(column.Name));
                             }
 
-                            else if (column.MemberType.CSType == typeof(UInt64) || column.MemberType.CSType == typeof(List<UInt64>))
+                            else if (memberInfo.Type.CSType == typeof(UInt64))
                             {
                                     writer.Write(entry.GetValueFromColumn<UInt64>(column.Name));
                             }
 
-                            else if (memberInfo.Type.CSType == typeof(Int64) || memberInfo.Type.CSType == typeof(List<Int64>))
+                            else if (memberInfo.Type.CSType == typeof(Int64))
                             {
                                     writer.Write(entry.GetValueFromColumn<Int64>(column.Name));
                             }
@@ -1012,28 +1012,27 @@ namespace LibARMP.IO
             if (table.TableInfo.FormatVersion == Version.DragonEngineV2 && table.TableInfo.HasExtraFieldInfo)
             {
                 List<int> offsets = new List<int>();
-                foreach (ArmpMemberInfo memberInfo in table.MemberInfo)
+                foreach (ArmpTableColumn column in table.Columns)
                 {
-                    if (memberInfo.ArraySize > 0)
+                    if (column.Children?.Count > 0)
                     {
                         offsets.Add((int)writer.BaseStream.Position);
 
-                        foreach(int index in memberInfo.ArrayIndices)
-                            writer.Write(index);
+                        foreach (ArmpTableColumn child in column.Children)
+                            writer.Write(child != null ? child.ID : 0);
                     }
                 }
                 offsets.Add((int)writer.BaseStream.Position);
-                writer.Write(0);
                 writer.WritePadding(0x00, 0x8);
 
                 ptr = (int)writer.BaseStream.Position;
 
-                foreach (ArmpMemberInfo memberInfo in table.MemberInfo)
+                foreach (ArmpTableColumn column in table.Columns)
                 {
-                    writer.Write(memberInfo.ArraySize);
+                    writer.Write(column.Children?.Count ?? 0);
                     writer.Write(offsets[0]);
                     writer.WriteTimes(0x00, 0x18);
-                    if (memberInfo.ArraySize > 0)
+                    if (column.Children?.Count > 0)
                     {
                         offsets.RemoveAt(0);
                     }
@@ -1052,12 +1051,13 @@ namespace LibARMP.IO
         /// <param name="table">The <see cref="ArmpTableBase"/>.</param>
         private static void WriteMemberInfoTable(BinaryWriter writer, ArmpTableBase table)
         {
-            foreach (ArmpMemberInfo memberInfo in table.MemberInfo)
+            // Use the list of columns to avoid having to sort MemberInfo by column index.
+            foreach (ArmpTableColumn column in table.Columns)
             {
-                writer.Write((int)memberInfo.Type.GetIDAux(table.TableInfo.FormatVersion)); // Member type
-                writer.Write(memberInfo.Position); // Position
-                writer.Write(memberInfo.ArraySize); // Array size
-                writer.WriteTimes(0x00, 4); // Reserved bytes
+                writer.Write((int)column.MemberInfo.Type.GetIDAux(table.TableInfo.FormatVersion)); // Member type
+                writer.Write(column.MemberInfo.Position); // Position
+                writer.Write(column.MemberInfo.ArraySize); // Array size
+                writer.Write(0u); // Reserved bytes
             }
         }
     }

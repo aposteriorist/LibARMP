@@ -13,7 +13,6 @@ namespace LibARMP
         internal ArmpTableColumn(uint id)
         {
             this.ID = id;
-            Children = new List<ArmpTableColumn>();
         }
 
         /// <summary>
@@ -44,6 +43,12 @@ namespace LibARMP
         internal ArmpType Type { get; set; }
 
         /// <summary>
+        /// Gets the member info, if applicable.
+        /// </summary>
+        /// <remarks>This reference is kept to avoid unnecessarily sorting the table's MemberInfo List.</remarks>
+        internal ArmpMemberInfo MemberInfo { get; set; }
+
+        /// <summary>
         /// Gets or sets the column index.
         /// </summary>
         /// <remarks><para>Can be null if unused.</para></remarks>
@@ -64,13 +69,13 @@ namespace LibARMP
         /// <summary>
         /// Gets or sets the column's children.
         /// </summary>
-        /// <remarks><para>Only used if the column is special.</para><para><b>DRAGON ENGINE V2 ONLY</b></para></remarks>
+        /// <remarks><para>Only used if the column is of an array type.</para><para><b>DRAGON ENGINE V2 ONLY</b></para></remarks>
         internal List<ArmpTableColumn> Children { get; set; }
 
         /// <summary>
         /// Gets or sets the column's parent.
         /// </summary>
-        /// <remarks><para>Only used if the column is child of a special.</para><para><b>DRAGON ENGINE V2 ONLY</b></para></remarks>
+        /// <remarks><para>Only used if the column is child of an array-type column.</para><para><b>DRAGON ENGINE V2 ONLY</b></para></remarks>
         internal ArmpTableColumn Parent { get; set; }
 
 

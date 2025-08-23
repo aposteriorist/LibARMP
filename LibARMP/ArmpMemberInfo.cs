@@ -22,13 +22,8 @@ namespace LibARMP
         internal uint ArraySize { get; set; }
 
         /// <summary>
-        /// Indices of the array elements.
+        /// The associated column.
         /// </summary>
-        internal List<int> ArrayIndices { get; set; }
-
-        /// <summary>
-        /// Index of the associated column.
-        /// </summary>
-        internal int ColumnIndex { get; set; }
+        internal ArmpTableColumn Column { get; set; }
     }
 }

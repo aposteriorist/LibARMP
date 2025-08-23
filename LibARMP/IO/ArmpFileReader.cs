@@ -219,8 +219,8 @@ namespace LibARMP.IO
                     }
                     else // v2
                     {
-                        table.MemberInfo[c].ColumnIndex = c;
-                        column.IsArray = table.MemberInfo[c].ArraySize > 0;
+                        column.MemberInfo = table.MemberInfo[c];
+                        table.MemberInfo[c].Column = column;
                     }
                 }
 
@@ -769,7 +769,6 @@ namespace LibARMP.IO
 
             else if (storageMode == StorageMode.Entry)
             {
-                ArmpTableColumn column;
                 foreach (ArmpEntry entry in table.Entries)
                 {
                     int ptrData = reader.ReadInt32();
@@ -777,11 +776,10 @@ namespace LibARMP.IO
 
                     foreach (ArmpMemberInfo memberInfo in table.MemberInfo)
                     {
-                        column = table.Columns[memberInfo.ColumnIndex];
-                        if (!column.IsValid || memberInfo.Position < 0) continue;
+                        if (!memberInfo.Column.IsValid || memberInfo.Type.IsArray || memberInfo.Position < 0) continue;
                         reader.BaseStream.Seek(ptrData + memberInfo.Position);
-                        entry.ColumnValueOffsets.Add(column.Name, (int)reader.BaseStream.Position);
-                        ReadValue(reader, table, version, entry, column, memberInfo.Type);
+                        entry.ColumnValueOffsets.Add(memberInfo.Column.Name, (int)reader.BaseStream.Position);
+                        ReadValue(reader, table, version, entry, memberInfo.Column, memberInfo.Type);
                     }
 
                     reader.BaseStream.Seek(nextPtr);
@@ -1067,7 +1065,7 @@ namespace LibARMP.IO
 
 
         /// <summary>
-        /// Reads the additional Column Metadata.
+        /// Reads the Array Info table.
         /// </summary>
         /// <param name="reader">The <see cref="BinaryReader"/>.</param>
         /// <param name="ptrArrayInfo">The pointer to the Array Info section.</param>
@@ -1077,25 +1075,30 @@ namespace LibARMP.IO
         {
             reader.BaseStream.Seek(ptrArrayInfo);
 
-            for (int i = 0; i < table.MemberInfo.Count; i++)
+            foreach (ArmpTableColumn column in table.Columns)
             {
                 int arraySize = reader.ReadInt32();
                 int ptrArrayIndices = reader.ReadInt32();
                 reader.ReadBytes(0x18); // Padding
 
-                if (arraySize > 0)
+                if (arraySize > 0 && ptrArrayIndices > 0)
                 {
-                    ArmpMemberInfo memberInfo = table.MemberInfo[i];
+                    column.Children = new List<ArmpTableColumn>(arraySize);
                     reader.BaseStream.PushToPosition(ptrArrayIndices);
 
                     int index;
-                    memberInfo.ArrayIndices = new List<int>(arraySize);
                     for (int j = 0; j < arraySize; j++)
                     {
                         index = reader.ReadInt32();
-                        memberInfo.ArrayIndices.Add(index);
+                        if (index > 0)
+                        {
+                            ArmpTableColumn child = table.Columns[index];
+                            column.Children.Add(child);
+                            child.Parent = column;
+                        }
+                        else
+                            column.Children.Add(null);
                     }
-
 
                     reader.BaseStream.PopPosition();
                 }
@@ -1128,8 +1131,8 @@ namespace LibARMP.IO
                         break;
                     }
                 }
-                memberInfo.Position = reader.ReadInt32(); // Position
-                memberInfo.ArraySize = reader.ReadUInt32(); // Array Size
+                memberInfo.Position = reader.ReadInt32();
+                memberInfo.ArraySize = reader.ReadUInt32();
                 reader.ReadInt32(); // Reserved
 
                 MemberInfoTable.Add(memberInfo);
