@@ -594,7 +594,7 @@ namespace LibARMP.IO
                 List<int> columnValueOffsets = new List<int>();
                 foreach (ArmpTableColumn column in table.Columns)
                 {
-                    if (column.IsValid == false)
+                    if (!column.IsValid || column.Type.IsArray)
                     {
                         columnValueOffsets.Add(0);
                     }
