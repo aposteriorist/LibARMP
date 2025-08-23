@@ -556,15 +556,10 @@ namespace LibARMP.IO
                 sbyte typeID = column.Type.GetID(table.TableInfo.FormatVersion);
                 writer.Write(typeID);
             }
-            writer.WritePadding(0x00, 0x4);
+
             // Update the main table pointer at 0x18
             writer.WriteAtPosition(ptr, baseOffset + 0x18);
 
-            //Set the text ptr to column types if there is no text
-            if (!table.TableInfo.HasText)
-            {
-                writer.WriteAtPosition(ptr, baseOffset + 0x24);
-            }
             #endregion
 
 
@@ -737,12 +732,13 @@ namespace LibARMP.IO
                             foreach (ArmpEntry entry in table.Entries)
                                 writer.Write(entry.GetValueFromColumn<Int64>(column.Name));
                         }
+                            writer.WritePadding(0, 8);
                     }
                 }
                 }
 
                 // Write the column value offset table
-                writer.WritePadding(0x00, 0x4);
+                writer.WritePadding(0, 8);
                 int ptrColumnOffsetTable = (int)writer.BaseStream.Position;
                 foreach (int offset in columnValueOffsets)
                 {
@@ -861,7 +857,7 @@ namespace LibARMP.IO
                             }
                         }
                     }
-                    writer.WritePadding(0x00, 0x4);
+                    writer.WritePadding(0, 8);
                 }
 
                 // Write the column value offset table
@@ -882,6 +878,7 @@ namespace LibARMP.IO
 
             if (table.TableInfo.HasEntryIndices)
             {
+                writer.WritePadding(0, 8);
                 ptr = (int)writer.BaseStream.Position;
                 uint[] indices = new uint[table.TableInfo.EntryCount];
                 foreach (ArmpEntry entry in table.Entries)
@@ -905,6 +902,7 @@ namespace LibARMP.IO
 
             if (table.TableInfo.HasColumnIndices)
             {
+                writer.WritePadding(0, 8);
                 ptr = (int)writer.BaseStream.Position;
                 foreach (ArmpTableColumn column in table.Columns)
                 {
@@ -964,7 +962,7 @@ namespace LibARMP.IO
                 {
                     offsetDictionary.Add(kvp.Key, (int)writer.BaseStream.Position);
                     Util.WriteBooleanBitmask(writer, kvp.Value, false);
-                    writer.WritePadding(0x00, 0x4);
+                    writer.WritePadding(0, 8);
                 }
 
                 ptr = (int)writer.BaseStream.Position;
