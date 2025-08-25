@@ -395,7 +395,7 @@ namespace LibARMP.IO
 
             uint pointer = (uint)writer.BaseStream.Position;
             WriteTable(writer, table, tablePointers);
-            writer.WritePadding(0x00, 0x10);
+            writer.WritePadding(0x00, 0x10); // Not quite right for DE v1, but acceptable
             writer.WriteAtPosition(indexerTablePtr, pointer + 0x3C);
             return pointer;
         }
@@ -450,7 +450,7 @@ namespace LibARMP.IO
                 allFalse &= !entry.IsValid;
                 }
 
-            if (allTrue) ptr = -1;
+            if (allTrue && table.TableInfo.EntryCount > 0) ptr = -1;    // Zero-entry corner case, e.g. ccc_ccc_action_set_pos.bin
             else if (allFalse) ptr = 0;
             else
             {
@@ -538,11 +538,19 @@ namespace LibARMP.IO
                 // Update the main table text count at 0x8
                 writer.WriteAtPosition(table.Text.Count, baseOffset + 0x8);
 
-                if (table.TableInfo.FormatVersion == Version.DragonEngineV2) writer.WritePadding(0x00, 0x8);
+                writer.WritePadding(0x00, 0x8);
             }
             else
             {
+                if (table.TableInfo.FormatVersion == Version.DragonEngineV1)
+                {
+                    writer.WritePadding(0x00, 0x10);
+                    writer.WriteAtPosition((int)writer.BaseStream.Position, baseOffset + 0x24);
+                }
+                else
+                {
                 writer.WritePadding(0x00, 0x8);
+            }
             }
             #endregion
 
@@ -550,6 +558,7 @@ namespace LibARMP.IO
             ///// Column Types /////
             #region ColumnTypes
 
+            writer.WritePadding(0x00, 0x8);
             ptr = (int)writer.BaseStream.Position;
             foreach (ArmpTableColumn column in table.Columns)
             {
@@ -563,18 +572,19 @@ namespace LibARMP.IO
             #endregion
 
 
-            ///// Column Types Aux (V1) /////
-            #region ColumnTypesAux(v1)
+            ///// Member Types (V1) /////
+            #region MemberTypes(v1)
 
             if (table.TableInfo.FormatVersion == Version.DragonEngineV1)
             {
+                writer.WritePadding(0x00, 0x8);
                 ptr = (int)writer.BaseStream.Position;
                 foreach (ArmpTableColumn column in table.Columns)
                 {
                     sbyte typeID = column.Type.GetIDAux(table.TableInfo.FormatVersion);
                     writer.Write(typeID);
                 }
-                writer.WritePadding(0x00, 0x4);
+
                 // Update the main table pointer at 0x48
                 writer.WriteAtPosition(ptr, baseOffset + 0x48);
             }
@@ -638,6 +648,10 @@ namespace LibARMP.IO
                                     int index = table.Text.IndexOf(value);
                                     writer.Write(index);
                                 }
+                                    else if (table.TableInfo.HasText)
+                                    {
+                                        writer.Write(-1);
+                                    }
                                 else
                                 {
                                         writer.Write(0);
@@ -732,6 +746,7 @@ namespace LibARMP.IO
                             foreach (ArmpEntry entry in table.Entries)
                                 writer.Write(entry.GetValueFromColumn<Int64>(column.Name));
                         }
+
                             writer.WritePadding(0, 8);
                     }
                 }
@@ -776,14 +791,19 @@ namespace LibARMP.IO
                         {
                             if (memberInfo.Type.CSType == typeof(string))
                             {
-                                if (entry.GetValueFromColumn(column.Name) != null)
+                                string value = (string)entry.GetValueFromColumn(column.Name);
+                                if (value != null)
                                 {
-                                    long index = table.Text.IndexOf((string)entry.GetValueFromColumn(column.Name));
+                                    long index = table.Text.IndexOf(value);
                                     writer.Write(index);
+                                }
+                                else if (table.TableInfo.HasText)
+                                {
+                                    writer.Write(-1L);
                                 }
                                 else
                                 {
-                                    writer.Write((long)-1);
+                                    writer.Write(0L);
                                 }
                             }
 
@@ -935,6 +955,7 @@ namespace LibARMP.IO
 
             if (table.TableInfo.HasExtraFieldInfo && table.TableInfo.FormatVersion == Version.DragonEngineV1)
             {
+                writer.WritePadding(0, 8); // Fine for now
                 ptr = (int)writer.BaseStream.Position;
                 foreach (ArmpEntry entry in table.Entries)
                 {

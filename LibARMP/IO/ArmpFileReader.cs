@@ -28,8 +28,8 @@ namespace LibARMP.IO
             ARMP armp = new ARMP();
 
             char[] magic = reader.ReadChars(4);
-            int endianess = reader.ReadInt32(); // Only used in OE
-            if (endianess == 258)
+            int endianness = reader.ReadInt32(); // Only used in OE
+            if (endianness == 258)
             {
                 armp.FormatVersion = Version.OldEngine;
             }
@@ -332,7 +332,7 @@ namespace LibARMP.IO
 
 
             // Now that file reading is over, MemberInfo should be sorted by position to facilitate editing later.
-            if (table.TableInfo.HasMemberInfo)
+            if (table.TableInfo.HasMemberInfo && version == Version.DragonEngineV2)
                 table.MemberInfo.Sort((x, y) => x.Position.CompareTo(y.Position));
 
             table.RefreshColumnNameCache();
@@ -838,10 +838,10 @@ namespace LibARMP.IO
                 else
                 {
                     int index = reader.ReadInt32();
-                    if (index != -1 && table.TableInfo.HasText) // Some files have valid string indices despite not having any text.
+                    if (index >= 0 && table.TableInfo.HasText) // Some files have valid string indices despite not having any text.
                         entry.Data.Add(column.Name, table.Text[index]);
                     else
-                        entry.Data.Add(column.Name, null);
+                        entry.Data.Add(column.Name, null);  // Will translate to either -1 or 0 depending on text count.
                 }
             }
 
