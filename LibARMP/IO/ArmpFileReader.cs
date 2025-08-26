@@ -808,7 +808,7 @@ namespace LibARMP.IO
                 entry.Data.Add(column.Name, null);
             }
 
-            else if (type.CSType == typeof(bool) || type.CSType == typeof(List<bool>))
+            else if (type.CSType == typeof(bool))
             {
                 if (booleanColumnDataTemp != null)
                 {
@@ -822,7 +822,7 @@ namespace LibARMP.IO
                 }
             }
 
-            else if (type.CSType == typeof(string) || type.CSType == typeof(List<string>))
+            else if (type.CSType == typeof(string))
             {
                 // This should only run if we are loading the armp from memory
                 if (table.TableInfo.IsProcessedForMemory)
@@ -844,7 +844,7 @@ namespace LibARMP.IO
                 }
             }
 
-            else if (type.CSType == typeof(ArmpTable) || type.CSType == typeof(List<ArmpTable>))
+            else if (type.CSType == typeof(ArmpTable))
             {
                 long ptrTable = reader.ReadInt64();
                 long currentpos = reader.BaseStream.Position;
@@ -862,61 +862,61 @@ namespace LibARMP.IO
                 reader.BaseStream.Position = currentpos; // Reset position to the offset table
             }
 
-            else if (type.CSType == typeof(float) || type.CSType == typeof(List<float>))
+            else if (type.CSType == typeof(float))
             {
                 float value = reader.ReadSingle();
                 entry.Data[column.Name] = value;
             }
 
-            else if (type.CSType == typeof(double) || type.CSType == typeof(List<double>))
+            else if (type.CSType == typeof(double))
             {
                 double value = reader.ReadDouble();
                 entry.Data[column.Name] = value;
             }
 
-            else if (type.CSType == typeof(byte) || type.CSType == typeof(List<byte>))
+            else if (type.CSType == typeof(byte))
             {
                 byte value = reader.ReadByte();
                 entry.Data[column.Name] = value;
             }
 
-            else if (type.CSType == typeof(sbyte) || type.CSType == typeof(List<sbyte>))
+            else if (type.CSType == typeof(sbyte))
             {
                 sbyte value = reader.ReadSByte();
                 entry.Data[column.Name] = value;
             }
 
-            else if (type.CSType == typeof(UInt16) || type.CSType == typeof(List<UInt16>))
+            else if (type.CSType == typeof(UInt16))
             {
                 UInt16 value = reader.ReadUInt16();
                 entry.Data[column.Name] = value;
             }
 
-            else if (type.CSType == typeof(Int16) || type.CSType == typeof(List<Int16>))
+            else if (type.CSType == typeof(Int16))
             {
                 Int16 value = reader.ReadInt16();
                 entry.Data[column.Name] = value;
             }
 
-            else if (type.CSType == typeof(UInt32) || type.CSType == typeof(List<UInt32>))
+            else if (type.CSType == typeof(UInt32))
             {
                 UInt32 value = reader.ReadUInt32();
                 entry.Data[column.Name] = value;
             }
 
-            else if (type.CSType == typeof(Int32) || type.CSType == typeof(List<Int32>))
+            else if (type.CSType == typeof(Int32))
             {
                 Int32 value = reader.ReadInt32();
                 entry.Data[column.Name] = value;
             }
 
-            else if (type.CSType == typeof(UInt64) || type.CSType == typeof(List<UInt64>))
+            else if (type.CSType == typeof(UInt64))
             {
                 UInt64 value = reader.ReadUInt64();
                 entry.Data[column.Name] = value;
             }
 
-            else if (type.CSType == typeof(Int64) || type.CSType == typeof(List<Int64>))
+            else if (type.CSType == typeof(Int64))
             {
                 Int64 value = reader.ReadInt64();
                 entry.Data[column.Name] = value;
