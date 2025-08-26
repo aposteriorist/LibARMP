@@ -609,7 +609,7 @@ namespace LibARMP.IO
                 Console.WriteLine("Entry Count: " + armpTableInfo.EntryCount);
                 Console.WriteLine("Column Count: " + armpTableInfo.ColumnCount);
                 Console.WriteLine("Text Count: " + armpTableInfo.TextCount);
-                Console.WriteLine("Entry Validator: " + armpTableInfo.EntryValidator);
+                Console.WriteLine("Default Entry Index: " + armpTableInfo.DefaultEntryIndex);
                 Console.WriteLine("Pointer to Entry Names Offset Table: " + armpTableInfo.ptrEntryNamesOffsetTable);
                 Console.WriteLine("Pointer to Entry Validity: " + armpTableInfo.ptrEntryValidity);
                 Console.WriteLine("Pointer to Column Data Types: " + armpTableInfo.ptrColumnDataTypes);
@@ -620,19 +620,19 @@ namespace LibARMP.IO
                 Console.WriteLine("Unknown Flag 2: " + armpTableInfo.UnknownFlag2);
                 Console.WriteLine("Unknown Flag 3: " + armpTableInfo.UnknownFlag3);
                 Console.WriteLine("Unknown Flag 4: " + armpTableInfo.UnknownFlag4);
-                Console.WriteLine("Unknown Flag 5: " + armpTableInfo.UnknownFlag5);
-                Console.WriteLine("Unknown Flag 6: " + armpTableInfo.UnknownFlag6);
+                Console.WriteLine("Flag 5 - DoNotUseRaw: " + armpTableInfo.DoNotUseRaw);
+                Console.WriteLine("Flag 6 - MembersWellFormatted: " + armpTableInfo.MembersWellFormatted);
                 Console.WriteLine("Flag 7 - IsProcessedForMemory: " + armpTableInfo.IsProcessedForMemory);
                 Console.WriteLine("Pointer to Text Offset Table: " + armpTableInfo.ptrTextOffsetTable);
                 Console.WriteLine("Pointer to Column Names Offset Table: " + armpTableInfo.ptrColumnNamesOffsetTable);
-                Console.WriteLine("Column Validator: " + armpTableInfo.ColumnValidator);
+                Console.WriteLine("Default Column Index: " + armpTableInfo.DefaultColumnIndex);
                 Console.WriteLine("Pointer to Entry Indices: " + armpTableInfo.ptrEntryIndices);
                 Console.WriteLine("Pointer to Column Indices: " + armpTableInfo.ptrColumnIndices);
                 Console.WriteLine("Pointer to Column Validity: " + armpTableInfo.ptrColumnValidity);
                 Console.WriteLine("Pointer to Indexer table: " + armpTableInfo.ptrIndexerTable);
                 Console.WriteLine("Pointer to Column Metadata: " + armpTableInfo.ptrColumnMetadata);
-                Console.WriteLine("Pointer to Empty Values Offset Table: " + armpTableInfo.ptrEmptyValuesOffsetTable);
-                Console.WriteLine("Pointer to Column Data Types Aux: " + armpTableInfo.ptrColumnDataTypesAux);
+                Console.WriteLine("Pointer to Specific Column Validity: " + armpTableInfo.ptrSpecificColumnValidityOffsetTable);
+                Console.WriteLine("Pointer to Member Info: " + armpTableInfo.ptrMemberInfo);
                 Console.WriteLine("Pointer to Field Info: " + armpTableInfo.ptrExtraFieldInfo);
                 Console.WriteLine("Has Indexer: " + armpTableInfo.HasIndexerTable);
 #endif
