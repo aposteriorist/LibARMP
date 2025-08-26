@@ -648,7 +648,7 @@ namespace LibARMP.IO
                                     int index = table.Text.IndexOf(value);
                                     writer.Write(index);
                                 }
-                                    else if (table.TableInfo.HasText)
+                                    else if (table.TableInfo.FormatVersion == Version.DragonEngineV1)
                                     {
                                         writer.Write(-1);
                                     }
