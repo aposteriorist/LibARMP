@@ -308,7 +308,7 @@ namespace LibARMP.IO
 
             if (table.TableInfo.HasSpecificColumnValidity)
             {
-                List<uint> scvOffsetList = Util.IterateOffsetList(reader, table.TableInfo.ptrEmptyValuesOffsetTable, table.TableInfo.ColumnCount, false);
+                List<uint> scvOffsetList = Util.IterateOffsetList(reader, table.TableInfo.ptrSpecificColumnValidityOffsetTable, table.TableInfo.ColumnCount, false);
 
                 uint offset;
                 ArmpTableColumn column;
