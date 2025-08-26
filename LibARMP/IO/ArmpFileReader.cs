@@ -303,28 +303,27 @@ namespace LibARMP.IO
             #endregion
 
 
-            ///// Empty Values /////
-            #region EmptyValues
+            ///// Specific Column Validity /////
+            #region SpecificColumnValidity
 
-            if (table.TableInfo.HasEmptyValues)
+            if (table.TableInfo.HasSpecificColumnValidity)
             {
-                List<uint> emptyValuesOffsetList = Util.IterateOffsetList(reader, table.TableInfo.ptrEmptyValuesOffsetTable, table.TableInfo.ColumnCount, false);
+                List<uint> scvOffsetList = Util.IterateOffsetList(reader, table.TableInfo.ptrEmptyValuesOffsetTable, table.TableInfo.ColumnCount, false);
 
-                int columnIndex = -1;
-                foreach (uint offset in emptyValuesOffsetList)
+                uint offset;
+                ArmpTableColumn column;
+                for (int i = 0; i < table.TableInfo.ColumnCount; i++)
                 {
-                    columnIndex++;
-                    if (offset == 0xFFFFFFFF)
+                    column = table.Columns[i];
+                    offset = scvOffsetList[i];
+
+                    if ((int)offset <= 0)
                     {
-                        table.EmptyValuesIsNegativeOffset.Add(true);
-                        continue;
+                        column.SpecificValidity = new List<bool> { offset != 0 };
                     }
                     else
                     {
-                        table.EmptyValuesIsNegativeOffset.Add(false);
-                        if (offset == 0) continue;
-
-                        table.EmptyValues.Add(columnIndex, Util.IterateBooleanBitmask(reader, offset, table.TableInfo.EntryCount, false));
+                        column.SpecificValidity = Util.IterateBooleanBitmask(reader, offset, table.TableInfo.EntryCount, false);
                     }
                 }
             }
@@ -579,7 +578,7 @@ namespace LibARMP.IO
                 armpTableInfo.ptrColumnValidity = reader.ReadUInt32();
                 armpTableInfo.ptrIndexerTable = reader.ReadUInt32();
                 armpTableInfo.ptrColumnMetadata = reader.ReadUInt32(); //This seems to be used as a band aid fix for when a column name has or starts with special characters. (minigame_karaoke_music_data -> ?karaoke_music_kind)
-                armpTableInfo.ptrEmptyValuesOffsetTable = reader.ReadUInt32();
+                armpTableInfo.ptrSpecificColumnValidityOffsetTable = reader.ReadUInt32();
                 armpTableInfo.ptrMemberInfo = reader.ReadUInt32();
                 armpTableInfo.ptrExtraFieldInfo = reader.ReadUInt32();
 
@@ -601,7 +600,7 @@ namespace LibARMP.IO
                 if (armpTableInfo.ptrMemberInfo > 0 && armpTableInfo.ptrMemberInfo < 0xFFFFFFFF) armpTableInfo.HasMemberInfo = true;
                 if (armpTableInfo.ptrEntryIndices > 0 && armpTableInfo.ptrEntryIndices < 0xFFFFFFFF) armpTableInfo.HasEntryIndices = true;
                 if (armpTableInfo.ptrColumnIndices > 0 && armpTableInfo.ptrColumnIndices < 0xFFFFFFFF) armpTableInfo.HasColumnIndices = true;
-                if (armpTableInfo.ptrEmptyValuesOffsetTable > 0 && armpTableInfo.ptrEmptyValuesOffsetTable < 0xFFFFFFFF) armpTableInfo.HasEmptyValues = true;
+                if (armpTableInfo.ptrSpecificColumnValidityOffsetTable > 0 && armpTableInfo.ptrSpecificColumnValidityOffsetTable < 0xFFFFFFFF) armpTableInfo.HasSpecificColumnValidity = true;
                 if (armpTableInfo.ptrColumnMetadata > 0 && armpTableInfo.ptrColumnMetadata < 0xFFFFFFFF) armpTableInfo.HasColumnMetadata = true;
                 if (armpTableInfo.ptrExtraFieldInfo > 0 && armpTableInfo.ptrExtraFieldInfo < 0xFFFFFFFF) armpTableInfo.HasExtraFieldInfo = true;
 

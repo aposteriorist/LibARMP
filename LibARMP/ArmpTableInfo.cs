@@ -30,7 +30,7 @@ namespace LibARMP
             this.ptrColumnIndices = 0;
             this.ptrColumnValidity = 0;
             this.ptrIndexerTable = 0;
-            this.ptrEmptyValuesOffsetTable = 0;
+            this.ptrSpecificColumnValidityOffsetTable = 0;
             this.ptrMemberInfo = 0;
             this.ptrExtraFieldInfo = 0;
             this.ptrColumnMetadata = 0;
@@ -186,7 +186,7 @@ namespace LibARMP
         /// Gets or sets the pointer to the Empty Values Offset Table.
         /// </summary>
         /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
-        internal UInt32 ptrEmptyValuesOffsetTable { get; set; }
+        internal UInt32 ptrSpecificColumnValidityOffsetTable { get; set; }
 
         /// <summary>
         /// Gets or sets the pointer to the Member Info table.
@@ -258,7 +258,7 @@ namespace LibARMP
         /// Gets or sets the boolean indicating if the table has an Empty Values Table.
         /// </summary>
         /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
-        internal bool HasEmptyValues { get; set; }
+        internal bool HasSpecificColumnValidity { get; set; }
 
         /// <summary>
         /// Gets a boolean indicating if the table has additional field info (varies between format versions).

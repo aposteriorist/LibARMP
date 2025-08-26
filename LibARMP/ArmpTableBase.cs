@@ -18,8 +18,6 @@ namespace LibARMP
             ColumnNameCache = new Dictionary<string, ArmpTableColumn>();
             Entries = new List<ArmpEntry>();
             Columns = new List<ArmpTableColumn>();
-            EmptyValues = new Dictionary<int, List<bool>>();
-            EmptyValuesIsNegativeOffset = new List<bool>();
         }
 
         /// <summary>
@@ -58,21 +56,9 @@ namespace LibARMP
         internal List<ArmpEntry> Entries { get; set; }
 
         /// <summary>
-        /// List of member info specifications (for Storage Mode 1) which together define a structure.
+        /// List of member info (for Storage Mode 1) which together define a structure specification.
         /// </summary>
         internal List<ArmpMemberInfo> MemberInfo { get; set; }
-
-        /// <summary>
-        /// Values marked as empty for specific columns (despite actually having a value).
-        /// </summary>
-        /// <remarks><para>[column index : list<bool> (length = entry count)]</para></remarks>
-        internal Dictionary<int, List<bool>> EmptyValues { get; set; }
-
-        /// <summary>
-        /// DEBUG: Boolean list (length = column count) to indicate if the offset in the empty values offset list was -1.
-        /// </summary>
-        /// <remarks><para>The difference between 0 and -1 is unknown.</para></remarks>
-        internal List<bool> EmptyValuesIsNegativeOffset { get; set; }
 
         /// <summary>
         /// PLACEHOLDER: Edited values for patcher.

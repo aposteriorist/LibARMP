@@ -973,39 +973,35 @@ namespace LibARMP.IO
             #endregion
 
 
-            ///// Empty Values /////
-            #region EmptyValues
+            ///// Specific Column Validity /////
+            #region SpecificColumnValidity
 
-            if (table.TableInfo.HasEmptyValues)
+            if (table.TableInfo.HasSpecificColumnValidity)
             {
-                Dictionary<int, int> offsetDictionary = new Dictionary<int, int>();
-                foreach (KeyValuePair<int, List<bool>> kvp in table.EmptyValues)
-                {
-                    offsetDictionary.Add(kvp.Key, (int)writer.BaseStream.Position);
-                    Util.WriteBooleanBitmask(writer, kvp.Value, false);
-                    writer.WritePadding(0, 8);
-                }
+                int[] emptyValueOffsets = new int[table.TableInfo.ColumnCount];
 
-                ptr = (int)writer.BaseStream.Position;
                 for (int i = 0; i < table.TableInfo.ColumnCount; i++)
                 {
-                    if (table.EmptyValuesIsNegativeOffset[i])
+                    if (table.Columns[i].SpecificValidity.Count == 1)
                     {
-                        writer.Write(-1);
+                        emptyValueOffsets[i] = table.Columns[i].SpecificValidity[0] ? -1 : 0;
                     }
                     else
                     {
-                        if (offsetDictionary.ContainsKey(i))
-                        {
-                            writer.Write(offsetDictionary[i]);
+                        emptyValueOffsets[i] = (int)writer.BaseStream.Position;
+                        Util.WriteBooleanBitmask(writer, table.Columns[i].SpecificValidity, false);
+                        writer.WritePadding(0, 8);
                         }
-                        else
-                        {
-                            writer.Write(0);
-                        }
-                    }
                 }
-                // Update the main table pointer at 0x44
+
+                writer.WritePadding(0, 8); // Fine until proven otherwise
+
+                ptr = (int)writer.BaseStream.Position;
+                foreach (int offset in emptyValueOffsets)
+                        {
+                    writer.Write(offset);
+                }
+
                 writer.WriteAtPosition(ptr, baseOffset + 0x44);
             }
             #endregion
