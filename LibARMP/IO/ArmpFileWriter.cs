@@ -120,7 +120,7 @@ namespace LibARMP.IO
             long baseOffset = writer.BaseStream.Position;
             int ptr = 0;
 
-            writer.WriteTimes(0x00, 0x40); // Placeholder table
+            writer.WriteTimes(0, 0x40); // Placeholder table
 
             ///// Entry Count /////
             writer.WriteAtPosition(table.Entries.Count, baseOffset, true);
@@ -156,7 +156,7 @@ namespace LibARMP.IO
                     writer.WriteAtPosition(ptr, baseOffset + 0xC, true);
                 }
 
-                writer.WritePadding(0x00, 0x10);
+                writer.WritePadding(0, 0x10);
             }
             #endregion
 
@@ -175,7 +175,7 @@ namespace LibARMP.IO
                 // Update the main table pointer at 0x8
                 writer.WriteAtPosition(ptr, baseOffset + 0x8, true);
                 
-                writer.WritePadding(0x00, 0x10);
+                writer.WritePadding(0, 0x10);
             }
             #endregion
 
@@ -322,7 +322,7 @@ namespace LibARMP.IO
                 }
             }
 
-            writer.WritePadding(0x00, 0x4);
+            writer.WritePadding(0, 4);
 
             // Write the column value offset table
             int ptrColumnOffsetTable = (int)writer.BaseStream.Position;
@@ -331,7 +331,7 @@ namespace LibARMP.IO
                 writer.Write(offset, true);
             }
 
-            writer.WritePadding(0x00, 0x10);
+            writer.WritePadding(0, 0x10);
 
             // Update the main table pointer at 0x1C
             writer.WriteAtPosition(ptrColumnOffsetTable, baseOffset + 0x1C, true);
@@ -389,13 +389,13 @@ namespace LibARMP.IO
                 if (tableMain.Indexer != null)
                 {
                     indexerTablePtr = WriteTableRecursive(writer, tableMain.Indexer);
-                    writer.WritePadding(0x00, 0x10);
+                    writer.WritePadding(0, 0x10);
                 }
             }
 
             uint pointer = (uint)writer.BaseStream.Position;
             WriteTable(writer, table, tablePointers);
-            writer.WritePadding(0x00, 0x10); // Not quite right for DE v1, but acceptable
+            writer.WritePadding(0, 0x10); // Not quite right for DE v1, but acceptable
             writer.WriteAtPosition(indexerTablePtr, pointer + 0x3C);
             return pointer;
         }
@@ -413,7 +413,7 @@ namespace LibARMP.IO
             int ptr = 0;
             bool allTrue, allFalse;
 
-            writer.WriteTimes(0x00, 0x50); // Placeholder table
+            writer.WriteTimes(0, 0x50); // Placeholder table
 
 
             ///// Entry/Column Count /////
@@ -457,7 +457,7 @@ namespace LibARMP.IO
                 ptr = (int)writer.BaseStream.Position;
                 Util.WriteBooleanBitmask(writer, entryValidity, false);
 
-                writer.WritePadding(0x00, 0x8);
+                writer.WritePadding(0, 8);
             }
 
                 // Update the main table pointer at 0x14
@@ -485,7 +485,7 @@ namespace LibARMP.IO
                 ptr = (int)writer.BaseStream.Position;
                 Util.WriteBooleanBitmask(writer, columnValidity, false);
 
-                writer.WritePadding(0x00, 0x4);
+                writer.WritePadding(0, 4);
             }
 
                 // Update the main table pointer at 0x38
@@ -538,18 +538,18 @@ namespace LibARMP.IO
                 // Update the main table text count at 0x8
                 writer.WriteAtPosition(table.Text.Count, baseOffset + 0x8);
 
-                writer.WritePadding(0x00, 0x8);
+                writer.WritePadding(0, 8);
             }
             else
             {
                 if (table.TableInfo.FormatVersion == Version.DragonEngineV1)
                 {
-                    writer.WritePadding(0x00, 0x10);
+                    writer.WritePadding(0, 0x10);
                     writer.WriteAtPosition((int)writer.BaseStream.Position, baseOffset + 0x24);
                 }
                 else
                 {
-                writer.WritePadding(0x00, 0x8);
+                    writer.WritePadding(0, 8);
             }
             }
             #endregion
@@ -558,7 +558,7 @@ namespace LibARMP.IO
             ///// Column Types /////
             #region ColumnTypes
 
-            writer.WritePadding(0x00, 0x8);
+            writer.WritePadding(0, 8);
             ptr = (int)writer.BaseStream.Position;
             foreach (ArmpTableColumn column in table.Columns)
             {
@@ -577,7 +577,7 @@ namespace LibARMP.IO
 
             if (table.TableInfo.FormatVersion == Version.DragonEngineV1)
             {
-                writer.WritePadding(0x00, 0x8);
+                writer.WritePadding(0, 8);
                 ptr = (int)writer.BaseStream.Position;
                 foreach (ArmpTableColumn column in table.Columns)
                 {
@@ -608,7 +608,7 @@ namespace LibARMP.IO
                     {
                         if (column.Type.CSType == typeof(bool))
                         {
-                            writer.WritePadding(0x00, 8);
+                            writer.WritePadding(0, 8);
 
                             List<bool> boolList = new List<bool>();
                             allTrue = true;
@@ -676,12 +676,12 @@ namespace LibARMP.IO
                                         }
                                         else
                                         {
-                                            writer.WriteTimes(0x00, 0x8);
+                                                writer.Write(0L);
                                         }
                                     }
                                     else
                                     {
-                                        writer.WriteTimes(0x00, 0x8);
+                                            writer.Write(0L);
                                     }
                                 }
                             }
@@ -774,7 +774,7 @@ namespace LibARMP.IO
                 ArmpTableColumn column;
                 foreach (ArmpEntry entry in table.Entries)
                 {
-                    writer.WritePadding(0x00, 0x10);
+                    writer.WritePadding(0, 0x10);
 
                     int startOffset = (int)writer.BaseStream.Position;
                     entryValueOffsets.Add(startOffset);
@@ -822,7 +822,7 @@ namespace LibARMP.IO
                                 }
                                 catch
                                 {
-                                    writer.WriteTimes(0x00, 0x8);
+                                    writer.Write(0L);
                                 }
                             }
 
@@ -1025,7 +1025,7 @@ namespace LibARMP.IO
 
             if (table.TableInfo.FormatVersion == Version.DragonEngineV2 && table.TableInfo.HasMemberInfo)
             {
-                writer.WritePadding(0x00, 0x10);
+                writer.WritePadding(0, 0x10);
                 ptr = (int)writer.BaseStream.Position;
                 WriteMemberInfoTable(writer, table);
                 // Update the main table pointer at 0x48
@@ -1051,7 +1051,7 @@ namespace LibARMP.IO
                     }
                 }
                 offsets.Add((int)writer.BaseStream.Position);
-                writer.WritePadding(0x00, 0x8);
+                writer.WritePadding(0, 0x8);
 
                 ptr = (int)writer.BaseStream.Position;
 
@@ -1059,7 +1059,7 @@ namespace LibARMP.IO
                 {
                     writer.Write(column.Children?.Count ?? 0);
                     writer.Write(offsets[0]);
-                    writer.WriteTimes(0x00, 0x18);
+                    writer.WriteTimes(0, 0x18);
                     if (column.Children?.Count > 0)
                     {
                         offsets.RemoveAt(0);
