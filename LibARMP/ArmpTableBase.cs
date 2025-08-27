@@ -380,7 +380,7 @@ namespace LibARMP
         /// <returns>A <see cref="string"/> list.</returns>
         public List<string> GetColumnNames (bool includeArrayHeaders = true)
         {
-            List<string> returnList = new List<string>(TableInfo.ColumnCount);
+            List<string> returnList = new List<string>(Columns.Count);
 
             foreach (ArmpTableColumn column in Columns)
             {
