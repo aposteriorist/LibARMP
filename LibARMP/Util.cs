@@ -155,7 +155,7 @@ namespace LibARMP
                 ptrList.Add((int)writer.BaseStream.Position);
                 writer.Write(text, true);
             }
-            writer.WritePadding(0x00, 0x10);
+            writer.WritePadding(0, 0x10);
             int ptrOffsetTable = (int)writer.BaseStream.Position;
 
             foreach(int pointer in ptrList)
