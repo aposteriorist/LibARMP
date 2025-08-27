@@ -311,7 +311,7 @@ namespace LibARMP.IO
             if (table.TableInfo.HasBlankCellFlags)
             {
                 table.CellsWithData = new Dictionary<ArmpTableColumn, List<ArmpEntry>>();
-                List<uint> scvOffsetList = Util.IterateOffsetList(reader, table.TableInfo.ptrSpecificColumnValidityOffsetTable, table.TableInfo.ColumnCount, false);
+                List<uint> scvOffsetList = Util.IterateOffsetList(reader, table.TableInfo.ptrBlankCellFlagOffsetTable, table.TableInfo.ColumnCount, false);
 
                 uint offset;
                 ArmpTableColumn column;
