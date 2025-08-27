@@ -1068,6 +1068,9 @@ namespace LibARMP
                     if (!Text.Contains(str) && str != null) Text.Add(str);
                 }
             }
+
+            if (TableInfo.DefaultColumnIndex > -1 && !Text.Contains(string.Empty))
+                Text.Insert(TableInfo.DefaultColumnIndex, string.Empty); // Okay for now
         }
 
 
