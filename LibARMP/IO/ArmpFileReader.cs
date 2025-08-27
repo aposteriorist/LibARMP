@@ -134,13 +134,15 @@ namespace LibARMP.IO
             ///// Column Names /////
             #region ColumnNames
 
-            List<string> columnNames = new List<string>();
+            List<string> columnNames = null;
             if (table.TableInfo.HasColumnNames)
             {
                 columnNames = Util.IterateStringList(reader, Util.IterateOffsetList(reader, table.TableInfo.ptrColumnNamesOffsetTable, table.TableInfo.ColumnCount, false));
             }
             else
             {
+                columnNames = new List<string>(table.TableInfo.ColumnCount);
+
                 // Fill with numbers
                 for (int c = 0; c < table.TableInfo.ColumnCount; c++)
                 {
