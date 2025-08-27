@@ -303,27 +303,43 @@ namespace LibARMP.IO
             #endregion
 
 
-            ///// Specific Column Validity /////
-            #region SpecificColumnValidity
+            ///// Blank Cell Flags /////
+            #region BlankCellFlags
 
-            if (table.TableInfo.HasSpecificColumnValidity)
+            if (table.TableInfo.HasBlankCellFlags)
             {
+                table.CellsWithData = new Dictionary<ArmpTableColumn, List<ArmpEntry>>();
                 List<uint> scvOffsetList = Util.IterateOffsetList(reader, table.TableInfo.ptrSpecificColumnValidityOffsetTable, table.TableInfo.ColumnCount, false);
 
                 uint offset;
                 ArmpTableColumn column;
+                List<bool> blankCellFlags;
+                List<ArmpEntry> entriesWithData;
                 for (int i = 0; i < table.TableInfo.ColumnCount; i++)
                 {
                     column = table.Columns[i];
                     offset = scvOffsetList[i];
 
-                    if ((int)offset <= 0)
+                    if ((int)offset < 0)
                     {
-                        column.SpecificValidity = new List<bool> { offset != 0 };
+                        table.CellsWithData.Add(column, null); // Empty list will also work on write
+                    }
+                    else if (offset == 0)
+                    {
+                        entriesWithData = new List<ArmpEntry>(table.TableInfo.EntryCount);
+                        entriesWithData.AddRange(table.Entries);
+                        table.CellsWithData.Add(column, entriesWithData);
                     }
                     else
                     {
-                        column.SpecificValidity = Util.IterateBooleanBitmask(reader, offset, table.TableInfo.EntryCount, false);
+                        blankCellFlags = Util.IterateBooleanBitmask(reader, offset, table.TableInfo.EntryCount, false);
+                        entriesWithData = new List<ArmpEntry>(table.TableInfo.EntryCount);
+                        for (int j = 0; j < table.TableInfo.EntryCount; j++)
+                        {
+                            if (!blankCellFlags[j])
+                                entriesWithData.Add(table.Entries[j]);
+                        }
+                        table.CellsWithData.Add(column, entriesWithData);
                     }
                 }
             }
@@ -578,7 +594,7 @@ namespace LibARMP.IO
                 armpTableInfo.ptrColumnValidity = reader.ReadUInt32();
                 armpTableInfo.ptrIndexerTable = reader.ReadUInt32();
                 armpTableInfo.ptrColumnMetadata = reader.ReadUInt32(); //This seems to be used as a band aid fix for when a column name has or starts with special characters. (minigame_karaoke_music_data -> ?karaoke_music_kind)
-                armpTableInfo.ptrSpecificColumnValidityOffsetTable = reader.ReadUInt32();
+                armpTableInfo.ptrBlankCellFlagOffsetTable = reader.ReadUInt32();
                 armpTableInfo.ptrMemberInfo = reader.ReadUInt32();
                 armpTableInfo.ptrExtraFieldInfo = reader.ReadUInt32();
 
@@ -600,7 +616,7 @@ namespace LibARMP.IO
                 if (armpTableInfo.ptrMemberInfo > 0 && armpTableInfo.ptrMemberInfo < 0xFFFFFFFF) armpTableInfo.HasMemberInfo = true;
                 if (armpTableInfo.ptrEntryIndices > 0 && armpTableInfo.ptrEntryIndices < 0xFFFFFFFF) armpTableInfo.HasEntryIndices = true;
                 if (armpTableInfo.ptrColumnIndices > 0 && armpTableInfo.ptrColumnIndices < 0xFFFFFFFF) armpTableInfo.HasColumnIndices = true;
-                if (armpTableInfo.ptrSpecificColumnValidityOffsetTable > 0 && armpTableInfo.ptrSpecificColumnValidityOffsetTable < 0xFFFFFFFF) armpTableInfo.HasSpecificColumnValidity = true;
+                if (armpTableInfo.ptrBlankCellFlagOffsetTable > 0 && armpTableInfo.ptrBlankCellFlagOffsetTable < 0xFFFFFFFF) armpTableInfo.HasBlankCellFlags = true;
                 if (armpTableInfo.ptrColumnMetadata > 0 && armpTableInfo.ptrColumnMetadata < 0xFFFFFFFF) armpTableInfo.HasColumnMetadata = true;
                 if (armpTableInfo.ptrExtraFieldInfo > 0 && armpTableInfo.ptrExtraFieldInfo < 0xFFFFFFFF) armpTableInfo.HasExtraFieldInfo = true;
 
@@ -631,7 +647,7 @@ namespace LibARMP.IO
                 Console.WriteLine("Pointer to Column Validity: " + armpTableInfo.ptrColumnValidity);
                 Console.WriteLine("Pointer to Indexer table: " + armpTableInfo.ptrIndexerTable);
                 Console.WriteLine("Pointer to Column Metadata: " + armpTableInfo.ptrColumnMetadata);
-                Console.WriteLine("Pointer to Specific Column Validity: " + armpTableInfo.ptrSpecificColumnValidityOffsetTable);
+                Console.WriteLine("Pointer to Blank Cell Flag Offset Table: " + armpTableInfo.ptrBlankCellFlagOffsetTable);
                 Console.WriteLine("Pointer to Member Info: " + armpTableInfo.ptrMemberInfo);
                 Console.WriteLine("Pointer to Field Info: " + armpTableInfo.ptrExtraFieldInfo);
                 Console.WriteLine("Has Indexer: " + armpTableInfo.HasIndexerTable);

@@ -973,23 +973,36 @@ namespace LibARMP.IO
             #endregion
 
 
-            ///// Specific Column Validity /////
-            #region SpecificColumnValidity
+            ///// Blank Cell Flags /////
+            #region BlankCellFlags
 
-            if (table.TableInfo.HasSpecificColumnValidity)
+            if (table.TableInfo.HasBlankCellFlags)
             {
-                int[] emptyValueOffsets = new int[table.TableInfo.ColumnCount];
+                int[] emptyValueOffsets = new int[table.Columns.Count];
 
-                for (int i = 0; i < table.TableInfo.ColumnCount; i++)
+                List<bool> blankCellFlags;
+                List<ArmpEntry> entriesWithData;
+                for (int i = 0; i < table.Columns.Count; i++)
                 {
-                    if (table.Columns[i].SpecificValidity.Count == 1)
+                    entriesWithData = table.CellsWithData[table.Columns[i]];
+                    if (entriesWithData == null || entriesWithData.Count == 0)
+                {
+                        emptyValueOffsets[i] = -1;
+                    }
+                    else if (entriesWithData.Count == 1 || entriesWithData.Count == table.Entries.Count)
                     {
-                        emptyValueOffsets[i] = table.Columns[i].SpecificValidity[0] ? -1 : 0;
+                        emptyValueOffsets[i] = 0;
                     }
                     else
                     {
                         emptyValueOffsets[i] = (int)writer.BaseStream.Position;
-                        Util.WriteBooleanBitmask(writer, table.Columns[i].SpecificValidity, false);
+                        blankCellFlags = new List<bool>(table.Entries.Count);
+
+                        foreach (ArmpEntry entry in table.Entries)
+                            blankCellFlags.Add(!table.CellsWithData[table.Columns[i]].Contains(entry));
+
+                        Util.WriteBooleanBitmask(writer, blankCellFlags, false);
+
                         writer.WritePadding(0, 8);
                         }
                 }

@@ -61,6 +61,11 @@ namespace LibARMP
         internal List<ArmpMemberInfo> MemberInfo { get; set; }
 
         /// <summary>
+        /// List of cells (entry-column intersections) which contain data, i.e. are not blank.
+        /// </summary>
+        internal Dictionary<ArmpTableColumn, List<ArmpEntry>> CellsWithData { get; set; }
+
+        /// <summary>
         /// PLACEHOLDER: Edited values for patcher.
         /// </summary>
         /// <remarks><para>[column : list of entry ids]</para></remarks>

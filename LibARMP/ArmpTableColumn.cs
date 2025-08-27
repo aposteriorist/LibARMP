@@ -67,11 +67,6 @@ namespace LibARMP
         public int UnknownMetadata0x40 { get; set; }
 
         /// <summary>
-        /// Gets or sets the column's validity for a particular entry, rather than for the entire column.
-        /// </summary>
-        public List<bool> SpecificValidity { get; set; }
-
-        /// <summary>
         /// Gets or sets the column's children.
         /// </summary>
         /// <remarks><para>Only used if the column is of an array type.</para><para><b>DRAGON ENGINE V2 ONLY</b></para></remarks>
