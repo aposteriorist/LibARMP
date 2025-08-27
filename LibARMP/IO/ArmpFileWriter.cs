@@ -939,6 +939,7 @@ namespace LibARMP.IO
 
             if (table.TableInfo.HasColumnMetadata)
             {
+                writer.WritePadding(0, 8);
                 ptr = (int)writer.BaseStream.Position;
                 foreach (ArmpTableColumn column in table.Columns)
                 {
