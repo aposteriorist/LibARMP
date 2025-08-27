@@ -54,7 +54,7 @@ namespace LibARMP.IO
             }
             else
             {
-                writer.WriteTimes(0x00, 0x10); // Dummy main table pointer and padding
+                writer.WriteTimes(0, 0x10); // Dummy main table pointer and padding
                 uint mainPtr = WriteTableRecursive(writer, armp.MainTable);
                 writer.BaseStream.Seek(0x10);
                 writer.Write(mainPtr);
@@ -359,7 +359,7 @@ namespace LibARMP.IO
             {
                 ArmpEntry entry;
                 IReadOnlyList<ArmpEntry> entries = table.GetAllEntries();
-                for (int i = 0; i < table.TableInfo.EntryCount; i++)
+                for (int i = 0; i < entries.Count; i++)
                 {
                     if (!table.TableInfo.HasEntryIndices)
                         entry = entries[i];
@@ -450,7 +450,7 @@ namespace LibARMP.IO
                 allFalse &= !entry.IsValid;
                 }
 
-            if (allTrue && table.TableInfo.EntryCount > 0) ptr = -1;    // Zero-entry corner case, e.g. ccc_ccc_action_set_pos.bin
+            if (allTrue && table.Entries.Count > 0) ptr = -1;    // Zero-entry corner case, e.g. ccc_ccc_action_set_pos.bin
             else if (allFalse) ptr = 0;
             else
             {
@@ -900,7 +900,7 @@ namespace LibARMP.IO
             {
                 writer.WritePadding(0, 8);
                 ptr = (int)writer.BaseStream.Position;
-                uint[] indices = new uint[table.TableInfo.EntryCount];
+                uint[] indices = new uint[table.Entries.Count];
                 foreach (ArmpEntry entry in table.Entries)
                 {
                     indices[entry.Index] = entry.ID;
@@ -999,7 +999,9 @@ namespace LibARMP.IO
                         blankCellFlags = new List<bool>(table.Entries.Count);
 
                         foreach (ArmpEntry entry in table.Entries)
+                        {
                             blankCellFlags.Add(!table.CellsWithData[table.Columns[i]].Contains(entry));
+                        }
 
                         Util.WriteBooleanBitmask(writer, blankCellFlags, false);
 
