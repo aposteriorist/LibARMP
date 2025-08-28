@@ -1031,24 +1031,47 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Calculates the distance between data for Storage Mode 1 columns.
+        /// Calculates the positions for members in the table's structure (Storage Mode 1).
         /// </summary>
         /// <remarks><para><b>DRAGON ENGINE V2 (STORAGE MODE 1) ONLY</b></para></remarks>
-        internal void UpdateColumnDistances()
+        internal void PackStructure()
         {
-            int distance = 0;
+#if DEBUG
+Console.Writeline("Packing structure.");
+#endif
+            int currentPos = 0;
 
-            foreach (ArmpTableColumn column in Columns)
+            foreach (ArmpMemberInfo info in MemberInfo)
             {
-                if (column.Type.Size == 0)
+                if (!info.Column.IsValid)
                 {
-                    column.Position = distance;
+                    info.Position = -1;
+#if DEBUG
+                    Console.WriteLine($"0x{info.Position:X}:\t{info.Column.Name}");
+#endif
                     continue;
                 }
 
-                int padding = distance % column.Type.Size;
-                column.Position = distance + padding;
-                distance = column.Position + column.Type.Size;
+                if (info.Column.Parent == null)
+                {
+                    int size = (info.Type.IsArray ? 8 : info.Type.Size);
+                    int padding = size - currentPos % size;
+                    if (padding == size) padding = 0;
+                    info.Position = currentPos + padding;
+                }
+                else
+                {
+                    ArmpTableColumn parent = info.Column.Parent;
+                    info.Position = parent.MemberInfo.Position + info.Type.Size * parent.Children.IndexOf(info.Column);
+                }
+
+                currentPos = info.Position + info.Type.Size;
+
+#if DEBUG
+                Console.WriteLine($"0x{info.Position:X}:\t{info.Column.Name}");
+#endif
+
+                info.ArraySize = (uint)(info.Column.Children?.Count ?? 0);
             }
         }
 

@@ -409,6 +409,11 @@ namespace LibARMP.IO
         /// <param name="table">The <see cref="ArmpTableBase"/> to write.</param>
         private static void WriteTable(BinaryWriter writer, ArmpTableBase table, Dictionary<ArmpTableBase, uint> tableValuePointers = null)
         {
+            if (table.TableInfo.FormatVersion == Version.DragonEngineV2 && table.TableInfo.HasMemberInfo)
+            {
+                table.PackStructure();
+            }
+
             long baseOffset = writer.BaseStream.Position;
             int ptr = 0;
             bool allTrue, allFalse;
