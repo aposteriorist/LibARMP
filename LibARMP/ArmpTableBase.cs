@@ -1040,38 +1040,41 @@ namespace LibARMP
 Console.Writeline("Packing structure.");
 #endif
             int currentPos = 0;
-
             foreach (ArmpMemberInfo info in MemberInfo)
             {
                 if (!info.Column.IsValid)
                 {
                     info.Position = -1;
-#if DEBUG
-                    Console.WriteLine($"0x{info.Position:X}:\t{info.Column.Name}");
-#endif
-                    continue;
                 }
 
-                if (info.Column.Parent == null)
+                else if (info.Column.Parent == null)
                 {
                     int size = (info.Type.IsArray ? 8 : info.Type.Size);
                     int padding = size - currentPos % size;
                     if (padding == size) padding = 0;
                     info.Position = currentPos + padding;
+                    currentPos = info.Position + info.Type.Size;
+
+                    // If there are array elements, handle them here.
+                    if (info.Column.Children != null)
+                    {
+                        ArmpMemberInfo childInfo = null;
+                        for (int i = 0; i < info.Column.Children.Count; i++)
+                        {
+                            if (info.Column.Children[i] == null) continue;
+                            childInfo = info.Column.Children[i].MemberInfo;
+                            childInfo.Position = info.Position + childInfo.Type.Size * i;
+                            childInfo.ArraySize = 0;
+                        }
+                        currentPos += info.Column.Children.Count * childInfo?.Type.Size ?? 0;
+                        info.ArraySize = (uint)info.Column.Children.Count;
                 }
                 else
-                {
-                    ArmpTableColumn parent = info.Column.Parent;
-                    info.Position = parent.MemberInfo.Position + info.Type.Size * parent.Children.IndexOf(info.Column);
+                        info.ArraySize = 0;
                 }
-
-                currentPos = info.Position + info.Type.Size;
-
 #if DEBUG
                 Console.WriteLine($"0x{info.Position:X}:\t{info.Column.Name}");
 #endif
-
-                info.ArraySize = (uint)(info.Column.Children?.Count ?? 0);
             }
         }
 
