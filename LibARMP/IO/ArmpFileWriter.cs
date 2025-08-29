@@ -984,7 +984,7 @@ namespace LibARMP.IO
 
             if (table.TableInfo.HasBlankCellFlags)
             {
-                int[] emptyValueOffsets = new int[table.Columns.Count];
+                int[] bcfOffsets = new int[table.Columns.Count];
 
                 List<bool> blankCellFlags;
                 List<ArmpEntry> entriesWithData;
@@ -993,15 +993,15 @@ namespace LibARMP.IO
                     entriesWithData = table.CellsWithData[table.Columns[i]];
                     if (entriesWithData == null || entriesWithData.Count == 0)
                 {
-                        emptyValueOffsets[i] = -1;
+                        bcfOffsets[i] = -1;
                     }
-                    else if (entriesWithData.Count == 1 || entriesWithData.Count == table.Entries.Count)
+                    else if (entriesWithData.Count == table.Entries.Count)
                     {
-                        emptyValueOffsets[i] = 0;
+                        bcfOffsets[i] = 0;
                     }
                     else
                     {
-                        emptyValueOffsets[i] = (int)writer.BaseStream.Position;
+                        bcfOffsets[i] = (int)writer.BaseStream.Position;
                         blankCellFlags = new List<bool>(table.Entries.Count);
 
                         foreach (ArmpEntry entry in table.Entries)
@@ -1018,7 +1018,7 @@ namespace LibARMP.IO
                 writer.WritePadding(0, 8); // Fine until proven otherwise
 
                 ptr = (int)writer.BaseStream.Position;
-                foreach (int offset in emptyValueOffsets)
+                foreach (int offset in bcfOffsets)
                         {
                     writer.Write(offset);
                 }
