@@ -221,8 +221,8 @@ namespace LibARMP.IO
                     }
                     else // v2
                     {
-                        column.MemberInfo = table.MemberInfo[c];
-                        table.MemberInfo[c].Column = column;
+                        column.MemberInfo = table.StructureSpec[c];
+                        table.StructureSpec[c].Column = column;
                     }
                 }
 
@@ -348,9 +348,9 @@ namespace LibARMP.IO
             #endregion
 
 
-            // Now that file reading is over, MemberInfo should be sorted by position to facilitate editing later.
+            // Now that file reading is over, the structure spec should be sorted by position to facilitate editing later.
             if (table.TableInfo.HasMemberInfo && version == Version.DragonEngineV2)
-                table.MemberInfo.Sort((x, y) => x.Position.CompareTo(y.Position));
+                table.StructureSpec.Sort((x, y) => x.Position.CompareTo(y.Position));
 
             table.RefreshColumnNameCache();
             return table;
@@ -795,7 +795,7 @@ namespace LibARMP.IO
                     int ptrData = reader.ReadInt32();
                     long nextPtr = reader.BaseStream.Position;
 
-                    foreach (ArmpMemberInfo memberInfo in table.MemberInfo)
+                    foreach (ArmpMemberInfo memberInfo in table.StructureSpec)
                     {
                         if (!memberInfo.Column.IsValid || memberInfo.Type.IsArray || memberInfo.Position < 0) continue;
                         reader.BaseStream.Seek(ptrData + memberInfo.Position);

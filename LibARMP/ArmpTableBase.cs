@@ -58,7 +58,7 @@ namespace LibARMP
         /// <summary>
         /// List of member info (for Storage Mode 1) which together define a structure specification.
         /// </summary>
-        internal List<ArmpMemberInfo> MemberInfo { get; set; }
+        internal List<ArmpMemberInfo> StructureSpec { get; set; }
 
         /// <summary>
         /// List of cells (entry-column intersections) which contain data, i.e. are not blank.
@@ -762,7 +762,7 @@ namespace LibARMP
                     Type = armpType,    // Fine for now but not strictly correct
                     Position = -1,
                 };
-                MemberInfo.Add(info);
+                StructureSpec.Add(info);
                 column.MemberInfo = info;
                 info.Column = column;
                 }
@@ -821,7 +821,7 @@ namespace LibARMP
                 if (TableInfo.HasMemberInfo)
                 {
                     column.MemberInfo.Column = null;
-                    MemberInfo.Remove(column.MemberInfo);
+                    StructureSpec.Remove(column.MemberInfo);
                     column.MemberInfo = null;
                 }
 
@@ -1040,7 +1040,7 @@ namespace LibARMP
 Console.Writeline("Packing structure.");
 #endif
             int currentPos = 0;
-            foreach (ArmpMemberInfo info in MemberInfo)
+            foreach (ArmpMemberInfo info in StructureSpec)
             {
                 if (!info.Column.IsValid)
                 {

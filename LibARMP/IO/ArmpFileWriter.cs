@@ -784,7 +784,7 @@ namespace LibARMP.IO
                     int startOffset = (int)writer.BaseStream.Position;
                     entryValueOffsets.Add(startOffset);
 
-                    foreach (ArmpMemberInfo memberInfo in table.MemberInfo)
+                    foreach (ArmpMemberInfo memberInfo in table.StructureSpec)
                     {
                         column = memberInfo.Column;
                         if (!column.IsValid || memberInfo.Type.IsArray || memberInfo.Position < 0) continue;
