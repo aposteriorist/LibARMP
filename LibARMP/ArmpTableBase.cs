@@ -13,11 +13,11 @@ namespace LibARMP
         /// <summary>
         /// Initializes a new instance of the <see cref="ArmpTableBase"/> class.
         /// </summary>
-        internal ArmpTableBase()
+        internal ArmpTableBase(int expectedEntryCount = 0, int expectedColumnCount = 0)
         {
             ColumnNameCache = new Dictionary<string, ArmpTableColumn>();
-            Entries = new List<ArmpEntry>();
-            Columns = new List<ArmpTableColumn>();
+            Entries = new List<ArmpEntry>(expectedEntryCount);
+            Columns = new List<ArmpTableColumn>(expectedColumnCount);
         }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace LibARMP
         /// <returns>A copy of this <see cref="ArmpTableBase"/>.</returns>
         public ArmpTableBase Copy (bool copyEntries = true)
         {
-            ArmpTableBase copy = new ArmpTableBase();
+            ArmpTableBase copy = new ArmpTableBase(copyEntries ? Entries.Count : 0, Columns.Count);
             copy.TableInfo = Util.DeepCopy(TableInfo);
 
             foreach (ArmpTableColumn column in Columns)
