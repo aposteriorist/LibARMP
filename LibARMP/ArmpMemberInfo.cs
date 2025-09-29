@@ -25,5 +25,15 @@ namespace LibARMP
         /// The associated column.
         /// </summary>
         internal ArmpTableColumn Column { get; set; }
+
+        public ArmpMemberInfo Copy(ArmpTableColumn column = null)
+        {
+            ArmpMemberInfo copy = new ArmpMemberInfo();
+            copy.Type = Type;
+            copy.Position = -1;
+            copy.ArraySize = ArraySize;
+            copy.Column = column;
+            return copy;
+        }
     }
 }
