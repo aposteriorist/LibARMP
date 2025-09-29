@@ -100,6 +100,9 @@ namespace LibARMP
             copy.IsValid = IsValid;
             copy.UnknownMetadata0x40 = UnknownMetadata0x40;
 
+            if (Type.IsArray)
+                copy.Children = new List<ArmpTableColumn>(Children.Count);
+
             return copy;
         }
     }
