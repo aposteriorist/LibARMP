@@ -164,7 +164,7 @@ namespace LibARMP.IO
             {
                 if (version == Version.DragonEngineV2)
                 {
-                    table.MemberInfo = ReadMemberInfoTable(reader, table.TableInfo.ptrMemberInfo, table.TableInfo.ColumnCount);
+                    table.StructureSpec = ReadMemberInfoTable(reader, table.TableInfo.ptrMemberInfo, table.TableInfo.ColumnCount);
                 }
                 else
                 {
