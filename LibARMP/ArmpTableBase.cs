@@ -61,6 +61,11 @@ namespace LibARMP
         internal List<ArmpMemberInfo> StructureSpec { get; set; }
 
         /// <summary>
+        /// Signals if the structure specification has been edited and is in need of repacking.
+        /// </summary>
+        internal bool StructurePacked { get; set; }
+
+        /// <summary>
         /// List of cells (entry-column intersections) which contain data, i.e. are not blank.
         /// </summary>
         internal Dictionary<ArmpTableColumn, List<ArmpEntry>> CellsWithData { get; set; }
@@ -1075,6 +1080,8 @@ namespace LibARMP
         /// <remarks><para><b>DRAGON ENGINE V2 (STORAGE MODE 1) ONLY</b></para></remarks>
         internal void PackStructure()
         {
+            if (StructurePacked) return;
+
 #if DEBUG
 Console.Writeline("Packing structure.");
 #endif
@@ -1115,6 +1122,8 @@ Console.Writeline("Packing structure.");
                 Console.WriteLine($"0x{info.Position:X}:\t{info.Column.Name}");
 #endif
             }
+
+            StructurePacked = true;
         }
 
 

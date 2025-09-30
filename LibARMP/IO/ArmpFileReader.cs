@@ -350,7 +350,10 @@ namespace LibARMP.IO
 
             // Now that file reading is over, the structure spec should be sorted by position to facilitate editing later.
             if (table.TableInfo.HasMemberInfo && version == Version.DragonEngineV2)
+            {
                 table.StructureSpec.Sort((x, y) => x.Position.CompareTo(y.Position));
+                table.StructurePacked = true;
+            }
 
             table.RefreshColumnNameCache();
             return table;
