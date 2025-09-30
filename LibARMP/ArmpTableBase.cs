@@ -83,26 +83,65 @@ namespace LibARMP
             ArmpTableBase copy = new ArmpTableBase(copyEntries ? Entries.Count : 0, Columns.Count);
             copy.TableInfo = Util.DeepCopy(TableInfo);
 
+            // If the table has member info, initiate an ordered copy of the structure specification.
+            ArmpMemberInfo[] copySpecOrdered = null;
+            if (TableInfo.HasMemberInfo)
+            {
+                copySpecOrdered = new ArmpMemberInfo[StructureSpec.Count];
+            }
+
+            // Track the columns that have already been copied to ensure array members are handled only once.
+            List<ArmpTableColumn> copiedColumns = new List<ArmpTableColumn>(Columns.Count);
+            ArmpTableColumn copyColumn;
+            
+            // Copy the columns.
             foreach (ArmpTableColumn column in Columns)
             {
-                ArmpTableColumn copyColumn = column.Copy();
-                copy.Columns.Add(copyColumn);
+                // If the column has already been copied, it was an array member.
+                if (copiedColumns.Contains(column)) continue;
 
-                if (copyColumn.Name.Contains("[") && copyColumn.Name.Contains("]"))
+                // Copy the column and its member info.
+                copyColumn = column.Copy();
+                copy.Columns.Add(copyColumn);
+                copiedColumns.Add(column);
+
+                if (TableInfo.HasMemberInfo)
                 {
-                    string baseName = copyColumn.Name.Split('[')[0];
-                    if (copy.ColumnNameCache.ContainsKey(baseName))
+                    copySpecOrdered[StructureSpec.IndexOf(column.MemberInfo)] = copyColumn.MemberInfo = column.MemberInfo.Copy(copyColumn);
+                }
+
+                copy.ColumnNameCache.Add(copyColumn.Name, copyColumn);
+
+                // If the column is of array type and has children, copy them and their member info.
+                if (column.Children?.Count > 0)
                     {
-                        ArmpTableColumn parentColumn = copy.ColumnNameCache[baseName];
-                        parentColumn.Children.Add(copyColumn);
-                        parentColumn.ArraySize += 1;
-                        copyColumn.Parent = parentColumn;
+                    ArmpTableColumn copyChild;
+                    foreach (ArmpTableColumn child in column.Children)
+                    {
+                        copyChild = child.Copy();
+                        copyColumn.Children.Add(copyChild);
+                        copyChild.Parent = copyColumn;
+                        copy.Columns.Add(copyChild);
+                        copiedColumns.Add(child);
+                        copy.ColumnNameCache.Add(copyChild.Name, copyChild);
+
+                        if (TableInfo.HasMemberInfo)
+                        {
+                            copySpecOrdered[StructureSpec.IndexOf(child.MemberInfo)] = copyChild.MemberInfo = child.MemberInfo.Copy(copyChild);
+                        }
+                    }
                     }
                 }
 
-                copy.RefreshColumnNameCache();
+            // Finish copying the structure specification if present.
+            if (TableInfo.HasMemberInfo)
+            {
+                copy.StructureSpec = new List<ArmpMemberInfo>(copySpecOrdered);
             }
 
+            copiedColumns.Clear();
+
+            // Copy entries if requested.
             if (copyEntries)
             {
                 foreach(ArmpEntry entry in Entries)
