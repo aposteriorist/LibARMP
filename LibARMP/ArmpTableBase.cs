@@ -142,6 +142,7 @@ namespace LibARMP
             if (TableInfo.HasMemberInfo)
             {
                 copy.StructureSpec = new List<ArmpMemberInfo>(copySpecOrdered);
+                copy.StructurePacked = true;
             }
 
             copiedColumns.Clear();
@@ -715,6 +716,7 @@ namespace LibARMP
                     entry.SetDefaultColumnContent(column.Name);
                 }
                 column.IsValid = true;
+                if (TableInfo.HasMemberInfo && column.MemberInfo != null) StructurePacked = false;
             }
             else //Remove all values
             {
@@ -722,8 +724,12 @@ namespace LibARMP
                 {
                     entry.RemoveColumnContent(column.Name);
                 }
+                if (TableInfo.HasMemberInfo && column.MemberInfo != null)
+                {
+                    column.MemberInfo.Position = -1;
+                    if (StructurePacked) StructurePacked = !column.IsValid;
+                }
                 column.IsValid = false;
-                if (column.MemberInfo != null) column.MemberInfo.Position = -1;
             }
         }
 
@@ -809,6 +815,7 @@ namespace LibARMP
                 StructureSpec.Add(info);
                 column.MemberInfo = info;
                 info.Column = column;
+                if (StructurePacked) StructurePacked = !column.IsValid;
                 }
 
             Columns.Add(column);
@@ -867,6 +874,7 @@ namespace LibARMP
                     column.MemberInfo.Column = null;
                     StructureSpec.Remove(column.MemberInfo);
                     column.MemberInfo = null;
+                    if (StructurePacked) StructurePacked = !column.IsValid;
                 }
 
                 Columns.Remove(column);
