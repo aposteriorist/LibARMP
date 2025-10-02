@@ -366,8 +366,8 @@ namespace LibARMP.IO
                     else
                         entry = entries[(int)table.EntryIndices[i]];
 
-                foreach (string column in tableColumns)
-                {
+                    foreach (string column in tableColumns)
+                    {
                         try
                         {
                             ArmpTableBase tableValue = (ArmpTableBase)entry.GetValueFromColumn(column);
@@ -445,15 +445,15 @@ namespace LibARMP.IO
             ///// Entry Validity //////
             #region EntryValidity
 
-                List<bool> entryValidity = new List<bool>();
+            List<bool> entryValidity = new List<bool>();
             allTrue = true;
             allFalse = true;
-                foreach (ArmpEntry entry in table.Entries)
-                {
-                    entryValidity.Add(entry.IsValid);
+            foreach (ArmpEntry entry in table.Entries)
+            {
+                entryValidity.Add(entry.IsValid);
                 allTrue &= entry.IsValid;
                 allFalse &= !entry.IsValid;
-                }
+            }
 
             if (allTrue && table.Entries.Count > 0) ptr = -1;    // Zero-entry corner case, e.g. ccc_ccc_action_set_pos.bin
             else if (allFalse) ptr = 0;
@@ -465,23 +465,23 @@ namespace LibARMP.IO
                 writer.WritePadding(0, 8);
             }
 
-                // Update the main table pointer at 0x14
-                writer.WriteAtPosition(ptr, baseOffset + 0x14);
+            // Update the main table pointer at 0x14
+            writer.WriteAtPosition(ptr, baseOffset + 0x14);
             #endregion
 
 
             ///// Column Validity /////
             #region ColumnValidity
 
-                List<bool> columnValidity = new List<bool>();
+            List<bool> columnValidity = new List<bool>();
             allTrue = true;
             allFalse = true;
-                foreach (ArmpTableColumn column in table.Columns)
-                {
+            foreach (ArmpTableColumn column in table.Columns)
+            {
                 columnValidity.Add(column.IsValid);
                 allTrue &= column.IsValid;
                 allFalse &= !column.IsValid;
-                }
+            }
 
             if (allTrue) ptr = -1;
             else if (allFalse) ptr = 0;
@@ -493,8 +493,8 @@ namespace LibARMP.IO
                 writer.WritePadding(0, 4);
             }
 
-                // Update the main table pointer at 0x38
-                writer.WriteAtPosition(ptr, baseOffset + 0x38);
+            // Update the main table pointer at 0x38
+            writer.WriteAtPosition(ptr, baseOffset + 0x38);
             #endregion
 
 
@@ -555,7 +555,7 @@ namespace LibARMP.IO
                 else
                 {
                     writer.WritePadding(0, 8);
-            }
+                }
             }
             #endregion
 
@@ -640,121 +640,121 @@ namespace LibARMP.IO
                         }
                         else
                         {
-                        columnValueOffsets.Add((int)writer.BaseStream.Position);
+                            columnValueOffsets.Add((int)writer.BaseStream.Position);
 
-                        // Write operations based on column type
-                        if (column.Type.CSType == typeof(string))
-                        {
-                            foreach (ArmpEntry entry in table.Entries)
-                            {
-                                string value = (string)entry.GetValueFromColumn(column.Name);
-                                if (value != null)
-                                {
-                                    int index = table.Text.IndexOf(value);
-                                    writer.Write(index);
-                                }
-                                    else if (table.TableInfo.FormatVersion == Version.DragonEngineV1)
-                                    {
-                                        writer.Write(-1);
-                                    }
-                                else
-                                {
-                                        writer.Write(0);
-                                }
-                            }
-                        }
-
-                        else if (column.Type.CSType == typeof(ArmpTable))
-                        {
-                            if (tableValuePointers != null)
+                            // Write operations based on column type
+                            if (column.Type.CSType == typeof(string))
                             {
                                 foreach (ArmpEntry entry in table.Entries)
                                 {
-                                    if (entry.Data.ContainsKey(column.Name))
+                                    string value = (string)entry.GetValueFromColumn(column.Name);
+                                    if (value != null)
                                     {
-                                        ArmpTable tableValue = (ArmpTable)entry.GetValueFromColumn(column.Name);
-                                        if (tableValue != null)
-                                        {
-                                            uint tablePtr;
-                                            tableValuePointers.TryGetValue(tableValue, out tablePtr);
-                                            writer.Write((ulong)tablePtr);
-                                        }
-                                        else
-                                        {
-                                                writer.Write(0L);
-                                        }
+                                        int index = table.Text.IndexOf(value);
+                                        writer.Write(index);
                                     }
+                                        else if (table.TableInfo.FormatVersion == Version.DragonEngineV1)
+                                        {
+                                            writer.Write(-1);
+                                        }
                                     else
                                     {
-                                            writer.Write(0L);
+                                            writer.Write(0);
                                     }
                                 }
                             }
-                        }
 
-                        else if (column.Type.CSType == typeof(float))
-                        {
-                            foreach (ArmpEntry entry in table.Entries)
-                                writer.Write(entry.GetValueFromColumn<float>(column.Name));
-                        }
+                            else if (column.Type.CSType == typeof(ArmpTable))
+                            {
+                                if (tableValuePointers != null)
+                                {
+                                    foreach (ArmpEntry entry in table.Entries)
+                                    {
+                                        if (entry.Data.ContainsKey(column.Name))
+                                        {
+                                            ArmpTable tableValue = (ArmpTable)entry.GetValueFromColumn(column.Name);
+                                            if (tableValue != null)
+                                            {
+                                                uint tablePtr;
+                                                tableValuePointers.TryGetValue(tableValue, out tablePtr);
+                                                writer.Write((ulong)tablePtr);
+                                            }
+                                            else
+                                            {
+                                                writer.Write(0L);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            writer.Write(0L);
+                                        }
+                                    }
+                                }
+                            }
 
-                        else if (column.Type.CSType == typeof(double))
-                        {
-                            foreach (ArmpEntry entry in table.Entries)
-                                writer.Write(entry.GetValueFromColumn<double>(column.Name));
-                        }
+                            else if (column.Type.CSType == typeof(float))
+                            {
+                                foreach (ArmpEntry entry in table.Entries)
+                                    writer.Write(entry.GetValueFromColumn<float>(column.Name));
+                            }
 
-                        else if (column.Type.CSType == typeof(byte))
-                        {
-                            foreach (ArmpEntry entry in table.Entries)
-                                writer.Write(entry.GetValueFromColumn<byte>(column.Name));
-                        }
+                            else if (column.Type.CSType == typeof(double))
+                            {
+                                foreach (ArmpEntry entry in table.Entries)
+                                    writer.Write(entry.GetValueFromColumn<double>(column.Name));
+                            }
 
-                        else if (column.Type.CSType == typeof(sbyte))
-                        {
-                            foreach (ArmpEntry entry in table.Entries)
-                                writer.Write(entry.GetValueFromColumn<sbyte>(column.Name));
-                        }
+                            else if (column.Type.CSType == typeof(byte))
+                            {
+                                foreach (ArmpEntry entry in table.Entries)
+                                    writer.Write(entry.GetValueFromColumn<byte>(column.Name));
+                            }
 
-                        else if (column.Type.CSType == typeof(UInt16))
-                        {
-                            foreach (ArmpEntry entry in table.Entries)
-                                writer.Write(entry.GetValueFromColumn<UInt16>(column.Name));
-                        }
+                            else if (column.Type.CSType == typeof(sbyte))
+                            {
+                                foreach (ArmpEntry entry in table.Entries)
+                                    writer.Write(entry.GetValueFromColumn<sbyte>(column.Name));
+                            }
 
-                        else if (column.Type.CSType == typeof(Int16))
-                        {
-                            foreach (ArmpEntry entry in table.Entries)
-                                writer.Write(entry.GetValueFromColumn<Int16>(column.Name));
-                        }
+                            else if (column.Type.CSType == typeof(UInt16))
+                            {
+                                foreach (ArmpEntry entry in table.Entries)
+                                    writer.Write(entry.GetValueFromColumn<UInt16>(column.Name));
+                            }
 
-                        else if (column.Type.CSType == typeof(UInt32))
-                        {
-                            foreach (ArmpEntry entry in table.Entries)
-                                writer.Write(entry.GetValueFromColumn<UInt32>(column.Name));
-                        }
+                            else if (column.Type.CSType == typeof(Int16))
+                            {
+                                foreach (ArmpEntry entry in table.Entries)
+                                    writer.Write(entry.GetValueFromColumn<Int16>(column.Name));
+                            }
 
-                        else if (column.Type.CSType == typeof(Int32))
-                        {
-                            foreach (ArmpEntry entry in table.Entries)
-                                writer.Write(entry.GetValueFromColumn<Int32>(column.Name));
-                        }
+                            else if (column.Type.CSType == typeof(UInt32))
+                            {
+                                foreach (ArmpEntry entry in table.Entries)
+                                    writer.Write(entry.GetValueFromColumn<UInt32>(column.Name));
+                            }
 
-                        else if (column.Type.CSType == typeof(UInt64))
-                        {
-                            foreach (ArmpEntry entry in table.Entries)
-                                writer.Write(entry.GetValueFromColumn<UInt64>(column.Name));
-                        }
+                            else if (column.Type.CSType == typeof(Int32))
+                            {
+                                foreach (ArmpEntry entry in table.Entries)
+                                    writer.Write(entry.GetValueFromColumn<Int32>(column.Name));
+                            }
 
-                        else if (column.Type.CSType == typeof(Int64))
-                        {
-                            foreach (ArmpEntry entry in table.Entries)
-                                writer.Write(entry.GetValueFromColumn<Int64>(column.Name));
-                        }
+                            else if (column.Type.CSType == typeof(UInt64))
+                            {
+                                foreach (ArmpEntry entry in table.Entries)
+                                    writer.Write(entry.GetValueFromColumn<UInt64>(column.Name));
+                            }
+
+                            else if (column.Type.CSType == typeof(Int64))
+                            {
+                                foreach (ArmpEntry entry in table.Entries)
+                                    writer.Write(entry.GetValueFromColumn<Int64>(column.Name));
+                            }
 
                             writer.WritePadding(0, 8);
+                        }
                     }
-                }
                 }
 
                 // Write the column value offset table
@@ -833,52 +833,52 @@ namespace LibARMP.IO
 
                             else if (memberInfo.Type.CSType == typeof(float))
                             {
-                                    writer.Write(entry.GetValueFromColumn<float>(column.Name));
+                                writer.Write(entry.GetValueFromColumn<float>(column.Name));
                             }
 
                             else if (memberInfo.Type.CSType == typeof(double))
                             {
-                                    writer.Write(entry.GetValueFromColumn<double>(column.Name));
+                                writer.Write(entry.GetValueFromColumn<double>(column.Name));
                             }
 
                             else if (memberInfo.Type.CSType == typeof(byte))
                             {
-                                    writer.Write(entry.GetValueFromColumn<byte>(column.Name));
+                                writer.Write(entry.GetValueFromColumn<byte>(column.Name));
                             }
 
                             else if (memberInfo.Type.CSType == typeof(sbyte))
                             {
-                                    writer.Write(entry.GetValueFromColumn<sbyte>(column.Name));
+                                writer.Write(entry.GetValueFromColumn<sbyte>(column.Name));
                             }
 
                             else if (memberInfo.Type.CSType == typeof(UInt16))
                             {
-                                    writer.Write(entry.GetValueFromColumn<UInt16>(column.Name));
+                                writer.Write(entry.GetValueFromColumn<UInt16>(column.Name));
                             }
 
                             else if (memberInfo.Type.CSType == typeof(Int16))
                             {
-                                    writer.Write(entry.GetValueFromColumn<Int16>(column.Name));
+                                writer.Write(entry.GetValueFromColumn<Int16>(column.Name));
                             }
 
                             else if (memberInfo.Type.CSType == typeof(UInt32))
                             {
-                                    writer.Write(entry.GetValueFromColumn<UInt32>(column.Name));
+                                writer.Write(entry.GetValueFromColumn<UInt32>(column.Name));
                             }
 
                             else if (memberInfo.Type.CSType == typeof(Int32))
                             {
-                                    writer.Write(entry.GetValueFromColumn<Int32>(column.Name));
+                                writer.Write(entry.GetValueFromColumn<Int32>(column.Name));
                             }
 
                             else if (memberInfo.Type.CSType == typeof(UInt64))
                             {
-                                    writer.Write(entry.GetValueFromColumn<UInt64>(column.Name));
+                                writer.Write(entry.GetValueFromColumn<UInt64>(column.Name));
                             }
 
                             else if (memberInfo.Type.CSType == typeof(Int64))
                             {
-                                    writer.Write(entry.GetValueFromColumn<Int64>(column.Name));
+                                writer.Write(entry.GetValueFromColumn<Int64>(column.Name));
                             }
                         }
                     }
@@ -992,7 +992,7 @@ namespace LibARMP.IO
                 {
                     entriesWithData = table.CellsWithData[table.Columns[i]];
                     if (entriesWithData == null || entriesWithData.Count == 0)
-                {
+                    {
                         bcfOffsets[i] = -1;
                     }
                     else if (entriesWithData.Count == table.Entries.Count)
@@ -1012,14 +1012,14 @@ namespace LibARMP.IO
                         Util.WriteBooleanBitmask(writer, blankCellFlags, false);
 
                         writer.WritePadding(0, 8);
-                        }
+                    }
                 }
 
                 writer.WritePadding(0, 8); // Fine until proven otherwise
 
                 ptr = (int)writer.BaseStream.Position;
                 foreach (int offset in bcfOffsets)
-                        {
+                {
                     writer.Write(offset);
                 }
 
