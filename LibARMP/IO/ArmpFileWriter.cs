@@ -586,7 +586,7 @@ namespace LibARMP.IO
                 ptr = (int)writer.BaseStream.Position;
                 foreach (ArmpTableColumn column in table.Columns)
                 {
-                    sbyte typeID = column.Type.GetIDAux(table.TableInfo.FormatVersion);
+                    sbyte typeID = column.Type.GetMemberTypeID(table.TableInfo.FormatVersion);
                     writer.Write(typeID);
                 }
 

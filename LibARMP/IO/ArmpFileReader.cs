@@ -284,7 +284,7 @@ namespace LibARMP.IO
                 }
                 table.EntryValidity.AddRange(values);
             }
-                SetEntryValidity(table.EntryValidity, table.Entries);
+            SetEntryValidity(table.EntryValidity, table.Entries);
             #endregion
 
 
@@ -768,11 +768,11 @@ namespace LibARMP.IO
                     {
                         bool value = ptrData == -1;
                         foreach (ArmpEntry entry in table.Entries)
-                    {
+                        {
                             entry.Data.Add(column.Name, value);
                         }
 #if DEBUG
-                        Console.WriteLine(String.Format("Bool shortcut column -- > {0}", column.Name));
+                        Console.WriteLine(String.Format("Bool shortcut column ---> {0}", column.Name));
 #endif
                     }
                     else if (ptrData > 0)
