@@ -474,7 +474,7 @@ namespace LibARMP.IO
             #region ColumnValidity
 
             List<bool> columnValidity = new List<bool>();
-            allTrue = true;
+            allTrue = table.Columns.Count > 0;
             allFalse = true;
             foreach (ArmpTableColumn column in table.Columns)
             {
@@ -604,7 +604,7 @@ namespace LibARMP.IO
                 List<int> columnValueOffsets = new List<int>();
                 foreach (ArmpTableColumn column in table.Columns)
                 {
-                    if (!column.IsValid || column.Type.IsArray)
+                    if (!column.IsValid)
                     {
                         columnValueOffsets.Add(0);
                     }
@@ -616,7 +616,7 @@ namespace LibARMP.IO
                             writer.WritePadding(0, 8);
 
                             List<bool> boolList = new List<bool>();
-                            allTrue = true;
+                            allTrue = table.Entries.Count > 0;
                             allFalse = true;
                             bool temp;
                             foreach (ArmpEntry entry in table.Entries)
@@ -627,8 +627,6 @@ namespace LibARMP.IO
                                 allFalse &= !temp;
                             }
 
-                            if (boolList.Count > 0)
-                            {
                                 if (allTrue) columnValueOffsets.Add(-1);
                                 else if (allFalse) columnValueOffsets.Add(0);
                                 else
@@ -637,7 +635,6 @@ namespace LibARMP.IO
                                     Util.WriteBooleanBitmask(writer, boolList, false);
                                 }
                             }
-                        }
                         else
                         {
                             columnValueOffsets.Add((int)writer.BaseStream.Position);
@@ -757,6 +754,8 @@ namespace LibARMP.IO
                     }
                 }
 
+                if (table.Columns.Count > 0 || table.TableInfo.FormatVersion == Version.DragonEngineV1)
+                {
                 // Write the column value offset table
                 writer.WritePadding(0, 8);
                 int ptrColumnOffsetTable = (int)writer.BaseStream.Position;
@@ -767,6 +766,7 @@ namespace LibARMP.IO
 
                 // Update the main table pointer at 0x1C
                 writer.WriteAtPosition(ptrColumnOffsetTable, baseOffset + 0x1C);
+            }
             }
             #endregion
 
@@ -792,8 +792,6 @@ namespace LibARMP.IO
                         writer.BaseStream.Position = startOffset + memberInfo.Position;
 
                         // Write operations based on column type
-                        if (table.IsColumnValid(column.Name))
-                        {
                             if (memberInfo.Type.CSType == typeof(string))
                             {
                                 string value = (string)entry.GetValueFromColumn(column.Name);
