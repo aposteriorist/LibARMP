@@ -934,10 +934,17 @@ namespace LibARMP.IO
             {
                 writer.WritePadding(0, 8);
                 ptr = (int)writer.BaseStream.Position;
+                uint[] indices = new uint[table.Columns.Count];
                 foreach (ArmpTableColumn column in table.Columns)
                 {
-                    writer.Write(column.Index);
+                    indices[column.Index] = column.ID;
                 }
+
+                foreach (uint columnIndex in indices)
+                {
+                    writer.Write(columnIndex);
+                }
+
                 // Update the main table pointer at 0x34
                 writer.WriteAtPosition(ptr, baseOffset + 0x34);
             }

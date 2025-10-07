@@ -227,7 +227,7 @@ namespace LibARMP.IO
                 }
 
                 column.IsValid = columnValidity[c];
-                if (table.TableInfo.HasColumnIndices) column.Index = columnIndices[c];
+                if (table.TableInfo.HasColumnIndices) column.Index = columnIndices.IndexOf(c);
                 if (table.TableInfo.HasColumnMetadata) column.UnknownMetadata0x40 = columnMetadata0x40[c];
 
                 table.Columns.Add(column);

@@ -515,7 +515,7 @@ namespace LibARMP
         public List<string> GetColumnNamesByType (Type type)
         {
             List<string> returnList = new List<string>();
-            foreach (ArmpTableColumn column in Columns)
+            foreach (ArmpTableColumn column in Columns.OrderBy(x => x.Index))
             {
                 if (column.Type.CSType == type)
                     returnList.Add(column.Name);
