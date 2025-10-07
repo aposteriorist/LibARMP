@@ -1,6 +1,7 @@
 ﻿using LibARMP.Exceptions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace LibARMP
 {
@@ -1098,7 +1099,6 @@ namespace LibARMP
 #if DEBUG
 Console.Writeline("Packing structure.");
 #endif
-            int currentPos = 0;
             foreach (ArmpMemberInfo info in StructureSpec)
             {
                 if (!info.Column.IsValid)
@@ -1131,7 +1131,7 @@ Console.Writeline("Packing structure.");
                             childInfo.Position = info.Position + info.Type.Size * i;
                             childInfo.ArraySize = 0;
                         }
-                }
+                    }
                 }
 #if DEBUG
                 Console.WriteLine($"0x{info.Position:X}:\t{info.Column.Name}");
@@ -1154,12 +1154,15 @@ Console.Writeline("Packing structure.");
                 foreach (ArmpEntry entry in Entries)
                 {
                     string str = entry.GetValueFromColumn<string>(column);
+                    if (str == string.Empty && TableInfo.DefaultColumnIndex > -1) continue;
                     if (!Text.Contains(str) && str != null) Text.Add(str);
                 }
             }
 
-            if (TableInfo.DefaultColumnIndex > -1 && !Text.Contains(string.Empty))
+            if (TableInfo.FormatVersion == Version.DragonEngineV2 && TableInfo.DefaultColumnIndex > -1)
+            {
                 Text.Insert(TableInfo.DefaultColumnIndex, string.Empty); // Okay for now
+            }
         }
 
 
