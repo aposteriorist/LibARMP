@@ -69,7 +69,7 @@ namespace LibARMP
         }
 
 
-        internal sbyte GetIDAux (Version version)
+        internal sbyte GetMemberTypeID (Version version)
         {
             switch (version)
             {
