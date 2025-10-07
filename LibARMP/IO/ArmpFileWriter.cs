@@ -1066,8 +1066,8 @@ namespace LibARMP.IO
                             writer.Write(child != null ? child.ID : 0);
                     }
                 }
-                offsets.Add((int)writer.BaseStream.Position);
-                writer.WritePadding(0, 0x8);
+                offsets.Add(offsets.Count > 0 ? (int)writer.BaseStream.Position : 0);
+                writer.WritePadding(0, 8);
 
                 ptr = (int)writer.BaseStream.Position;
 
