@@ -36,6 +36,9 @@
 	then automatically create columns in the table to match.
 
 - There should be an option for ArmpMemberInfo in a spec to have manually-edited positions (currently LibARMP automatically packs structures).
+	Some files have very unique member info. In Gaiden, arena_deck_slot has a funky array as mentioned above.
+	Another file in Gaiden is asset_icon, which has a valid column with a negative position in member info.
+
 
 - The same structure specification should be able to be connected to multiple tables at once. I haven't put any thought into how, exactly.
 	But shared structures crop up a lot. One example is that any time a table has a table-type column, each entry's table in that column
