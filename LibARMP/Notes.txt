@@ -21,7 +21,8 @@
 	- If a column that has no member info is invalid, and vice-versa, that creates a valuable default. (Storage Mode 1 only obviously.)
 
 	- When an invalid column is marked valid, we could generate member info with the appropriate type.
-		(I believe there are some weird corner cases with types that might invalidate this, I'd need to remind myself.)
+		(There are some cases where the type used for storage in the member info is different from the actual value being stored.
+		 For example, arena_deck_slot in Gaiden stores bytes in an int array, meaning each byte occupies four bytes.)
 
 	- When writing a binary file, a dummy entry with a negative position and the correct type could be written for invalid columns.
 
@@ -45,11 +46,6 @@
 	identical to other files of this same type, and that structure will contain other structures identical to other files of the same type, and so on.
 
 
-- SetStorageMode only goes one layer deep, but the comment specifies only to call it on the main table.
-	Shouldn't it contain recursive calls if the goal is for every subtable of a subtable to have its storage mode changed?
-	Mind you, I don't think there's any reason that a sub-table can't be a different storage mode than its parent, even though RGG don't do it.
-
-
 When the storage mode of a table is changed:
 
 	- From Structured: ask if the user wants to save the structure spec as a file, perhaps, then clear the structure.
@@ -57,16 +53,3 @@ When the storage mode of a table is changed:
 
 	- To Structured: create member info for every valid column, ordered by column.
 		(If there's not already member info because of the prior note.)
-
-
-
-
-I will also point out that if there's no interest in implementing the above structure spec goals, then ArmpMemberInfo doesn't need to exist.
-
-	- The ordered list of ArmpMemberInfo in ArmpTableBase could instead be an ordered list of only the valid ArmpTableColumns.
-
-	- The type of ArmpMemberInfo is mostly recoverable from the column's type. (Again, I think I recall weird cases here.)
-
-	- The array size field is recoverable from the count of the Children list, which is already owned by the column.
-
-	- The position field can be recovered by the order of the columns and their types, if we assume that the structure should always be packed.
