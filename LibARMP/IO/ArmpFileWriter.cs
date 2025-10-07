@@ -899,6 +899,53 @@ namespace LibARMP.IO
                 }
             }
             #endregion
+
+
+            ///// Blank Cell Flags /////
+            #region BlankCellFlags
+
+            if (table.TableInfo.HasBlankCellFlags)
+            {
+                int[] bcfOffsets = new int[table.Columns.Count];
+
+                List<bool> blankCellFlags;
+                List<ArmpEntry> entriesWithData;
+                for (int i = 0; i < table.Columns.Count; i++)
+                {
+                    entriesWithData = table.CellsWithData[table.Columns[i]];
+                    if (entriesWithData == null || entriesWithData.Count == 0)
+                    {
+                        bcfOffsets[i] = -1;
+                    }
+                    else if (entriesWithData.Count == table.Entries.Count)
+                    {
+                        bcfOffsets[i] = 0;
+                    }
+                    else
+                    {
+                        bcfOffsets[i] = (int)writer.BaseStream.Position;
+                        blankCellFlags = new List<bool>(table.Entries.Count);
+
+                        foreach (ArmpEntry entry in table.Entries)
+                        {
+                            blankCellFlags.Add(!table.CellsWithData[table.Columns[i]].Contains(entry));
+                        }
+
+                        Util.WriteBooleanBitmask(writer, blankCellFlags, false);
+
+                        writer.WritePadding(0, 4);
+                    }
+                }
+
+                writer.WritePadding(0, table.TableInfo.FormatVersion == Version.DragonEngineV2 ? 8 : 4); // Fine until proven otherwise
+
+                ptr = (int)writer.BaseStream.Position;
+                foreach (int offset in bcfOffsets)
+                {
+                    writer.Write(offset);
+                }
+
+                writer.WriteAtPosition(ptr, baseOffset + 0x44);
             }
             #endregion
 
@@ -987,55 +1034,6 @@ namespace LibARMP.IO
                 }
                 // Update the main table pointer at 0x4C
                 writer.WriteAtPosition(ptr, baseOffset + 0x4C);
-            }
-            #endregion
-
-
-            ///// Blank Cell Flags /////
-            #region BlankCellFlags
-
-            if (table.TableInfo.HasBlankCellFlags)
-            {
-                int[] bcfOffsets = new int[table.Columns.Count];
-
-                List<bool> blankCellFlags;
-                List<ArmpEntry> entriesWithData;
-                for (int i = 0; i < table.Columns.Count; i++)
-                {
-                    entriesWithData = table.CellsWithData[table.Columns[i]];
-                    if (entriesWithData == null || entriesWithData.Count == 0)
-                    {
-                        bcfOffsets[i] = -1;
-                    }
-                    else if (entriesWithData.Count == table.Entries.Count)
-                    {
-                        bcfOffsets[i] = 0;
-                    }
-                    else
-                    {
-                        bcfOffsets[i] = (int)writer.BaseStream.Position;
-                        blankCellFlags = new List<bool>(table.Entries.Count);
-
-                        foreach (ArmpEntry entry in table.Entries)
-                        {
-                            blankCellFlags.Add(!table.CellsWithData[table.Columns[i]].Contains(entry));
-                        }
-
-                        Util.WriteBooleanBitmask(writer, blankCellFlags, false);
-
-                        writer.WritePadding(0, 8);
-                    }
-                }
-
-                writer.WritePadding(0, 8); // Fine until proven otherwise
-
-                ptr = (int)writer.BaseStream.Position;
-                foreach (int offset in bcfOffsets)
-                {
-                    writer.Write(offset);
-                }
-
-                writer.WriteAtPosition(ptr, baseOffset + 0x44);
             }
             #endregion
 
