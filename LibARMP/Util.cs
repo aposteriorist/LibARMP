@@ -54,19 +54,19 @@ namespace LibARMP
         /// </summary>
         /// <param name="reader">The <see cref="BinaryReader"/>.</param>
         /// <param name="ptrBitmask">The pointer to the bitmask.</param>
-        /// <param name="amount">The amount of values in the bitmask.</param>
+        /// <param name="bitCount">The amount of values in the bitmask.</param>
         /// <returns>A <see cref="Boolean"/> list.</returns>
-        internal static List<bool> IterateBooleanBitmask (BinaryReader reader, UInt32 ptrBitmask, int amount, bool isBigEndian)
+        internal static List<bool> IterateBooleanBitmask (BinaryReader reader, UInt32 ptrBitmask, int bitCount, bool isBigEndian)
         {
-            List<bool> boolList = new List<bool>();
+            List<bool> boolList = new List<bool>(bitCount);
 
             reader.BaseStream.Seek(ptrBitmask);
 
-            for (int i = 0; i < Math.Ceiling((float)amount/8); i++)
+            for (int i = 0; i < bitCount; i += 32)
             {
                 int bitmask = reader.ReadInt32(isBigEndian);
 
-                for (int j = 0; j < 32 && boolList.Count < amount; j++)
+                for (int j = 0; j < 32 && boolList.Count < bitCount; j++)
                 {
                     boolList.Add((bitmask & (1 << j)) != 0);
                 }
