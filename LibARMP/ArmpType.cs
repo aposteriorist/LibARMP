@@ -22,7 +22,7 @@ namespace LibARMP
         /// <summary>
         /// Aux ID for Dragon Engine v1
         /// </summary>
-        internal sbyte IDAuxv1 { get; set; }
+        internal sbyte MemberTypeIDv1 { get; set; }
 
         /// <summary>
         /// ID for Dragon Engine v2
@@ -32,7 +32,7 @@ namespace LibARMP
         /// <summary>
         /// Aux ID for Dragon Engine v2
         /// </summary>
-        internal sbyte IDAuxv2 { get; set; }
+        internal sbyte MemberTypeIDv2 { get; set; }
 
         /// <summary>
         /// ID for Old Engine
@@ -47,7 +47,7 @@ namespace LibARMP
         /// <summary>
         /// Size of the type
         /// </summary>
-        internal sbyte Size { get; set; }
+        internal byte Size { get; set; }
 
         /// <summary>
         /// If this represents an array type (in formats that support arrays).
@@ -73,8 +73,8 @@ namespace LibARMP
         {
             switch (version)
             {
-                case Version.DragonEngineV1: return IDAuxv1;
-                case Version.DragonEngineV2: return IDAuxv2;
+                case Version.DragonEngineV1: return MemberTypeIDv1;
+                case Version.DragonEngineV2: return MemberTypeIDv2;
                 default: return -1;
             }
         }
@@ -82,7 +82,7 @@ namespace LibARMP
 
         internal sbyte GetID (Version version, bool isAux)
         {
-            if (isAux) return GetIDAux(version);
+            if (isAux) return GetMemberTypeID(version);
             else return GetID(version);
         }
     }

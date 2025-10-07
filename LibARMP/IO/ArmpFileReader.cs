@@ -353,6 +353,16 @@ namespace LibARMP.IO
             {
                 table.StructureSpec.Sort((x, y) => x.Position.CompareTo(y.Position));
                 table.StructurePacked = true;
+
+                uint width = 0;
+                foreach (ArmpMemberInfo memberInfo in table.StructureSpec)
+                {
+                    if (memberInfo.Column == null || !memberInfo.Column.IsValid || memberInfo.Position < 0) continue;
+
+                    width = memberInfo.Type.Size;
+                    if (memberInfo.Type.IsArray) width *= memberInfo.ArraySize;
+                    if (table.StructureWidth < memberInfo.Position + width) table.StructureWidth = (uint)memberInfo.Position + width;
+                }
             }
 
             table.RefreshColumnNameCache();
@@ -1149,7 +1159,7 @@ namespace LibARMP.IO
                 type = reader.ReadInt32();
                 foreach (ArmpType armpType in DataTypes.Types)
                 {
-                    if (armpType.GetIDAux(Version.DragonEngineV2) == type)
+                    if (armpType.GetMemberTypeID(Version.DragonEngineV2) == type)
                 {
                         memberInfo.Type = armpType;
                         break;
@@ -1183,7 +1193,7 @@ namespace LibARMP.IO
                 sbyte id = Convert.ToSByte(memberInfoTable[i][0]);
                 foreach (ArmpType armpType in DataTypes.Types)
                 {
-                    if (armpType.GetIDAux(version) == id)
+                    if (armpType.GetMemberTypeID(version) == id)
                     {
                         typesList.Add(armpType);
                         break;

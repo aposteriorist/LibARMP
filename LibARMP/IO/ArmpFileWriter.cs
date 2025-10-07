@@ -881,19 +881,24 @@ namespace LibARMP.IO
                                 writer.Write(entry.GetValueFromColumn<Int64>(column.Name));
                             }
                         }
-                    }
+                    writer.BaseStream.Position = startOffset + table.StructureWidth;
                     writer.WritePadding(0, 8);
                 }
 
-                // Write the column value offset table
-                int ptrColumnOffsetTable = (int)writer.BaseStream.Position;
+                if (table.Entries.Count > 0)
+                {
+                    // Write the structure offset table
+                    int ptrStructureOffsetTable = (int)writer.BaseStream.Position;
                 foreach (int offset in entryValueOffsets)
                 {
                     writer.Write(offset);
                 }
 
                 // Update the main table pointer at 0x1C
-                writer.WriteAtPosition(ptrColumnOffsetTable, baseOffset + 0x1C);
+                    writer.WriteAtPosition(ptrStructureOffsetTable, baseOffset + 0x1C);
+                }
+            }
+            #endregion
             }
             #endregion
 
@@ -1090,7 +1095,7 @@ namespace LibARMP.IO
             // Use the list of columns to avoid having to sort MemberInfo by column index.
             foreach (ArmpTableColumn column in table.Columns)
             {
-                writer.Write((int)column.MemberInfo.Type.GetIDAux(table.TableInfo.FormatVersion)); // Member type
+                writer.Write((int)column.MemberInfo.Type.GetMemberTypeID(table.TableInfo.FormatVersion)); // Member type
                 writer.Write(column.MemberInfo.Position); // Position
                 writer.Write(column.MemberInfo.ArraySize); // Array size
                 writer.Write(0u); // Reserved bytes

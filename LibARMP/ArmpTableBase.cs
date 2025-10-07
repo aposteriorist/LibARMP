@@ -61,6 +61,11 @@ namespace LibARMP
         internal List<ArmpMemberInfo> StructureSpec { get; set; }
 
         /// <summary>
+        /// Calculated width of the packed structure (for Storage Mode 1).
+        /// </summary>
+        internal uint StructureWidth { get; set; }
+
+        /// <summary>
         /// Signals if the structure specification has been edited and is in need of repacking.
         /// </summary>
         internal bool StructurePacked { get; set; }
@@ -1089,7 +1094,7 @@ namespace LibARMP
         internal void PackStructure()
         {
             if (StructurePacked) return;
-
+            StructureWidth = 0;
 #if DEBUG
 Console.Writeline("Packing structure.");
 #endif
@@ -1103,11 +1108,17 @@ Console.Writeline("Packing structure.");
 
                 else if (info.Column.Parent == null)
                 {
-                    int size = (info.Type.IsArray ? 8 : info.Type.Size);
-                    int padding = size - currentPos % size;
-                    if (padding == size) padding = 0;
-                    info.Position = currentPos + padding;
-                    currentPos = info.Position + info.Type.Size;
+                    uint align = info.Type.Size;
+                    uint width = info.Type.Size;
+                    if (info.Type.IsArray)
+                    {
+                        width *= info.ArraySize;
+                        align = 8;
+                    }
+                    uint padding = align - StructureWidth % align;
+                    if (padding == align) padding = 0;
+                    info.Position = (int)(StructureWidth + padding);
+                    StructureWidth = (uint)info.Position + width;
 
                     // If there are array elements, handle them here.
                     if (info.Column.Children != null)
@@ -1117,14 +1128,10 @@ Console.Writeline("Packing structure.");
                         {
                             if (info.Column.Children[i] == null) continue;
                             childInfo = info.Column.Children[i].MemberInfo;
-                            childInfo.Position = info.Position + childInfo.Type.Size * i;
+                            childInfo.Position = info.Position + info.Type.Size * i;
                             childInfo.ArraySize = 0;
                         }
-                        currentPos += info.Column.Children.Count * childInfo?.Type.Size ?? 0;
-                        info.ArraySize = (uint)info.Column.Children.Count;
                 }
-                else
-                        info.ArraySize = 0;
                 }
 #if DEBUG
                 Console.WriteLine($"0x{info.Position:X}:\t{info.Column.Name}");
