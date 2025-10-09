@@ -1108,12 +1108,11 @@ Console.Writeline("Packing structure.");
 
                 else if (info.Column.Parent == null)
                 {
-                    uint align = info.Type.Size;
+                    uint align = info.Type.Align == 0 ? info.Type.Size : info.Type.Align;
                     uint width = info.Type.Size;
                     if (info.Type.IsArray)
                     {
                         width *= info.ArraySize;
-                        align = 8;
                     }
                     uint padding = align - StructureWidth % align;
                     if (padding == align) padding = 0;
