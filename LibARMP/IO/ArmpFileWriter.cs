@@ -409,7 +409,7 @@ namespace LibARMP.IO
         /// <param name="table">The <see cref="ArmpTableBase"/> to write.</param>
         private static void WriteTable(BinaryWriter writer, ArmpTableBase table, Dictionary<ArmpTableBase, uint> tableValuePointers = null)
         {
-            if (table.TableInfo.FormatVersion == Version.DragonEngineV2 && table.TableInfo.HasMemberInfo)
+            if (table.TableInfo.FormatVersion == Version.DragonEngineV2 && table.TableInfo.StorageMode == StorageMode.Structured && table.TableInfo.HasMemberInfo)
             {
                 table.PackStructure();
             }
