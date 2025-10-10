@@ -49,7 +49,7 @@ namespace LibARMP
         internal ArmpMemberInfo MemberInfo { get; set; }
 
         /// <summary>
-        /// Gets or sets the column index.
+        /// Gets or sets the column's display index, which may differ from its ID.
         /// </summary>
         /// <remarks><para>Can be null if unused.</para></remarks>
         public int Index { get; set; }

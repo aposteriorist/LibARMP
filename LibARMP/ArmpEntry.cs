@@ -67,7 +67,7 @@ namespace LibARMP
         internal IDictionary<string, object> Data { get; set; }
 
         /// <summary>
-        /// Gets or sets the entry index.
+        /// Gets or sets the entry's display index, which may differ from its ID.
         /// </summary>
         public uint Index { get; set; }
 
