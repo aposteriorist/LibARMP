@@ -395,7 +395,7 @@ namespace LibARMP.IO
 
             uint pointer = (uint)writer.BaseStream.Position;
             WriteTable(writer, table, tablePointers);
-            writer.WritePadding(0, 0x10); // Not quite right for DE v1, but acceptable
+            writer.WritePadding(0, 8);
             writer.WriteAtPosition(indexerTablePtr, pointer + 0x3C);
             return pointer;
         }
@@ -417,6 +417,7 @@ namespace LibARMP.IO
             long baseOffset = writer.BaseStream.Position;
             int ptr = 0;
             bool allTrue, allFalse;
+            int paddingWidth = table.TableInfo.FormatVersion == Version.DragonEngineV2 ? 8 : 4; // TODO: A small handful of files have a different padding, manually set.
 
             writer.WriteTimes(0, 0x50); // Placeholder table
 
@@ -462,7 +463,7 @@ namespace LibARMP.IO
                 ptr = (int)writer.BaseStream.Position;
                 Util.WriteBooleanBitmask(writer, entryValidity, false);
 
-                writer.WritePadding(0, 8);
+                writer.WritePadding(0, paddingWidth);
             }
 
             // Update the main table pointer at 0x14
@@ -543,7 +544,7 @@ namespace LibARMP.IO
                 // Update the main table text count at 0x8
                 writer.WriteAtPosition(table.Text.Count, baseOffset + 0x8);
 
-                writer.WritePadding(0, 8);
+                writer.WritePadding(0, paddingWidth);
             }
             else
             {
@@ -554,7 +555,7 @@ namespace LibARMP.IO
                 }
                 else
                 {
-                    writer.WritePadding(0, 8);
+                    writer.WritePadding(0, paddingWidth);
                 }
             }
             #endregion
@@ -563,7 +564,7 @@ namespace LibARMP.IO
             ///// Column Types /////
             #region ColumnTypes
 
-            writer.WritePadding(0, 8);
+            writer.WritePadding(0, paddingWidth);
             ptr = (int)writer.BaseStream.Position;
             foreach (ArmpTableColumn column in table.Columns)
             {
@@ -582,7 +583,7 @@ namespace LibARMP.IO
 
             if (table.TableInfo.FormatVersion == Version.DragonEngineV1 && table.TableInfo.HasMemberInfo)
             {
-                writer.WritePadding(0, 8);
+                writer.WritePadding(0, 4); // True for most files
                 ptr = (int)writer.BaseStream.Position;
                 foreach (ArmpTableColumn column in table.Columns)
                 {
@@ -592,6 +593,7 @@ namespace LibARMP.IO
 
                 // Update the main table pointer at 0x48
                 writer.WriteAtPosition(ptr, baseOffset + 0x48);
+                writer.WritePadding(0, 4); // True for most files
             }
             #endregion
 
@@ -613,7 +615,7 @@ namespace LibARMP.IO
                     {
                         if (column.Type.CSType == typeof(bool))
                         {
-                            writer.WritePadding(0, 8);
+                            writer.WritePadding(0, paddingWidth);
 
                             List<bool> boolList = new List<bool>();
                             allTrue = table.Entries.Count > 0;
@@ -749,7 +751,7 @@ namespace LibARMP.IO
                                     writer.Write(entry.GetValueFromColumn<Int64>(column.Name));
                             }
 
-                            writer.WritePadding(0, 8);
+                            writer.WritePadding(0, paddingWidth);
                         }
                     }
                 }
@@ -757,7 +759,7 @@ namespace LibARMP.IO
                 if (table.Columns.Count > 0 || table.TableInfo.FormatVersion == Version.DragonEngineV1)
                 {
                 // Write the column value offset table
-                writer.WritePadding(0, 8);
+                    writer.WritePadding(0, paddingWidth);
                 int ptrColumnOffsetTable = (int)writer.BaseStream.Position;
                 foreach (int offset in columnValueOffsets)
                 {
@@ -935,7 +937,7 @@ namespace LibARMP.IO
                     }
                 }
 
-                writer.WritePadding(0, table.TableInfo.FormatVersion == Version.DragonEngineV2 ? 8 : 4); // Fine until proven otherwise
+                writer.WritePadding(0, paddingWidth);
 
                 ptr = (int)writer.BaseStream.Position;
                 foreach (int offset in bcfOffsets)
@@ -953,7 +955,7 @@ namespace LibARMP.IO
 
             if (table.TableInfo.HasEntryIndices)
             {
-                writer.WritePadding(0, 8);
+                writer.WritePadding(0, paddingWidth);
                 ptr = (int)writer.BaseStream.Position;
                 uint[] indices = new uint[table.Entries.Count];
                 foreach (ArmpEntry entry in table.Entries)
@@ -977,7 +979,7 @@ namespace LibARMP.IO
 
             if (table.TableInfo.HasColumnIndices)
             {
-                writer.WritePadding(0, 8);
+                writer.WritePadding(0, paddingWidth);
                 ptr = (int)writer.BaseStream.Position;
                 uint[] indices = new uint[table.Columns.Count];
                 foreach (ArmpTableColumn column in table.Columns)
@@ -1001,7 +1003,7 @@ namespace LibARMP.IO
 
             if (table.TableInfo.HasGameVarColumns)
             {
-                writer.WritePadding(0, 8);
+                writer.WritePadding(0, paddingWidth);
                 ptr = (int)writer.BaseStream.Position;
                 foreach (ArmpTableColumn column in table.Columns)
                 {
@@ -1011,6 +1013,9 @@ namespace LibARMP.IO
                 writer.WriteAtPosition(ptr, baseOffset + 0x40);
             }
             #endregion
+
+
+            if (table.TableInfo.FormatVersion == Version.DragonEngineV2) writer.WritePadding(0, 0x10);
 
 
             ///// Entry Info Flags (v1 only) /////
@@ -1055,6 +1060,7 @@ namespace LibARMP.IO
 
             if (table.TableInfo.FormatVersion == Version.DragonEngineV2 && table.TableInfo.HasExtraFieldInfo)
             {
+                writer.WritePadding(0, 0x10);
                 List<int> offsets = new List<int>();
                 foreach (ArmpTableColumn column in table.Columns)
                 {
