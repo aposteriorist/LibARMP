@@ -230,7 +230,7 @@ namespace LibARMP.IO
                 ptr = (int)writer.BaseStream.Position;
                 foreach (ArmpTableColumn column in table.Columns)
                 {
-                    writer.Write(column.UnknownMetadata0x40, true);
+                    writer.Write(column.ColumnMetadata, true);
                 }
                 // Update the main table pointer at 0x24
                 writer.WriteAtPosition(ptr, baseOffset + 0x24, true);
@@ -996,16 +996,16 @@ namespace LibARMP.IO
             #endregion
 
 
-            ///// Column Metadata /////
-            #region ColumnMetadata
+            ///// Game Var Column IDs /////
+            #region GameVarColumnIDs
 
-            if (table.TableInfo.HasColumnMetadata)
+            if (table.TableInfo.HasGameVarColumns)
             {
                 writer.WritePadding(0, 8);
                 ptr = (int)writer.BaseStream.Position;
                 foreach (ArmpTableColumn column in table.Columns)
                 {
-                    writer.Write(column.UnknownMetadata0x40);
+                    writer.Write(column.GameVarID);
                 }
                 // Update the main table pointer at 0x40
                 writer.WriteAtPosition(ptr, baseOffset + 0x40);

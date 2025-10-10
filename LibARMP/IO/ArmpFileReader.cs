@@ -200,8 +200,8 @@ namespace LibARMP.IO
 
 
             ///// Column Metadata /////
-            List<int> columnMetadata0x40 = null;
-            if (table.TableInfo.HasColumnMetadata) columnMetadata0x40 = Util.IterateArray<int>(reader, table.TableInfo.ptrColumnMetadata, table.TableInfo.ColumnCount, false);
+            List<int> gameVarColumnIDs = null;
+            if (table.TableInfo.HasGameVarColumns) gameVarColumnIDs = Util.IterateArray<int>(reader, table.TableInfo.ptrGameVarColumnIDs, table.TableInfo.ColumnCount, false);
 
 
             ///// Create Columns /////
@@ -227,7 +227,7 @@ namespace LibARMP.IO
 
                 column.IsValid = columnValidity[c];
                 if (table.TableInfo.HasColumnIndices) column.Index = table.ColumnIndices.IndexOf(c);
-                if (table.TableInfo.HasColumnMetadata) column.UnknownMetadata0x40 = columnMetadata0x40[c];
+                if (table.TableInfo.HasGameVarColumns) column.GameVarID = gameVarColumnIDs[c];
 
                 table.Columns.Add(column);
             }
@@ -427,7 +427,7 @@ namespace LibARMP.IO
             ///// Column Metadata /////
             #region ColumnMetadata
 
-            List<int> columnMetadata = new List<int>();
+            List<int> columnMetadata = null;
             if (table.TableInfo.HasColumnMetadata)
             {
                 columnMetadata = Util.IterateArray<int>(reader, table.TableInfo.ptrColumnMetadata, table.TableInfo.ColumnCount, true);
@@ -441,7 +441,7 @@ namespace LibARMP.IO
             for (uint c = 0; c < table.TableInfo.ColumnCount; c++)
             {
                 ArmpTableColumn column = new ArmpTableColumn(c, columnNames[(int)c], columnDataTypes[(int)c]);
-                if (table.TableInfo.HasColumnMetadata) column.UnknownMetadata0x40 = columnMetadata[(int)c];
+                if (table.TableInfo.HasColumnMetadata) column.ColumnMetadata = columnMetadata[(int)c];
 
                 table.Columns.Add(column);
             }
@@ -607,7 +607,7 @@ namespace LibARMP.IO
                 armpTableInfo.ptrColumnIndices = reader.ReadUInt32();
                 armpTableInfo.ptrColumnValidity = reader.ReadUInt32();
                 armpTableInfo.ptrIndexerTable = reader.ReadUInt32();
-                armpTableInfo.ptrColumnMetadata = reader.ReadUInt32(); //This seems to be used as a band aid fix for when a column name has or starts with special characters. (minigame_karaoke_music_data -> ?karaoke_music_kind)
+                armpTableInfo.ptrGameVarColumnIDs = reader.ReadUInt32();
                 armpTableInfo.ptrBlankCellFlagOffsetTable = reader.ReadUInt32();
                 armpTableInfo.ptrMemberInfo = reader.ReadUInt32();
                 armpTableInfo.ptrExtraFieldInfo = reader.ReadUInt32();
@@ -631,7 +631,7 @@ namespace LibARMP.IO
                 if (armpTableInfo.ptrEntryIndices > 0 && armpTableInfo.ptrEntryIndices < 0xFFFFFFFF) armpTableInfo.HasEntryIndices = true;
                 if (armpTableInfo.ptrColumnIndices > 0 && armpTableInfo.ptrColumnIndices < 0xFFFFFFFF) armpTableInfo.HasColumnIndices = true;
                 if (armpTableInfo.ptrBlankCellFlagOffsetTable > 0 && armpTableInfo.ptrBlankCellFlagOffsetTable < 0xFFFFFFFF) armpTableInfo.HasBlankCellFlags = true;
-                if (armpTableInfo.ptrColumnMetadata > 0 && armpTableInfo.ptrColumnMetadata < 0xFFFFFFFF) armpTableInfo.HasColumnMetadata = true;
+                if (armpTableInfo.ptrGameVarColumnIDs > 0 && armpTableInfo.ptrGameVarColumnIDs < 0xFFFFFFFF) armpTableInfo.HasGameVarColumns = true;
                 if (armpTableInfo.ptrExtraFieldInfo > 0 && armpTableInfo.ptrExtraFieldInfo < 0xFFFFFFFF) armpTableInfo.HasExtraFieldInfo = true;
 
 
@@ -660,10 +660,10 @@ namespace LibARMP.IO
                 Console.WriteLine("Pointer to Column Display Indices: " + armpTableInfo.ptrColumnIndices);
                 Console.WriteLine("Pointer to Column Validity: " + armpTableInfo.ptrColumnValidity);
                 Console.WriteLine("Pointer to Indexer table: " + armpTableInfo.ptrIndexerTable);
-                Console.WriteLine("Pointer to Column Metadata: " + armpTableInfo.ptrColumnMetadata);
+                Console.WriteLine("Pointer to Game Var Column IDs: " + armpTableInfo.ptrColumnMetadata);
                 Console.WriteLine("Pointer to Blank Cell Flag Offset Table: " + armpTableInfo.ptrBlankCellFlagOffsetTable);
                 Console.WriteLine("Pointer to Member Info: " + armpTableInfo.ptrMemberInfo);
-                Console.WriteLine("Pointer to Field Info: " + armpTableInfo.ptrExtraFieldInfo);
+                Console.WriteLine("Pointer to Array Info: " + armpTableInfo.ptrExtraFieldInfo);
                 Console.WriteLine("Has Indexer: " + armpTableInfo.HasIndexerTable);
 #endif
             }
@@ -733,10 +733,10 @@ namespace LibARMP.IO
                 else
                     entry = new ArmpEntry(table, i, table.EntryNames[(int)i], (uint)table.EntryIndices.IndexOf(i));
 
-                    entry.ParentTable = table;
-                    table.Entries.Add(entry);
-                }
+                entry.ParentTable = table;
+                table.Entries.Add(entry);
             }
+        }
 
 
 

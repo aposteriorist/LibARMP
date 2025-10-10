@@ -186,7 +186,20 @@ namespace LibARMP
         internal UInt32 ptrIndexerTable { get; set; }
 
         /// <summary>
-        /// Gets or sets the pointer to the Blank Cell Flag Offset Table.
+        /// Gets or sets the pointer to the Column Metadata table.
+        /// </summary>
+        /// <remarks><para><b>OLD ENGINE ONLY</b></para></remarks>
+        internal UInt32 ptrColumnMetadata { get; set; }
+
+        /// <summary>
+        /// Gets or sets the pointer to the game_var Column IDs.
+        /// </summary>
+        /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
+        // (Meaning still unknown for version 1. May be maximum, default, or otherwise special column values.)
+        internal UInt32 ptrGameVarColumnIDs { get; set; }
+
+        /// <summary>
+        /// Gets or sets the pointer to the Blank Cell Flag Offset table.
         /// </summary>
         /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
         internal UInt32 ptrBlankCellFlagOffsetTable { get; set; }
@@ -270,10 +283,17 @@ namespace LibARMP
         public bool HasExtraFieldInfo { get; internal set; }
 
         /// <summary>
-        /// Gets a boolean indicating if the table has column metadata.
+        /// Gets a boolean indicating if the table has any column metadata.
         /// </summary>
+        /// <remarks><para><b>OLD ENGINE ONLY</b></para></remarks>
         public bool HasColumnMetadata { get; internal set; }
 
+        /// <summary>
+        /// Gets a boolean indicating if the table has any columns that are also columns in game_var.
+        /// </summary>
+        /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
+        // (Meaning still unknown for version 1. May be maximum, default, or otherwise special column values.)
+        public bool HasGameVarColumns { get; internal set; }
 
 
         //Version Data

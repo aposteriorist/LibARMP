@@ -60,10 +60,17 @@ namespace LibARMP
         public bool IsValid { get; set; }
 
         /// <summary>
-        /// Gets or sets the unknown metadata.
+        /// Gets or sets the column metadata.
         /// </summary>
-        /// <remarks><para>TODO</para></remarks>
-        public int UnknownMetadata0x40 { get; set; }
+        /// <remarks><para><b>OLD ENGINE ONLY</b></para></remarks>
+        public int ColumnMetadata { get; set; }
+
+        /// <summary>
+        /// Gets or sets the game_var ID.
+        /// </summary>
+        /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
+        // (Meaning still unknown for version 1. May be maximum, default, or otherwise special column values.)
+        public int GameVarID { get; set; }
 
         /// <summary>
         /// Gets or sets the column's children.
@@ -98,7 +105,8 @@ namespace LibARMP
             ArmpTableColumn copy = new ArmpTableColumn(ID, Name, Type);
             copy.Index = Index;
             copy.IsValid = IsValid;
-            copy.UnknownMetadata0x40 = UnknownMetadata0x40;
+            copy.ColumnMetadata = ColumnMetadata;
+            copy.GameVarID = GameVarID;
 
             if (Type.IsArray)
                 copy.Children = new List<ArmpTableColumn>(Children.Count);
