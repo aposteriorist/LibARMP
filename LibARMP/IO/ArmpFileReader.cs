@@ -680,16 +680,16 @@ namespace LibARMP.IO
         /// <param name="ptrDataTypes">The pointer to the column data type array.</param>
         /// <param name="amount">The amount of values in the array.</param>
         /// <param name="version">The format version.</param>
-        /// <param name="isAuxiliary">Is it the auxiliary data types array?</param>
+        /// <param name="IsMemberType">Is it the member type array?</param>
         /// <returns>An <see cref="ArmpType"/> list.</returns>
-        private static List<ArmpType> GetColumnDataTypes(BinaryReader reader, uint ptrDataTypes, int amount, Version version, bool isAuxiliary = false)
+        private static List<ArmpType> GetColumnDataTypes(BinaryReader reader, uint ptrDataTypes, int amount, Version version, bool IsMemberType = false)
         {
             List<ArmpType> returnList = new List<ArmpType>();
 
             Dictionary<sbyte, ArmpType> typeIdCache = new Dictionary<sbyte, ArmpType>();
             foreach (ArmpType type in DataTypes.Types)
             {
-                typeIdCache.TryAdd(type.GetID(version, isAuxiliary), type);
+                typeIdCache.TryAdd(type.GetID(version, IsMemberType), type);
             }
 
             reader.BaseStream.Seek(ptrDataTypes);
