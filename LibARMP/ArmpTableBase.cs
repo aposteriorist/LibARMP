@@ -1111,6 +1111,14 @@ Console.Writeline("Packing structure.");
                     info.Position = -1;
                 }
 
+                // As a stopgap measure for now, skip this member if it was already -1.
+                // There's no great way of catching this in automatic packing.
+                // The affected columns seem to often be named '*', but I'd prefer a better indicator than that.
+                else if (info.Position == -1)
+                {
+                    continue;
+                }
+
                 else if (info.Column.Parent == null)
                 {
                     uint align = info.Type.Align == 0 ? info.Type.Size : info.Type.Align;
