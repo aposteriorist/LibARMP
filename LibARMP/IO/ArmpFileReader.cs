@@ -725,22 +725,18 @@ namespace LibARMP.IO
         /// <param name="table">The <see cref="ArmpTableBase"/>.</param>
         private static void InitializeEntries(ArmpTableBase table)
         {
+            ArmpEntry entry;
             for (uint i = 0; i < table.TableInfo.EntryCount; i++)
             {
                 if (!table.TableInfo.HasEntryIndices)
-                {
-                    ArmpEntry entry = new ArmpEntry(table, i, table.EntryNames[(int)i], i);
-                    entry.ParentTable = table;
-                    table.Entries.Add(entry);
-                }
+                    entry = new ArmpEntry(table, i, table.EntryNames[(int)i], i);
                 else
-                {
-                    ArmpEntry entry = new ArmpEntry(table, i, table.EntryNames[(int)i], (uint)table.EntryIndices.IndexOf(i));
+                    entry = new ArmpEntry(table, i, table.EntryNames[(int)i], (uint)table.EntryIndices.IndexOf(i));
+
                     entry.ParentTable = table;
                     table.Entries.Add(entry);
                 }
             }
-        }
 
 
 
