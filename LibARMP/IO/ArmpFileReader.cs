@@ -196,8 +196,7 @@ namespace LibARMP.IO
 
 
             ///// Column Indices /////
-            List<int> columnIndices = null;
-            if (table.TableInfo.HasColumnIndices) columnIndices = Util.IterateArray<int>(reader, table.TableInfo.ptrColumnIndices, table.TableInfo.ColumnCount, false);
+            if (table.TableInfo.HasColumnIndices) table.ColumnIndices = Util.IterateArray<int>(reader, table.TableInfo.ptrColumnIndices, table.TableInfo.ColumnCount, false);
 
 
             ///// Column Metadata /////
@@ -227,7 +226,7 @@ namespace LibARMP.IO
                 }
 
                 column.IsValid = columnValidity[c];
-                if (table.TableInfo.HasColumnIndices) column.Index = columnIndices.IndexOf(c);
+                if (table.TableInfo.HasColumnIndices) column.Index = table.ColumnIndices.IndexOf(c);
                 if (table.TableInfo.HasColumnMetadata) column.UnknownMetadata0x40 = columnMetadata0x40[c];
 
                 table.Columns.Add(column);
@@ -657,8 +656,8 @@ namespace LibARMP.IO
                 Console.WriteLine("Pointer to Text Offset Table: " + armpTableInfo.ptrTextOffsetTable);
                 Console.WriteLine("Pointer to Column Names Offset Table: " + armpTableInfo.ptrColumnNamesOffsetTable);
                 Console.WriteLine("Default Column Index: " + armpTableInfo.DefaultColumnIndex);
-                Console.WriteLine("Pointer to Entry Indices: " + armpTableInfo.ptrEntryIndices);
-                Console.WriteLine("Pointer to Column Indices: " + armpTableInfo.ptrColumnIndices);
+                Console.WriteLine("Pointer to Entry Display Indices: " + armpTableInfo.ptrEntryIndices);
+                Console.WriteLine("Pointer to Column Display Indices: " + armpTableInfo.ptrColumnIndices);
                 Console.WriteLine("Pointer to Column Validity: " + armpTableInfo.ptrColumnValidity);
                 Console.WriteLine("Pointer to Indexer table: " + armpTableInfo.ptrIndexerTable);
                 Console.WriteLine("Pointer to Column Metadata: " + armpTableInfo.ptrColumnMetadata);

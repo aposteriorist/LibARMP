@@ -47,7 +47,12 @@ namespace LibARMP
         internal List<uint> EntryIndices { get; set; }
 
         /// <summary>
-        /// Columns.
+        /// Column indices.
+        /// </summary>
+        internal List<int> ColumnIndices { get; set; }
+
+        /// <summary>
+        /// List of columns.
         /// </summary>
         internal List<ArmpTableColumn> Columns { get; set; }
 
@@ -516,10 +521,10 @@ namespace LibARMP
         public List<string> GetColumnNamesByType (Type type)
         {
             List<string> returnList = new List<string>();
-            foreach (ArmpTableColumn column in Columns.OrderBy(x => x.Index))
+            foreach (int i in ColumnIndices ?? Enumerable.Range(0, Columns.Count))
             {
-                if (column.Type.CSType == type)
-                    returnList.Add(column.Name);
+                if (Columns[i].Type.CSType == type)
+                    returnList.Add(Columns[i].Name);
             }
 
             return returnList;
