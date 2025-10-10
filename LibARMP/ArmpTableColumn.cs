@@ -12,7 +12,7 @@ namespace LibARMP
         /// <param name="id">The column ID.</param>
         internal ArmpTableColumn(uint id)
         {
-            this.ID = id;
+            ID = id;
         }
 
         /// <summary>
@@ -23,8 +23,8 @@ namespace LibARMP
         /// <param name="type">The column type.</param>
         internal ArmpTableColumn(uint id, string name, ArmpType type) : this(id)
         {
-            this.Name = name;
-            this.Type = type;
+            Name = name;
+            Type = type;
         }
 
         /// <summary>

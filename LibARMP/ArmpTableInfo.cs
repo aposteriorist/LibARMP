@@ -11,44 +11,47 @@ namespace LibARMP
         internal ArmpTableInfo ()
         {
             //General Info
-            this.EntryCount = 0;
-            this.ColumnCount = 0;
-            this.TextCount = 0;
-            this.DefaultEntryIndex = -1;
-            this.DefaultColumnIndex = -1;
-            this.TableID = 0;
-            this.StorageMode = 0;
+            EntryCount = 0;
+            ColumnCount = 0;
+            TextCount = 0;
+            DefaultEntryIndex = -1;
+            DefaultColumnIndex = -1;
+            TableID = 0;
+            StorageMode = 0;
 
             //Pointers
-            this.ptrEntryNamesOffsetTable = 0;
-            this.ptrEntryValidity = 0;
-            this.ptrColumnDataTypes = 0;
-            this.ptrColumnContentOffsetTable = 0;
-            this.ptrTextOffsetTable = 0;
-            this.ptrColumnNamesOffsetTable = 0;
-            this.ptrEntryIndices = 0;
-            this.ptrColumnIndices = 0;
-            this.ptrColumnValidity = 0;
-            this.ptrIndexerTable = 0;
-            this.ptrBlankCellFlagOffsetTable = 0;
-            this.ptrMemberInfo = 0;
-            this.ptrExtraFieldInfo = 0;
-            this.ptrColumnMetadata = 0;
+            ptrEntryNamesOffsetTable = 0;
+            ptrEntryValidity = 0;
+            ptrColumnDataTypes = 0;
+            ptrColumnContentOffsetTable = 0;
+            ptrTextOffsetTable = 0;
+            ptrColumnNamesOffsetTable = 0;
+            ptrEntryIndices = 0;
+            ptrColumnIndices = 0;
+            ptrColumnValidity = 0;
+            ptrIndexerTable = 0;
+            ptrColumnMetadata = 0;
+            ptrGameVarColumnIDs = 0;
+            ptrBlankCellFlagOffsetTable = 0;
+            ptrMemberInfo = 0;
+            ptrExtraFieldInfo = 0;
 
             //Flags
-            this.HasText = false;
-            this.HasIndexerTable = false;
-            this.HasEntryNames = false;
-            this.HasColumnNames = false;
-            this.HasMemberInfo = false;
-            this.HasEntryValidity = false;
-            this.HasEntryIndices = false;
-            this.HasColumnIndices = false;
-            this.HasExtraFieldInfo = false;
-            this.HasBlankCellFlags = false;
+            HasText = false;
+            HasIndexerTable = false;
+            HasEntryNames = false;
+            HasColumnNames = false;
+            HasMemberInfo = false;
+            HasEntryValidity = false;
+            HasEntryIndices = false;
+            HasColumnIndices = false;
+            HasExtraFieldInfo = false;
+            HasBlankCellFlags = false;
+            HasColumnMetadata = false;
+            HasGameVarColumns = false;
 
             //Extra data
-            this.FormatVersion = Version.Unknown;
+            FormatVersion = Version.Unknown;
         }
 
 
@@ -215,11 +218,6 @@ namespace LibARMP
         /// </summary>
         /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
         internal UInt32 ptrExtraFieldInfo { get; set; }
-
-        /// <summary>
-        /// Gets or sets the pointer to the Column Metadata.
-        /// </summary>
-        internal UInt32 ptrColumnMetadata { get; set; }
 
 
 
