@@ -580,7 +580,7 @@ namespace LibARMP.IO
             ///// Member Types (V1) /////
             #region MemberTypes(v1)
 
-            if (table.TableInfo.FormatVersion == Version.DragonEngineV1)
+            if (table.TableInfo.FormatVersion == Version.DragonEngineV1 && table.TableInfo.HasMemberInfo)
             {
                 writer.WritePadding(0, 8);
                 ptr = (int)writer.BaseStream.Position;
