@@ -130,7 +130,7 @@ namespace LibARMP
 
                 // If the column is of array type and has children, copy them and their member info.
                 if (column.Children?.Count > 0)
-                    {
+                {
                     ArmpTableColumn copyChild;
                     foreach (ArmpTableColumn child in column.Children)
                     {
@@ -146,8 +146,8 @@ namespace LibARMP
                             copySpecOrdered[StructureSpec.IndexOf(child.MemberInfo)] = copyChild.MemberInfo = child.MemberInfo.Copy(copyChild);
                         }
                     }
-                    }
                 }
+            }
 
             // Finish copying the structure specification if present.
             if (TableInfo.HasMemberInfo)
@@ -508,14 +508,32 @@ namespace LibARMP
 
 
         /// <summary>
+        /// Gets an ordered list of columns matching the type.
+        /// </summary>
+        /// <param name="type">The <see cref="Type"/> to look for.</param>
+        /// <returns>An <see cref="ArmpTableColumn"/> list.</returns>
+        public List<ArmpTableColumn> GetOrderedColumnsByType(Type type)
+        {
+            List<ArmpTableColumn> returnList = new List<ArmpTableColumn>();
+            foreach (int i in OrderedColumnIDs)
+            {
+                if (Columns[i].Type.CSType == type)
+                    returnList.Add(Columns[i]);
+            }
+
+            return returnList;
+        }
+
+
+        /// <summary>
         /// Gets a list of columns matching the type.
         /// </summary>
         /// <typeparam name="T">The <see cref="Type"/> to look for.</typeparam>
         /// <returns>An <see cref="ArmpTableColumn"/> list.</returns>
-        public List<ArmpTableColumn> GetColumnsByType<T>()
+        public List<ArmpTableColumn> GetColumnsByType<T>(bool ordered = false)
         {
             Type type = typeof(T);
-            return GetColumnsByType(type);
+            return ordered && TableInfo.FormatIsDragonEngine ? GetOrderedColumnsByType(type) : GetColumnsByType(type);
         }
 
 
@@ -524,13 +542,29 @@ namespace LibARMP
         /// </summary>
         /// <param name="type">The <see cref="Type"/> to look for.</param>
         /// <returns>A <see cref="string"/> list.</returns>
-        public List<string> GetColumnNamesByType (Type type)
+        public List<string> GetColumnNamesByType(Type type)
+        {
+            List<string> returnList = new List<string>();
+            foreach (ArmpTableColumn column in Columns)
+            {
+                if (column.Type.CSType == type) returnList.Add(column.Name);
+            }
+
+            return returnList;
+        }
+
+
+        /// <summary>
+        /// Gets an ordered list of column names matching the type.
+        /// </summary>
+        /// <param name="type">The <see cref="Type"/> to look for.</param>
+        /// <returns>A <see cref="string"/> list.</returns>
+        public List<string> GetOrderedColumnNamesByType (Type type)
         {
             List<string> returnList = new List<string>();
             foreach (int i in OrderedColumnIDs)
             {
-                if (Columns[i].Type.CSType == type)
-                    returnList.Add(Columns[i].Name);
+                if (Columns[i].Type.CSType == type) returnList.Add(Columns[i].Name);
             }
 
             return returnList;
@@ -542,10 +576,10 @@ namespace LibARMP
         /// </summary>
         /// <typeparam name="T">The <see cref="Type"/> to look for.</typeparam>
         /// <returns>A <see cref="string"/> list.</returns>
-        public List<string> GetColumnNamesByType<T>()
+        public List<string> GetColumnNamesByType<T>(bool ordered = false)
         {
             Type type = typeof(T);
-            return GetColumnNamesByType(type);
+            return ordered && TableInfo.FormatIsDragonEngine ? GetOrderedColumnNamesByType(type) : GetColumnNamesByType(type);
         }
 
 
@@ -567,14 +601,31 @@ namespace LibARMP
 
 
         /// <summary>
+        /// Gets an ordered list of column IDs matching the type.
+        /// </summary>
+        /// <param name="type">The <see cref="Type"/> to look for.</param>
+        /// <returns>A <see cref="uint"/> list.</returns>
+        public List<uint> GetOrderedColumnIDsByType(Type type)
+        {
+            List<uint> returnList = new List<uint>();
+            foreach (int i in OrderedColumnIDs)
+            {
+                if (Columns[i].Type.CSType == type) returnList.Add((uint)i);
+            }
+
+            return returnList;
+        }
+
+
+        /// <summary>
         /// Gets a list of column IDs matching the type.
         /// </summary>
         /// <typeparam name="T">The <see cref="Type"/> to look for.</typeparam>
         /// <returns>An <see cref="uint"/> list.</returns>
-        public List<uint> GetColumnIDsByType<T>()
+        public List<uint> GetColumnIDsByType<T>(bool ordered = false)
         {
             Type type = typeof(T);
-            return GetColumnIDsByType(type);
+            return ordered && TableInfo.FormatIsDragonEngine ? GetOrderedColumnIDsByType(type) : GetColumnIDsByType(type);
         }
 
 
@@ -836,7 +887,7 @@ namespace LibARMP
                 column.MemberInfo = info;
                 info.Column = column;
                 if (StructurePacked) StructurePacked = !column.IsValid;
-                }
+            }
 
             Columns.Add(column);
             RefreshColumnNameCache();

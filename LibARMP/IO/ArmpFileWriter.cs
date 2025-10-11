@@ -352,7 +352,7 @@ namespace LibARMP.IO
         /// <returns>The pointer to the table.</returns>
         private static uint WriteTableRecursive(BinaryWriter writer, ArmpTableBase table)
         {
-            List<string> tableColumns = table.GetColumnNamesByType<ArmpTable>();
+            List<string> tableColumns = table.GetColumnNamesByType<ArmpTable>(ordered: true);
             Dictionary<ArmpTableBase, uint> tablePointers = new Dictionary<ArmpTableBase, uint>();
 
             if (tableColumns.Count > 0)
@@ -629,14 +629,14 @@ namespace LibARMP.IO
                                 allFalse &= !temp;
                             }
 
-                                if (allTrue) columnValueOffsets.Add(-1);
-                                else if (allFalse) columnValueOffsets.Add(0);
-                                else
-                                {
-                                    columnValueOffsets.Add((int)writer.BaseStream.Position);
-                                    Util.WriteBooleanBitmask(writer, boolList, false);
-                                }
+                            if (allTrue) columnValueOffsets.Add(-1);
+                            else if (allFalse) columnValueOffsets.Add(0);
+                            else
+                            {
+                                columnValueOffsets.Add((int)writer.BaseStream.Position);
+                                Util.WriteBooleanBitmask(writer, boolList, false);
                             }
+                        }
                         else
                         {
                             columnValueOffsets.Add((int)writer.BaseStream.Position);
@@ -652,13 +652,13 @@ namespace LibARMP.IO
                                         int index = table.Text.IndexOf(value);
                                         writer.Write(index);
                                     }
-                                        else if (table.TableInfo.FormatVersion == Version.DragonEngineV1)
-                                        {
-                                            writer.Write(-1);
-                                        }
+                                    else if (table.TableInfo.FormatVersion == Version.DragonEngineV1)
+                                    {
+                                        writer.Write(-1);
+                                    }
                                     else
                                     {
-                                            writer.Write(0);
+                                        writer.Write(0);
                                     }
                                 }
                             }
@@ -758,17 +758,17 @@ namespace LibARMP.IO
 
                 if (table.Columns.Count > 0 || table.TableInfo.FormatVersion == Version.DragonEngineV1)
                 {
-                // Write the column value offset table
+                    // Write the column value offset table
                     writer.WritePadding(0, paddingWidth);
-                int ptrColumnOffsetTable = (int)writer.BaseStream.Position;
-                foreach (int offset in columnValueOffsets)
-                {
-                    writer.Write(offset);
-                }
+                    int ptrColumnOffsetTable = (int)writer.BaseStream.Position;
+                    foreach (int offset in columnValueOffsets)
+                    {
+                        writer.Write(offset);
+                    }
 
-                // Update the main table pointer at 0x1C
-                writer.WriteAtPosition(ptrColumnOffsetTable, baseOffset + 0x1C);
-            }
+                    // Update the main table pointer at 0x1C
+                    writer.WriteAtPosition(ptrColumnOffsetTable, baseOffset + 0x1C);
+                }
             }
             #endregion
 
@@ -794,93 +794,93 @@ namespace LibARMP.IO
                         writer.BaseStream.Position = startOffset + memberInfo.Position;
 
                         // Write operations based on column type
-                            if (memberInfo.Type.CSType == typeof(string))
+                        if (memberInfo.Type.CSType == typeof(string))
+                        {
+                            string value = (string)entry.GetValueFromColumn(column.Name);
+                            if (value != null)
                             {
-                                string value = (string)entry.GetValueFromColumn(column.Name);
-                                if (value != null)
-                                {
-                                    long index = table.Text.IndexOf(value);
-                                    writer.Write(index);
-                                }
-                                else if (table.TableInfo.HasText)
-                                {
-                                    writer.Write(-1L);
-                                }
-                                else
-                                {
-                                    writer.Write(0L);
-                                }
+                                long index = table.Text.IndexOf(value);
+                                writer.Write(index);
                             }
-
-                            else if (memberInfo.Type.CSType == typeof(bool))
+                            else if (table.TableInfo.HasText)
                             {
-                                bool val = (bool)entry.GetValueFromColumn(column.Name);
-                                writer.Write(Convert.ToByte(val));
+                                writer.Write(-1L);
                             }
-
-                            else if (memberInfo.Type.CSType == typeof(ArmpTable))
+                            else
                             {
-                                try
-                                {
-                                    ulong tablePtr = tableValuePointers[(ArmpTable)entry.GetValueFromColumn(column.Name)];
-                                    writer.Write(tablePtr);
-                                }
-                                catch
-                                {
-                                    writer.Write(0L);
-                                }
-                            }
-
-                            else if (memberInfo.Type.CSType == typeof(float))
-                            {
-                                writer.Write(entry.GetValueFromColumn<float>(column.Name));
-                            }
-
-                            else if (memberInfo.Type.CSType == typeof(double))
-                            {
-                                writer.Write(entry.GetValueFromColumn<double>(column.Name));
-                            }
-
-                            else if (memberInfo.Type.CSType == typeof(byte))
-                            {
-                                writer.Write(entry.GetValueFromColumn<byte>(column.Name));
-                            }
-
-                            else if (memberInfo.Type.CSType == typeof(sbyte))
-                            {
-                                writer.Write(entry.GetValueFromColumn<sbyte>(column.Name));
-                            }
-
-                            else if (memberInfo.Type.CSType == typeof(UInt16))
-                            {
-                                writer.Write(entry.GetValueFromColumn<UInt16>(column.Name));
-                            }
-
-                            else if (memberInfo.Type.CSType == typeof(Int16))
-                            {
-                                writer.Write(entry.GetValueFromColumn<Int16>(column.Name));
-                            }
-
-                            else if (memberInfo.Type.CSType == typeof(UInt32))
-                            {
-                                writer.Write(entry.GetValueFromColumn<UInt32>(column.Name));
-                            }
-
-                            else if (memberInfo.Type.CSType == typeof(Int32))
-                            {
-                                writer.Write(entry.GetValueFromColumn<Int32>(column.Name));
-                            }
-
-                            else if (memberInfo.Type.CSType == typeof(UInt64))
-                            {
-                                writer.Write(entry.GetValueFromColumn<UInt64>(column.Name));
-                            }
-
-                            else if (memberInfo.Type.CSType == typeof(Int64))
-                            {
-                                writer.Write(entry.GetValueFromColumn<Int64>(column.Name));
+                                writer.Write(0L);
                             }
                         }
+
+                        else if (memberInfo.Type.CSType == typeof(bool))
+                        {
+                            bool val = (bool)entry.GetValueFromColumn(column.Name);
+                            writer.Write(Convert.ToByte(val));
+                        }
+
+                        else if (memberInfo.Type.CSType == typeof(ArmpTable))
+                        {
+                            try
+                            {
+                                ulong tablePtr = tableValuePointers[(ArmpTable)entry.GetValueFromColumn(column.Name)];
+                                writer.Write(tablePtr);
+                            }
+                            catch
+                            {
+                                writer.Write(0L);
+                            }
+                        }
+
+                        else if (memberInfo.Type.CSType == typeof(float))
+                        {
+                            writer.Write(entry.GetValueFromColumn<float>(column.Name));
+                        }
+
+                        else if (memberInfo.Type.CSType == typeof(double))
+                        {
+                            writer.Write(entry.GetValueFromColumn<double>(column.Name));
+                        }
+
+                        else if (memberInfo.Type.CSType == typeof(byte))
+                        {
+                            writer.Write(entry.GetValueFromColumn<byte>(column.Name));
+                        }
+
+                        else if (memberInfo.Type.CSType == typeof(sbyte))
+                        {
+                            writer.Write(entry.GetValueFromColumn<sbyte>(column.Name));
+                        }
+
+                        else if (memberInfo.Type.CSType == typeof(UInt16))
+                        {
+                            writer.Write(entry.GetValueFromColumn<UInt16>(column.Name));
+                        }
+
+                        else if (memberInfo.Type.CSType == typeof(Int16))
+                        {
+                            writer.Write(entry.GetValueFromColumn<Int16>(column.Name));
+                        }
+
+                        else if (memberInfo.Type.CSType == typeof(UInt32))
+                        {
+                            writer.Write(entry.GetValueFromColumn<UInt32>(column.Name));
+                        }
+
+                        else if (memberInfo.Type.CSType == typeof(Int32))
+                        {
+                            writer.Write(entry.GetValueFromColumn<Int32>(column.Name));
+                        }
+
+                        else if (memberInfo.Type.CSType == typeof(UInt64))
+                        {
+                            writer.Write(entry.GetValueFromColumn<UInt64>(column.Name));
+                        }
+
+                        else if (memberInfo.Type.CSType == typeof(Int64))
+                        {
+                            writer.Write(entry.GetValueFromColumn<Int64>(column.Name));
+                        }
+                    }
                     writer.BaseStream.Position = startOffset + table.StructureWidth;
                     writer.WritePadding(0, 8);
                 }
@@ -889,12 +889,12 @@ namespace LibARMP.IO
                 {
                     // Write the structure offset table
                     int ptrStructureOffsetTable = (int)writer.BaseStream.Position;
-                foreach (int offset in entryValueOffsets)
-                {
-                    writer.Write(offset);
-                }
+                    foreach (int offset in entryValueOffsets)
+                    {
+                        writer.Write(offset);
+                    }
 
-                // Update the main table pointer at 0x1C
+                    // Update the main table pointer at 0x1C
                     writer.WriteAtPosition(ptrStructureOffsetTable, baseOffset + 0x1C);
                 }
             }
