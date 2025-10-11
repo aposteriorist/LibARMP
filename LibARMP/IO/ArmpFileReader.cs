@@ -204,8 +204,8 @@ namespace LibARMP.IO
             }
             else
             {
-                table.OrderedColumnIDs = new List<int>(table.Columns.Count);
-                for (int i = 0; i < table.Columns.Count; i++)
+                table.OrderedColumnIDs = new List<int>(table.TableInfo.ColumnCount);
+                for (int i = 0; i < table.TableInfo.ColumnCount; i++)
                     table.OrderedColumnIDs.Add(i);
             }
             #endregion
@@ -278,8 +278,8 @@ namespace LibARMP.IO
             }
             else
             {
-                table.OrderedEntryIDs = new List<uint>(table.Entries.Count);
-                for (uint i = 0; i < table.Entries.Count; i++)
+                table.OrderedEntryIDs = new List<uint>(table.TableInfo.EntryCount);
+                for (uint i = 0; i < table.TableInfo.EntryCount; i++)
                     table.OrderedEntryIDs.Add(i);
             }
             #endregion
