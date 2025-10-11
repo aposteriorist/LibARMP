@@ -40,7 +40,7 @@ namespace LibARMP
         {
             List<string> stringList = new List<string>();
 
-            foreach (int offset in offsetList) 
+            foreach (uint offset in offsetList) 
             {
                 reader.BaseStream.Seek(offset);
                 stringList.Add(reader.ReadStringNullTerminated());
@@ -65,7 +65,7 @@ namespace LibARMP
             for (int i = 0; i < bitCount; i += 32)
             {
                 int bitmask = reader.ReadInt32(isBigEndian);
-
+                
                 for (int j = 0; j < 32 && boolList.Count < bitCount; j++)
                 {
                     boolList.Add((bitmask & (1 << j)) != 0);
