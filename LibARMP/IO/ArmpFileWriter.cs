@@ -435,12 +435,12 @@ namespace LibARMP.IO
             writer.BaseStream.PopPosition();
 
 
-            ///// Default Entry Index /////
-            writer.WriteAtPosition(table.TableInfo.DefaultEntryIndex, baseOffset + 0xC);
+            ///// Default Entry ID /////
+            writer.WriteAtPosition(table.TableInfo.DefaultEntryID, baseOffset + 0xC);
 
 
-            ///// Default Column Index /////
-            writer.WriteAtPosition(table.TableInfo.DefaultColumnIndex, baseOffset + 0x2C);
+            ///// Default Column ID /////
+            writer.WriteAtPosition(table.TableInfo.DefaultColumnID, baseOffset + 0x2C);
 
 
             ///// Entry Validity //////

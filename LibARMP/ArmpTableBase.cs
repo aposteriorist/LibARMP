@@ -1166,14 +1166,14 @@ Console.Writeline("Packing structure.");
                 foreach (ArmpEntry entry in Entries)
                 {
                     string str = entry.GetValueFromColumn<string>(column);
-                    if (str == string.Empty && TableInfo.DefaultColumnIndex > -1) continue;
+                    if (str == string.Empty && TableInfo.DefaultColumnID > -1) continue;
                     if (!Text.Contains(str) && str != null) Text.Add(str);
                 }
             }
 
-            if (TableInfo.FormatVersion == Version.DragonEngineV2 && TableInfo.DefaultColumnIndex > -1)
+            if (TableInfo.FormatVersion == Version.DragonEngineV2 && TableInfo.DefaultColumnID > -1)
             {
-                Text.Insert(TableInfo.DefaultColumnIndex, string.Empty); // Okay for now
+                Text.Insert(TableInfo.DefaultColumnID, string.Empty); // Okay for now
             }
         }
 

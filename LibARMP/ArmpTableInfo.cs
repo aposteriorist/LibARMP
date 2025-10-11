@@ -14,8 +14,8 @@ namespace LibARMP
             EntryCount = 0;
             ColumnCount = 0;
             TextCount = 0;
-            DefaultEntryIndex = -1;
-            DefaultColumnIndex = -1;
+            DefaultEntryID = -1;
+            DefaultColumnID = -1;
             TableID = 0;
             StorageMode = 0;
 
@@ -73,18 +73,18 @@ namespace LibARMP
         public Int32 TextCount { get; internal set; }
 
         /// <summary>
-        /// The index of the default entry, if one exists.
+        /// The ID of the default entry, if one exists.
         /// This resolves errors when an entry is not found.
         /// </summary>
         /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
-        public Int32 DefaultEntryIndex { get; internal set; }
+        public Int32 DefaultEntryID { get; internal set; }
 
         /// <summary>
-        /// The index of the default column, if one exists.
+        /// The ID of the default column, if one exists.
         /// This resolves errors when a column is not found.
         /// </summary>
         /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
-        public Int32 DefaultColumnIndex { get; internal set; }
+        public Int32 DefaultColumnID { get; internal set; }
 
         /// <summary>
         /// Gets the table ID (Int24).
