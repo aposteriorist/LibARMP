@@ -302,6 +302,10 @@ namespace LibARMP
         /// <remarks><para>Version and Revision numbers are shared between multiple different format versions.</para></remarks>
         public Version FormatVersion { get; internal set; }
 
+        /// <summary>
+        /// Gets a boolean indicating if the version being used is Dragon Engine.
+        /// </summary>
+        public bool FormatIsDragonEngine { get => FormatVersion == Version.DragonEngineV2 || FormatVersion == Version.DragonEngineV1; }
 
 
         // Memory Address
