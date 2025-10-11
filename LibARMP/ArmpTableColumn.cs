@@ -13,6 +13,8 @@ namespace LibARMP
         internal ArmpTableColumn(uint id)
         {
             ID = id;
+            ColumnMetadata = -1;
+            GameVarID = -1;
         }
 
         /// <summary>
