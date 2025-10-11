@@ -361,10 +361,10 @@ namespace LibARMP.IO
                 IReadOnlyList<ArmpEntry> entries = table.GetAllEntries();
                 for (int i = 0; i < entries.Count; i++)
                 {
-                    if (!table.TableInfo.HasEntryIndices)
+                    if (!table.TableInfo.HasOrderedEntries)
                         entry = entries[i];
                     else
-                        entry = entries[(int)table.EntryIndices[i]];
+                        entry = entries[(int)table.OrderedEntryIDs[i]];
 
                     foreach (string column in tableColumns)
                     {
@@ -950,22 +950,17 @@ namespace LibARMP.IO
             #endregion
 
 
-            ///// Entry Indices /////
-            #region EntryIndices
+            ///// Entry Order /////
+            #region EntryOrder
 
-            if (table.TableInfo.HasEntryIndices)
+            if (table.TableInfo.HasOrderedEntries)
             {
                 writer.WritePadding(0, paddingWidth);
                 ptr = (int)writer.BaseStream.Position;
-                uint[] indices = new uint[table.Entries.Count];
-                foreach (ArmpEntry entry in table.Entries)
-                {
-                    indices[entry.Index] = entry.ID;
-                }
 
-                foreach (uint entryIndex in indices)
+                foreach (uint ID in table.OrderedEntryIDs)
                 {
-                    writer.Write(entryIndex);
+                    writer.Write(ID);
                 }
 
                 // Update the main table pointer at 0x30
@@ -974,22 +969,17 @@ namespace LibARMP.IO
             #endregion
 
 
-            ///// Column Indices /////
-            #region ColumnIndices
+            ///// Column Order /////
+            #region ColumnOrder
 
-            if (table.TableInfo.HasColumnIndices)
+            if (table.TableInfo.HasOrderedColumns)
             {
                 writer.WritePadding(0, paddingWidth);
                 ptr = (int)writer.BaseStream.Position;
-                uint[] indices = new uint[table.Columns.Count];
-                foreach (ArmpTableColumn column in table.Columns)
-                {
-                    indices[column.Index] = column.ID;
-                }
 
-                foreach (uint columnIndex in indices)
+                foreach (uint ID in table.OrderedColumnIDs)
                 {
-                    writer.Write(columnIndex);
+                    writer.Write(ID);
                 }
 
                 // Update the main table pointer at 0x34

@@ -26,8 +26,8 @@ namespace LibARMP
             ptrColumnContentOffsetTable = 0;
             ptrTextOffsetTable = 0;
             ptrColumnNamesOffsetTable = 0;
-            ptrEntryIndices = 0;
-            ptrColumnIndices = 0;
+            ptrEntryOrder = 0;
+            ptrColumnOrder = 0;
             ptrColumnValidity = 0;
             ptrIndexerTable = 0;
             ptrColumnMetadata = 0;
@@ -43,8 +43,8 @@ namespace LibARMP
             HasColumnNames = false;
             HasMemberInfo = false;
             HasEntryValidity = false;
-            HasEntryIndices = false;
-            HasColumnIndices = false;
+            HasOrderedEntries = false;
+            HasOrderedColumns = false;
             HasExtraFieldInfo = false;
             HasBlankCellFlags = false;
             HasColumnMetadata = false;
@@ -165,16 +165,16 @@ namespace LibARMP
         internal UInt32 ptrColumnNamesOffsetTable { get; set; }
 
         /// <summary>
-        /// Gets or sets the pointer to the Entry Indices int array.
+        /// Gets or sets the pointer to the Ordered Entry ID array.
         /// </summary>
         /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
-        internal UInt32 ptrEntryIndices { get; set; }
+        internal UInt32 ptrEntryOrder { get; set; }
 
         /// <summary>
-        /// Gets or sets the pointer to the Column Indices int array.
+        /// Gets or sets the pointer to the Ordered Column ID array.
         /// </summary>
         /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
-        internal UInt32 ptrColumnIndices { get; set; }
+        internal UInt32 ptrColumnOrder { get; set; }
 
         /// <summary>
         /// Gets or sets the pointer to the Column Validity bitmask.
@@ -260,13 +260,13 @@ namespace LibARMP
         /// Gets a boolean indicating if the display order of entries on the table differs from their IDs.
         /// </summary>
         /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
-        public bool HasEntryIndices { get; internal set; }
+        public bool HasOrderedEntries { get; internal set; }
 
         /// <summary>
         /// Gets a boolean indicating if the the display order of columns on the table differs from their IDs.
         /// </summary>
         /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
-        public bool HasColumnIndices { get; internal set; }
+        public bool HasOrderedColumns { get; internal set; }
 
         /// <summary>
         /// Gets or sets the boolean indicating if the table has flags indicating if cells are blank.

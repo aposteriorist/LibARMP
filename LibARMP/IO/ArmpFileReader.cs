@@ -195,8 +195,14 @@ namespace LibARMP.IO
             #endregion
 
 
-            ///// Column Indices /////
-            if (table.TableInfo.HasColumnIndices) table.ColumnIndices = Util.IterateArray<int>(reader, table.TableInfo.ptrColumnIndices, table.TableInfo.ColumnCount, false);
+            ///// Column Order /////
+            #region ColumnOrder
+
+            if (table.TableInfo.HasOrderedColumns)
+            {
+                table.OrderedColumnIDs = Util.IterateArray<int>(reader, table.TableInfo.ptrColumnOrder, table.TableInfo.ColumnCount, false);
+            }
+            #endregion
 
 
             ///// Column Metadata /////
@@ -226,7 +232,7 @@ namespace LibARMP.IO
                 }
 
                 column.IsValid = columnValidity[c];
-                if (table.TableInfo.HasColumnIndices) column.Index = table.ColumnIndices.IndexOf(c);
+                column.Index = table.TableInfo.HasOrderedColumns ? table.OrderedColumnIDs.IndexOf(c) : c;
                 if (table.TableInfo.HasGameVarColumns) column.GameVarID = gameVarColumnIDs[c];
 
                 table.Columns.Add(column);
@@ -257,8 +263,14 @@ namespace LibARMP.IO
             if (table.TableInfo.HasText) table.Text = Util.IterateStringList(reader, Util.IterateOffsetList(reader, table.TableInfo.ptrTextOffsetTable, table.TableInfo.TextCount, false));
 
 
-            ///// Entry Indices /////
-            if (table.TableInfo.HasEntryIndices) table.EntryIndices = Util.IterateArray<uint>(reader, table.TableInfo.ptrEntryIndices, table.TableInfo.EntryCount, false);
+            ///// Entry Order /////
+            #region EntryOrder
+
+            if (table.TableInfo.HasOrderedEntries)
+            {
+                table.OrderedEntryIDs = Util.IterateArray<uint>(reader, table.TableInfo.ptrEntryOrder, table.TableInfo.EntryCount, false);
+            }
+            #endregion
 
 
             ///// Entry Data /////
@@ -603,8 +615,8 @@ namespace LibARMP.IO
                 armpTableInfo.ptrTextOffsetTable = reader.ReadUInt32();
                 armpTableInfo.ptrColumnNamesOffsetTable = reader.ReadUInt32();
                 armpTableInfo.DefaultColumnID = reader.ReadInt32();
-                armpTableInfo.ptrEntryIndices = reader.ReadUInt32();
-                armpTableInfo.ptrColumnIndices = reader.ReadUInt32();
+                armpTableInfo.ptrEntryOrder = reader.ReadUInt32();
+                armpTableInfo.ptrColumnOrder = reader.ReadUInt32();
                 armpTableInfo.ptrColumnValidity = reader.ReadUInt32();
                 armpTableInfo.ptrIndexerTable = reader.ReadUInt32();
                 armpTableInfo.ptrGameVarColumnIDs = reader.ReadUInt32();
@@ -628,8 +640,8 @@ namespace LibARMP.IO
                 if (armpTableInfo.ptrEntryNamesOffsetTable > 0 && armpTableInfo.ptrEntryNamesOffsetTable < 0xFFFFFFFF) armpTableInfo.HasEntryNames = true;
                 if (armpTableInfo.ptrColumnNamesOffsetTable > 0 && armpTableInfo.ptrColumnNamesOffsetTable < 0xFFFFFFFF) armpTableInfo.HasColumnNames = true;
                 if (armpTableInfo.ptrMemberInfo > 0 && armpTableInfo.ptrMemberInfo < 0xFFFFFFFF) armpTableInfo.HasMemberInfo = true;
-                if (armpTableInfo.ptrEntryIndices > 0 && armpTableInfo.ptrEntryIndices < 0xFFFFFFFF) armpTableInfo.HasEntryIndices = true;
-                if (armpTableInfo.ptrColumnIndices > 0 && armpTableInfo.ptrColumnIndices < 0xFFFFFFFF) armpTableInfo.HasColumnIndices = true;
+                if (armpTableInfo.ptrEntryOrder > 0 && armpTableInfo.ptrEntryOrder < 0xFFFFFFFF) armpTableInfo.HasOrderedEntries = true;
+                if (armpTableInfo.ptrColumnOrder > 0 && armpTableInfo.ptrColumnOrder < 0xFFFFFFFF) armpTableInfo.HasOrderedColumns = true;
                 if (armpTableInfo.ptrBlankCellFlagOffsetTable > 0 && armpTableInfo.ptrBlankCellFlagOffsetTable < 0xFFFFFFFF) armpTableInfo.HasBlankCellFlags = true;
                 if (armpTableInfo.ptrGameVarColumnIDs > 0 && armpTableInfo.ptrGameVarColumnIDs < 0xFFFFFFFF) armpTableInfo.HasGameVarColumns = true;
                 if (armpTableInfo.ptrExtraFieldInfo > 0 && armpTableInfo.ptrExtraFieldInfo < 0xFFFFFFFF) armpTableInfo.HasExtraFieldInfo = true;
@@ -656,8 +668,8 @@ namespace LibARMP.IO
                 Console.WriteLine("Pointer to Text Offset Table: " + armpTableInfo.ptrTextOffsetTable);
                 Console.WriteLine("Pointer to Column Names Offset Table: " + armpTableInfo.ptrColumnNamesOffsetTable);
                 Console.WriteLine("Default Column ID: " + armpTableInfo.DefaultColumnIndex);
-                Console.WriteLine("Pointer to Entry Display Indices: " + armpTableInfo.ptrEntryIndices);
-                Console.WriteLine("Pointer to Column Display Indices: " + armpTableInfo.ptrColumnIndices);
+                Console.WriteLine("Pointer to Entry Display Order: " + armpTableInfo.ptrEntryOrder);
+                Console.WriteLine("Pointer to Column Display Order: " + armpTableInfo.ptrColumnOrder);
                 Console.WriteLine("Pointer to Column Validity: " + armpTableInfo.ptrColumnValidity);
                 Console.WriteLine("Pointer to Indexer table: " + armpTableInfo.ptrIndexerTable);
                 Console.WriteLine("Pointer to Game Var Column IDs: " + armpTableInfo.ptrColumnMetadata);
@@ -728,10 +740,10 @@ namespace LibARMP.IO
             ArmpEntry entry;
             for (uint i = 0; i < table.TableInfo.EntryCount; i++)
             {
-                if (!table.TableInfo.HasEntryIndices)
+                if (!table.TableInfo.HasOrderedEntries)
                     entry = new ArmpEntry(table, i, table.EntryNames[(int)i], i);
                 else
-                    entry = new ArmpEntry(table, i, table.EntryNames[(int)i], (uint)table.EntryIndices.IndexOf(i));
+                    entry = new ArmpEntry(table, i, table.EntryNames[(int)i], (uint)table.OrderedEntryIDs.IndexOf(i));
 
                 entry.ParentTable = table;
                 table.Entries.Add(entry);

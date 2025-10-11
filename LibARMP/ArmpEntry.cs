@@ -16,7 +16,7 @@ namespace LibARMP
             Data = new Dictionary<string, object>();
             ParentTable = parentTable;
 
-            if (ParentTable.TableInfo.HasEntryIndices)
+            if (!ParentTable.TableInfo.HasOrderedEntries)
                 Index = ID;
 
                 IsValid = true;

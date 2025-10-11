@@ -42,14 +42,14 @@ namespace LibARMP
         internal List<bool> EntryValidity { get; set; }
 
         /// <summary>
-        /// Entry indices.
+        /// Entry order.
         /// </summary>
-        internal List<uint> EntryIndices { get; set; }
+        internal List<uint> OrderedEntryIDs { get; set; }
 
         /// <summary>
-        /// Column indices.
+        /// Column order.
         /// </summary>
-        internal List<int> ColumnIndices { get; set; }
+        internal List<int> OrderedColumnIDs { get; set; }
 
         /// <summary>
         /// List of columns.
@@ -521,7 +521,7 @@ namespace LibARMP
         public List<string> GetColumnNamesByType (Type type)
         {
             List<string> returnList = new List<string>();
-            foreach (int i in ColumnIndices ?? Enumerable.Range(0, Columns.Count))
+            foreach (int i in OrderedColumnIDs)
             {
                 if (Columns[i].Type.CSType == type)
                     returnList.Add(Columns[i].Name);
@@ -597,7 +597,7 @@ namespace LibARMP
         /// <exception cref="ColumnNotFoundException">The table has no column with the specified ID.</exception>
         public int GetColumnIndex (uint id)
         {
-            if (!TableInfo.HasColumnIndices) throw new ColumnNoIndexException();
+            if (!TableInfo.HasOrderedColumns) throw new ColumnNoIndexException();
 
             try
             {
@@ -619,7 +619,7 @@ namespace LibARMP
         /// <exception cref="ColumnNotFoundException">The table has no column with the specified name.</exception>
         public int GetColumnIndex (string columnName)
         {
-            if (!TableInfo.HasColumnIndices) throw new ColumnNoIndexException();
+            if (!TableInfo.HasOrderedColumns) throw new ColumnNoIndexException();
 
             if (ColumnNameCache.ContainsKey(columnName))
             {
@@ -638,7 +638,7 @@ namespace LibARMP
         /// <exception cref="ColumnNotFoundException">The table has no column with the specified ID.</exception>
         public void SetColumnIndex (uint id, int newIndex)
         {
-            if (!TableInfo.HasColumnIndices) throw new ColumnNoIndexException();
+            if (!TableInfo.HasOrderedColumns) throw new ColumnNoIndexException();
 
             try
             {
@@ -660,7 +660,7 @@ namespace LibARMP
         /// <exception cref="ColumnNotFoundException">The table has no column with the specified name.</exception>
         public void SetColumnIndex (string columnName, int newIndex)
         {
-            if (!TableInfo.HasColumnIndices) throw new ColumnNoIndexException();
+            if (!TableInfo.HasOrderedColumns) throw new ColumnNoIndexException();
 
             try
             {
@@ -812,7 +812,7 @@ namespace LibARMP
             uint id = (uint)Columns.Count;
             ArmpType armpType = DataTypes.GetArmpTypeByCSType(columnType);
             ArmpTableColumn column = new ArmpTableColumn(id, columnName, armpType);
-            if (TableInfo.HasColumnIndices) column.Index = (int)id;
+            column.Index = (int)id;
             column.IsValid = true;
             if (armpType.IsArray) column.Children = new List<ArmpTableColumn>();
 
@@ -947,10 +947,8 @@ namespace LibARMP
         public ArmpEntry AddEntry (string name = "")
         {
             uint id = (uint)Entries.Count;
-            ArmpEntry entry = new ArmpEntry(this, id, name);
+            ArmpEntry entry = new ArmpEntry(this, id, name, id);
             entry.SetDefaultColumnContent();
-            if (TableInfo.HasEntryIndices)
-                entry.Index = id;
             Entries.Add(entry);
             return entry;
         }
