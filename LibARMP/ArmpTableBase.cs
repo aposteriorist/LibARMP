@@ -156,6 +156,9 @@ namespace LibARMP
                 copy.StructurePacked = true;
             }
 
+            // Copy the column order.
+            if (TableInfo.FormatIsDragonEngine) copy.OrderedColumnIDs = new List<int>(OrderedColumnIDs);
+
             copiedColumns.Clear();
 
             // Copy entries if requested.
@@ -165,6 +168,9 @@ namespace LibARMP
                 {
                     copy.Entries.Add(entry.Copy(copy));
                 }
+
+                // Copy the entry order.
+                if (TableInfo.FormatIsDragonEngine) copy.OrderedEntryIDs = new List<uint>(OrderedEntryIDs);
             }
 
             return copy;
@@ -643,6 +649,7 @@ namespace LibARMP
             try
             {
                 Columns[(int)id].Index = newIndex;
+                // TODO: Adjust all other column indices affected by the change.
             }
             catch
             {
@@ -666,6 +673,7 @@ namespace LibARMP
             {
                 int id = (int)GetColumnID(columnName);
                 Columns[id].Index = newIndex;
+                // TODO: Adjust all other column indices affected by the change.
             }
             catch
             {
@@ -813,6 +821,7 @@ namespace LibARMP
             ArmpType armpType = DataTypes.GetArmpTypeByCSType(columnType);
             ArmpTableColumn column = new ArmpTableColumn(id, columnName, armpType);
             column.Index = (int)id;
+            if (TableInfo.FormatIsDragonEngine) OrderedColumnIDs.Add((int)id);
             column.IsValid = true;
             if (armpType.IsArray) column.Children = new List<ArmpTableColumn>();
 
@@ -856,7 +865,7 @@ namespace LibARMP
         /// <returns>A <see cref="Boolean"/> indicating if the operation completed successfully.</returns>
         public bool DeleteColumn (string columnName)
         {
-            //TODO: Deleting a column will break how the game reads subsequent columns. Indices may need to be updated. Make it an optional argument?
+            //TODO: Deleting a column will break how the game reads subsequent columns. Indices need to be updated. Make it an optional argument?
             if (ColumnNameCache.ContainsKey(columnName))
             {
                 ArmpTableColumn column = ColumnNameCache[columnName];
@@ -950,6 +959,7 @@ namespace LibARMP
             ArmpEntry entry = new ArmpEntry(this, id, name, id);
             entry.SetDefaultColumnContent();
             Entries.Add(entry);
+            if (TableInfo.FormatIsDragonEngine) OrderedEntryIDs.Add(id);
             return entry;
         }
 
@@ -962,9 +972,10 @@ namespace LibARMP
         /// <exception cref="EntryInsertException">The specified ID is greater than the amount of entries in the table.</exception>
         public ArmpEntry InsertEntry (uint id, string name = "")
         {
+            // TODO: Entry order needs to be adjusted after insertion.
             if (id <= Entries.Count)
             {
-                ArmpEntry entry = new ArmpEntry(this, id, name);
+                ArmpEntry entry = new ArmpEntry(this, id, name, id);
                 entry.SetDefaultColumnContent();
                 Entries.Insert((int)id, entry);
 
@@ -991,6 +1002,7 @@ namespace LibARMP
         /// <exception cref="EntryNotFoundException">The table has no entry with the specified ID.</exception>
         public void DeleteEntry (uint id)
         {
+            // TODO: Entry order needs to be adjusted after deletion.
             if (id < Entries.Count)
             {
                 Entries.RemoveAt((int)id);

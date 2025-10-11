@@ -202,6 +202,12 @@ namespace LibARMP.IO
             {
                 table.OrderedColumnIDs = Util.IterateArray<int>(reader, table.TableInfo.ptrColumnOrder, table.TableInfo.ColumnCount, false);
             }
+            else
+            {
+                table.OrderedColumnIDs = new List<int>(table.Columns.Count);
+                for (int i = 0; i < table.Columns.Count; i++)
+                    table.OrderedColumnIDs.Add(i);
+            }
             #endregion
 
 
@@ -269,6 +275,12 @@ namespace LibARMP.IO
             if (table.TableInfo.HasOrderedEntries)
             {
                 table.OrderedEntryIDs = Util.IterateArray<uint>(reader, table.TableInfo.ptrEntryOrder, table.TableInfo.EntryCount, false);
+            }
+            else
+            {
+                table.OrderedEntryIDs = new List<uint>(table.Entries.Count);
+                for (uint i = 0; i < table.Entries.Count; i++)
+                    table.OrderedEntryIDs.Add(i);
             }
             #endregion
 

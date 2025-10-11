@@ -19,7 +19,7 @@ namespace LibARMP
             if (!ParentTable.TableInfo.HasOrderedEntries)
                 Index = ID;
 
-                IsValid = true;
+            IsValid = true;
 
             if (ParentTable.TableInfo.HasExtraFieldInfo && ParentTable.TableInfo.FormatVersion == Version.DragonEngineV1)
                 Flags = new bool[8] { false, false, false, false, false, false, false, false };
@@ -31,23 +31,14 @@ namespace LibARMP
         /// <param name="parentTable">The table that contains this entry.</param>
         /// <param name="id">The entry ID.</param>
         /// <param name="name">The entry name.</param>
-        internal ArmpEntry(ArmpTableBase parentTable, uint id, string name) : this(parentTable)
+        /// <param name="index">The entry index.</param>
+        internal ArmpEntry(ArmpTableBase parentTable, uint id, string name, uint index) : this(parentTable)
         {
             ID = id;
             Name = name;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ArmpEntry"/> class.
-        /// </summary>
-        /// <param name="parentTable">The table that contains this entry.</param>
-        /// <param name="id">The entry ID.</param>
-        /// <param name="name">The entry name.</param>
-        /// <param name="index">The entry index.</param>
-        internal ArmpEntry(ArmpTableBase parentTable, uint id, string name, uint index) : this(parentTable, id, name)
-        {
             Index = index;
         }
+
 
 
         /// <summary>
@@ -69,6 +60,7 @@ namespace LibARMP
         /// <summary>
         /// Gets or sets the entry's display index, which may differ from its ID.
         /// </summary>
+        /// <remarks><para>DRAGON ENGINE ONLY</para></remarks>
         public uint Index { get; set; }
 
         /// <summary>
