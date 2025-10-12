@@ -663,7 +663,7 @@ namespace LibARMP.IO
                 Console.WriteLine("Entry Count: " + armpTableInfo.EntryCount);
                 Console.WriteLine("Column Count: " + armpTableInfo.ColumnCount);
                 Console.WriteLine("Text Count: " + armpTableInfo.TextCount);
-                Console.WriteLine("Default Entry ID: " + armpTableInfo.DefaultEntryIndex);
+                Console.WriteLine("Default Entry ID: " + armpTableInfo.DefaultEntryID);
                 Console.WriteLine("Pointer to Entry Names Offset Table: " + armpTableInfo.ptrEntryNamesOffsetTable);
                 Console.WriteLine("Pointer to Entry Validity: " + armpTableInfo.ptrEntryValidity);
                 Console.WriteLine("Pointer to Column Data Types: " + armpTableInfo.ptrColumnDataTypes);
@@ -679,7 +679,7 @@ namespace LibARMP.IO
                 Console.WriteLine("Flag 7 - IsProcessedForMemory: " + armpTableInfo.IsProcessedForMemory);
                 Console.WriteLine("Pointer to Text Offset Table: " + armpTableInfo.ptrTextOffsetTable);
                 Console.WriteLine("Pointer to Column Names Offset Table: " + armpTableInfo.ptrColumnNamesOffsetTable);
-                Console.WriteLine("Default Column ID: " + armpTableInfo.DefaultColumnIndex);
+                Console.WriteLine("Default Column ID: " + armpTableInfo.DefaultColumnID);
                 Console.WriteLine("Pointer to Entry Display Order: " + armpTableInfo.ptrEntryOrder);
                 Console.WriteLine("Pointer to Column Display Order: " + armpTableInfo.ptrColumnOrder);
                 Console.WriteLine("Pointer to Column Validity: " + armpTableInfo.ptrColumnValidity);

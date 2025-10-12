@@ -1163,7 +1163,7 @@ namespace LibARMP
             if (StructurePacked) return;
             StructureWidth = 0;
 #if DEBUG
-Console.Writeline("Packing structure.");
+            Console.WriteLine("Packing structure.");
 #endif
             foreach (ArmpMemberInfo info in StructureSpec)
             {
