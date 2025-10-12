@@ -11,44 +11,47 @@ namespace LibARMP
         internal ArmpTableInfo ()
         {
             //General Info
-            this.EntryCount = 0;
-            this.ColumnCount = 0;
-            this.TextCount = 0;
-            this.EntryValidator = 0;
-            this.ColumnValidator = 0;
-            this.TableID = 0;
-            this.StorageMode = 0;
+            EntryCount = 0;
+            ColumnCount = 0;
+            TextCount = 0;
+            DefaultEntryID = -1;
+            DefaultColumnID = -1;
+            TableID = 0;
+            StorageMode = 0;
 
             //Pointers
-            this.ptrEntryNamesOffsetTable = 0;
-            this.ptrEntryValidity = 0;
-            this.ptrColumnDataTypes = 0;
-            this.ptrColumnContentOffsetTable = 0;
-            this.ptrTextOffsetTable = 0;
-            this.ptrColumnNamesOffsetTable = 0;
-            this.ptrEntryIndices = 0;
-            this.ptrColumnIndices = 0;
-            this.ptrColumnValidity = 0;
-            this.ptrIndexerTable = 0;
-            this.ptrEmptyValuesOffsetTable = 0;
-            this.ptrColumnDataTypesAux = 0;
-            this.ptrExtraFieldInfo = 0;
-            this.ptrColumnMetadata = 0;
+            ptrEntryNamesOffsetTable = 0;
+            ptrEntryValidity = 0;
+            ptrColumnDataTypes = 0;
+            ptrColumnContentOffsetTable = 0;
+            ptrTextOffsetTable = 0;
+            ptrColumnNamesOffsetTable = 0;
+            ptrEntryOrder = 0;
+            ptrColumnOrder = 0;
+            ptrColumnValidity = 0;
+            ptrIndexerTable = 0;
+            ptrColumnMetadata = 0;
+            ptrGameVarColumnIDs = 0;
+            ptrBlankCellFlagOffsetTable = 0;
+            ptrMemberInfo = 0;
+            ptrExtraFieldInfo = 0;
 
             //Flags
-            this.HasText = false;
-            this.HasIndexerTable = false;
-            this.HasEntryNames = false;
-            this.HasColumnNames = false;
-            this.HasColumnDataTypesAux = false;
-            this.HasEntryValidity = false;
-            this.HasColumnValidity = false;
-            this.HasEntryIndices = false;
-            this.HasColumnIndices = false;
-            this.HasExtraFieldInfo = false;
+            HasText = false;
+            HasIndexerTable = false;
+            HasEntryNames = false;
+            HasColumnNames = false;
+            HasMemberInfo = false;
+            HasEntryValidity = false;
+            HasOrderedEntries = false;
+            HasOrderedColumns = false;
+            HasExtraFieldInfo = false;
+            HasBlankCellFlags = false;
+            HasColumnMetadata = false;
+            HasGameVarColumns = false;
 
             //Extra data
-            this.FormatVersion = Version.Unknown;
+            FormatVersion = Version.Unknown;
         }
 
 
@@ -70,16 +73,18 @@ namespace LibARMP
         public Int32 TextCount { get; internal set; }
 
         /// <summary>
-        /// Gets a value indicating the validity of entries.
+        /// The ID of the default entry, if one exists.
+        /// This resolves errors when an entry is not found.
         /// </summary>
         /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
-        public Int32 EntryValidator { get; internal set; }
+        public Int32 DefaultEntryID { get; internal set; }
 
         /// <summary>
-        /// Gets a value indicating the validity of columns.
+        /// The ID of the default column, if one exists.
+        /// This resolves errors when a column is not found.
         /// </summary>
         /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
-        public Int32 ColumnValidator { get; internal set; }
+        public Int32 DefaultColumnID { get; internal set; }
 
         /// <summary>
         /// Gets the table ID (Int24).
@@ -97,16 +102,24 @@ namespace LibARMP
         public bool UnknownFlag2 { get; internal set; } //Flag 2
         public bool UnknownFlag3 { get; internal set; } //Flag 3
         public bool UnknownFlag4 { get; internal set; } //Flag 4
-        public bool UnknownFlag5 { get; internal set; } //Flag 5
 
         /// <summary>
-        /// Purpose unknown. Gets set when the armp is loaded into memory. It does not get set with modded/resaved armps. Are we missing data?
+        /// When set, signals not to point directly to raw entries within the armp in memory.
+        /// In other words, this flag forces code to ignore flag 6.
         /// </summary>
-        /// <remarks>Flag 6</remarks>
-        public bool UnknownFlag6 { get; internal set; } //Flag 6
+        public bool DoNotUseRaw { get; internal set; } //Flag 5
 
         /// <summary>
-        /// Are the text indices and table type offsets processed? (Turned into memory pointers)
+        /// When set, signals that member info in the armp (loaded into memory) has been verified to be formatted as expected.
+        /// The game's code will then treat armp entries as valid structs where applicable.
+        /// </summary>
+        /// <remarks>Cannot be set without flag 7.</remarks>
+        public bool MembersWellFormatted { get; internal set; } //Flag 6
+
+        /// <summary>
+        /// When set, signals that the armp table in memory has been initialized.
+        /// In Storage Mode 1, initialization includes string and table pointer adjustments, as well as member info verification.
+        /// In Storage Mode 0, this flag is only a rubber stamp.
         /// </summary>
         /// <remarks>Flag 7</remarks>
         public bool IsProcessedForMemory { get; internal set; } //Flag 7
@@ -152,16 +165,16 @@ namespace LibARMP
         internal UInt32 ptrColumnNamesOffsetTable { get; set; }
 
         /// <summary>
-        /// Gets or sets the pointer to the Entry Indices int array.
+        /// Gets or sets the pointer to the Ordered Entry ID array.
         /// </summary>
         /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
-        internal UInt32 ptrEntryIndices { get; set; }
+        internal UInt32 ptrEntryOrder { get; set; }
 
         /// <summary>
-        /// Gets or sets the pointer to the Column Indices int array.
+        /// Gets or sets the pointer to the Ordered Column ID array.
         /// </summary>
         /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
-        internal UInt32 ptrColumnIndices { get; set; }
+        internal UInt32 ptrColumnOrder { get; set; }
 
         /// <summary>
         /// Gets or sets the pointer to the Column Validity bitmask.
@@ -176,27 +189,35 @@ namespace LibARMP
         internal UInt32 ptrIndexerTable { get; set; }
 
         /// <summary>
-        /// Gets or sets the pointer to the Empty Values Offset Table.
+        /// Gets or sets the pointer to the Column Metadata table.
         /// </summary>
-        /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
-        internal UInt32 ptrEmptyValuesOffsetTable { get; set; }
+        /// <remarks><para><b>OLD ENGINE ONLY</b></para></remarks>
+        internal UInt32 ptrColumnMetadata { get; set; }
 
         /// <summary>
-        /// Gets or sets the pointer to the Auxiliary Column Data Type Table.
+        /// Gets or sets the pointer to the game_var Column IDs.
         /// </summary>
         /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
-        internal UInt32 ptrColumnDataTypesAux { get; set; }
+        // (Meaning still unknown for version 1. May be maximum, default, or otherwise special column values.)
+        internal UInt32 ptrGameVarColumnIDs { get; set; }
+
+        /// <summary>
+        /// Gets or sets the pointer to the Blank Cell Flag Offset table.
+        /// </summary>
+        /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
+        internal UInt32 ptrBlankCellFlagOffsetTable { get; set; }
+
+        /// <summary>
+        /// Gets or sets the pointer to the Member Info table.
+        /// </summary>
+        /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
+        internal UInt32 ptrMemberInfo { get; set; }
 
         /// <summary>
         /// Gets or sets the pointer to the additional Field Info.
         /// </summary>
         /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
         internal UInt32 ptrExtraFieldInfo { get; set; }
-
-        /// <summary>
-        /// Gets or sets the pointer to the Column Metadata.
-        /// </summary>
-        internal UInt32 ptrColumnMetadata { get; set; }
 
 
 
@@ -224,10 +245,10 @@ namespace LibARMP
         public bool HasColumnNames { get; internal set; }
 
         /// <summary>
-        /// Gets or sets the boolean indicating if the table has an auxiliary column data types list.
+        /// Gets or sets the boolean indicating if the table has a structure per entry with member types.
         /// </summary>
         /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
-        internal bool HasColumnDataTypesAux { get; set; }
+        internal bool HasMemberInfo { get; set; }
 
         /// <summary>
         /// Gets a boolean indicating if the table has validity flags for entries.
@@ -236,28 +257,22 @@ namespace LibARMP
         public bool HasEntryValidity { get; internal set; }
 
         /// <summary>
-        /// Gets a boolean indicating if the table has validity flags for columns.
+        /// Gets a boolean indicating if the display order of entries on the table differs from their IDs.
         /// </summary>
         /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
-        public bool HasColumnValidity { get; internal set; }
+        public bool HasOrderedEntries { get; internal set; }
 
         /// <summary>
-        /// Gets a boolean indicating if the table has entry indices.
+        /// Gets a boolean indicating if the the display order of columns on the table differs from their IDs.
         /// </summary>
         /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
-        public bool HasEntryIndices { get; internal set; }
+        public bool HasOrderedColumns { get; internal set; }
 
         /// <summary>
-        /// Gets a boolean indicating if the table has column indices.
+        /// Gets or sets the boolean indicating if the table has flags indicating if cells are blank.
         /// </summary>
         /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
-        public bool HasColumnIndices { get; internal set; }
-
-        /// <summary>
-        /// Gets or sets the boolean indicating if the table has an Empty Values Table.
-        /// </summary>
-        /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
-        internal bool HasEmptyValues { get; set; }
+        internal bool HasBlankCellFlags { get; set; }
 
         /// <summary>
         /// Gets a boolean indicating if the table has additional field info (varies between format versions).
@@ -266,10 +281,17 @@ namespace LibARMP
         public bool HasExtraFieldInfo { get; internal set; }
 
         /// <summary>
-        /// Gets a boolean indicating if the table has column metadata.
+        /// Gets a boolean indicating if the table has any column metadata.
         /// </summary>
+        /// <remarks><para><b>OLD ENGINE ONLY</b></para></remarks>
         public bool HasColumnMetadata { get; internal set; }
 
+        /// <summary>
+        /// Gets a boolean indicating if the table has any columns that are also columns in game_var.
+        /// </summary>
+        /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
+        // (Meaning still unknown for version 1. May be maximum, default, or otherwise special column values.)
+        public bool HasGameVarColumns { get; internal set; }
 
 
         //Version Data
@@ -280,6 +302,10 @@ namespace LibARMP
         /// <remarks><para>Version and Revision numbers are shared between multiple different format versions.</para></remarks>
         public Version FormatVersion { get; internal set; }
 
+        /// <summary>
+        /// Gets a boolean indicating if the version being used is Dragon Engine.
+        /// </summary>
+        public bool FormatIsDragonEngine { get => FormatVersion == Version.DragonEngineV2 || FormatVersion == Version.DragonEngineV1; }
 
 
         // Memory Address

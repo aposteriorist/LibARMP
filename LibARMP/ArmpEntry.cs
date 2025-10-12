@@ -16,11 +16,10 @@ namespace LibARMP
             Data = new Dictionary<string, object>();
             ParentTable = parentTable;
 
-            if (ParentTable.TableInfo.HasEntryIndices)
-                Index = (int)ID;
+            if (!ParentTable.TableInfo.HasOrderedEntries)
+                Index = ID;
 
-            if (ParentTable.TableInfo.HasEntryValidity)
-                IsValid = true;
+            IsValid = true;
 
             if (ParentTable.TableInfo.HasExtraFieldInfo && ParentTable.TableInfo.FormatVersion == Version.DragonEngineV1)
                 Flags = new bool[8] { false, false, false, false, false, false, false, false };
@@ -32,23 +31,14 @@ namespace LibARMP
         /// <param name="parentTable">The table that contains this entry.</param>
         /// <param name="id">The entry ID.</param>
         /// <param name="name">The entry name.</param>
-        internal ArmpEntry(ArmpTableBase parentTable, uint id, string name) : this(parentTable)
+        /// <param name="index">The entry index.</param>
+        internal ArmpEntry(ArmpTableBase parentTable, uint id, string name, uint index) : this(parentTable)
         {
             ID = id;
             Name = name;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ArmpEntry"/> class.
-        /// </summary>
-        /// <param name="parentTable">The table that contains this entry.</param>
-        /// <param name="id">The entry ID.</param>
-        /// <param name="name">The entry name.</param>
-        /// <param name="index">The entry index.</param>
-        internal ArmpEntry(ArmpTableBase parentTable, uint id, string name, int index) : this(parentTable, id, name)
-        {
             Index = index;
         }
+
 
 
         /// <summary>
@@ -68,15 +58,14 @@ namespace LibARMP
         internal IDictionary<string, object> Data { get; set; }
 
         /// <summary>
-        /// Gets or sets the entry index.
+        /// Gets or sets the entry's display index, which may differ from its ID.
         /// </summary>
-        /// <remarks><para>Can be null if unused.</para></remarks>
-        public int Index { get; set; }
+        /// <remarks><para>DRAGON ENGINE ONLY</para></remarks>
+        public uint Index { get; set; }
 
         /// <summary>
         /// Gets or sets if the entry is valid.
         /// </summary>
-        /// <remarks><para>Can be null if unused.</para></remarks>
         public bool IsValid { get; set; }
 
         /// <summary>
@@ -136,7 +125,7 @@ namespace LibARMP
         /// <param name="column">The <see cref="ArmpTableColumn"/>.</param>
         internal void SetDefaultColumnContent (ArmpTableColumn column)
         {
-            if (!column.IsSpecial)
+            if (!column.Type.IsArray)
             {
                 SetValueFromColumn(column.Name, column.Type.DefaultValue);
             }

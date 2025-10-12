@@ -1,6 +1,7 @@
 ﻿using LibARMP.Exceptions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace LibARMP
 {
@@ -13,13 +14,11 @@ namespace LibARMP
         /// <summary>
         /// Initializes a new instance of the <see cref="ArmpTableBase"/> class.
         /// </summary>
-        internal ArmpTableBase()
+        internal ArmpTableBase(int expectedEntryCount = 0, int expectedColumnCount = 0)
         {
             ColumnNameCache = new Dictionary<string, ArmpTableColumn>();
-            Entries = new List<ArmpEntry>();
-            Columns = new List<ArmpTableColumn>();
-            EmptyValues = new Dictionary<int, List<bool>>();
-            EmptyValuesIsNegativeOffset = new List<bool>();
+            Entries = new List<ArmpEntry>(expectedEntryCount);
+            Columns = new List<ArmpTableColumn>(expectedColumnCount);
         }
 
         /// <summary>
@@ -43,12 +42,17 @@ namespace LibARMP
         internal List<bool> EntryValidity { get; set; }
 
         /// <summary>
-        /// Entry indices.
+        /// Entry order.
         /// </summary>
-        internal List<int> EntryIndices { get; set; }
+        internal List<uint> OrderedEntryIDs { get; set; }
 
         /// <summary>
-        /// Columns.
+        /// Column order.
+        /// </summary>
+        internal List<int> OrderedColumnIDs { get; set; }
+
+        /// <summary>
+        /// List of columns.
         /// </summary>
         internal List<ArmpTableColumn> Columns { get; set; }
 
@@ -58,16 +62,24 @@ namespace LibARMP
         internal List<ArmpEntry> Entries { get; set; }
 
         /// <summary>
-        /// Values marked as empty for specific columns (despite actually having a value).
+        /// List of member info (for Storage Mode 1) which together define a structure specification.
         /// </summary>
-        /// <remarks><para>[column index : list<bool> (length = entry count)]</para></remarks>
-        internal Dictionary<int, List<bool>> EmptyValues { get; set; }
+        internal List<ArmpMemberInfo> StructureSpec { get; set; }
 
         /// <summary>
-        /// DEBUG: Boolean list (length = column count) to indicate if the offset in the empty values offset list was -1.
+        /// Calculated width of the packed structure (for Storage Mode 1).
         /// </summary>
-        /// <remarks><para>The difference between 0 and -1 is unknown.</para></remarks>
-        internal List<bool> EmptyValuesIsNegativeOffset { get; set; }
+        internal uint StructureWidth { get; set; }
+
+        /// <summary>
+        /// Signals if the structure specification has been edited and is in need of repacking.
+        /// </summary>
+        internal bool StructurePacked { get; set; }
+
+        /// <summary>
+        /// List of cells (entry-column intersections) which contain data, i.e. are not blank.
+        /// </summary>
+        internal Dictionary<ArmpTableColumn, List<ArmpEntry>> CellsWithData { get; set; }
 
         /// <summary>
         /// PLACEHOLDER: Edited values for patcher.
@@ -84,35 +96,81 @@ namespace LibARMP
         /// <returns>A copy of this <see cref="ArmpTableBase"/>.</returns>
         public ArmpTableBase Copy (bool copyEntries = true)
         {
-            ArmpTableBase copy = new ArmpTableBase();
+            ArmpTableBase copy = new ArmpTableBase(copyEntries ? Entries.Count : 0, Columns.Count);
             copy.TableInfo = Util.DeepCopy(TableInfo);
 
-            foreach (ArmpTableColumn column in Columns)
+            // If the table has member info, initiate an ordered copy of the structure specification.
+            ArmpMemberInfo[] copySpecOrdered = null;
+            if (TableInfo.HasMemberInfo)
             {
-                ArmpTableColumn copyColumn = column.Copy();
-                copy.Columns.Add(copyColumn);
-
-                if (copyColumn.Name.Contains("[") && copyColumn.Name.Contains("]"))
-                {
-                    string baseName = copyColumn.Name.Split('[')[0];
-                    if (copy.ColumnNameCache.ContainsKey(baseName))
-                    {
-                        ArmpTableColumn parentColumn = copy.ColumnNameCache[baseName];
-                        parentColumn.Children.Add(copyColumn);
-                        parentColumn.SpecialSize += 1;
-                        copyColumn.Parent = parentColumn;
-                    }
-                }
-
-                copy.RefreshColumnNameCache();
+                copySpecOrdered = new ArmpMemberInfo[StructureSpec.Count];
             }
 
+            // Track the columns that have already been copied to ensure array members are handled only once.
+            List<ArmpTableColumn> copiedColumns = new List<ArmpTableColumn>(Columns.Count);
+            ArmpTableColumn copyColumn;
+            
+            // Copy the columns.
+            foreach (ArmpTableColumn column in Columns)
+            {
+                // If the column has already been copied, it was an array member.
+                if (copiedColumns.Contains(column)) continue;
+
+                // Copy the column and its member info.
+                copyColumn = column.Copy();
+                copy.Columns.Add(copyColumn);
+                copiedColumns.Add(column);
+
+                if (TableInfo.HasMemberInfo)
+                {
+                    copySpecOrdered[StructureSpec.IndexOf(column.MemberInfo)] = copyColumn.MemberInfo = column.MemberInfo.Copy(copyColumn);
+                }
+
+                copy.ColumnNameCache.Add(copyColumn.Name, copyColumn);
+
+                // If the column is of array type and has children, copy them and their member info.
+                if (column.Children?.Count > 0)
+                {
+                    ArmpTableColumn copyChild;
+                    foreach (ArmpTableColumn child in column.Children)
+                    {
+                        copyChild = child.Copy();
+                        copyColumn.Children.Add(copyChild);
+                        copyChild.Parent = copyColumn;
+                        copy.Columns.Add(copyChild);
+                        copiedColumns.Add(child);
+                        copy.ColumnNameCache.Add(copyChild.Name, copyChild);
+
+                        if (TableInfo.HasMemberInfo)
+                        {
+                            copySpecOrdered[StructureSpec.IndexOf(child.MemberInfo)] = copyChild.MemberInfo = child.MemberInfo.Copy(copyChild);
+                        }
+                    }
+                }
+            }
+
+            // Finish copying the structure specification if present.
+            if (TableInfo.HasMemberInfo)
+            {
+                copy.StructureSpec = new List<ArmpMemberInfo>(copySpecOrdered);
+                copy.StructurePacked = true;
+            }
+
+            // Copy the column order.
+            if (TableInfo.FormatIsDragonEngine) copy.OrderedColumnIDs = new List<int>(OrderedColumnIDs);
+
+            copiedColumns.Clear();
+
+            // Copy entries if requested.
             if (copyEntries)
             {
                 foreach(ArmpEntry entry in Entries)
                 {
                     copy.Entries.Add(entry.Copy(copy));
                 }
+
+                // Copy the entry order.
+                if (TableInfo.FormatIsDragonEngine) copy.OrderedEntryIDs = new List<uint>(OrderedEntryIDs);
             }
 
             return copy;
@@ -380,15 +438,15 @@ namespace LibARMP
         /// <summary>
         /// Gets the column names.
         /// </summary>
-        /// <param name="includeSpecials">Include special columns? (Array data types. These columns do not contain data)</param>
+        /// <param name="includeArrayHeaders">Include array headers, which contain no data.</param>
         /// <returns>A <see cref="string"/> list.</returns>
-        public List<string> GetColumnNames (bool includeSpecials = true)
+        public List<string> GetColumnNames (bool includeArrayHeaders = true)
         {
-            List<string> returnList = new List<string>();
+            List<string> returnList = new List<string>(Columns.Count);
 
             foreach (ArmpTableColumn column in Columns)
             {
-                if (column.IsSpecial && !includeSpecials) continue;
+                if (column.Type.IsArray && !includeArrayHeaders) continue;
                 returnList.Add(column.Name);
             }
 
@@ -450,14 +508,32 @@ namespace LibARMP
 
 
         /// <summary>
+        /// Gets an ordered list of columns matching the type.
+        /// </summary>
+        /// <param name="type">The <see cref="Type"/> to look for.</param>
+        /// <returns>An <see cref="ArmpTableColumn"/> list.</returns>
+        public List<ArmpTableColumn> GetOrderedColumnsByType(Type type)
+        {
+            List<ArmpTableColumn> returnList = new List<ArmpTableColumn>();
+            foreach (int i in OrderedColumnIDs)
+            {
+                if (Columns[i].Type.CSType == type)
+                    returnList.Add(Columns[i]);
+            }
+
+            return returnList;
+        }
+
+
+        /// <summary>
         /// Gets a list of columns matching the type.
         /// </summary>
         /// <typeparam name="T">The <see cref="Type"/> to look for.</typeparam>
         /// <returns>An <see cref="ArmpTableColumn"/> list.</returns>
-        public List<ArmpTableColumn> GetColumnsByType<T>()
+        public List<ArmpTableColumn> GetColumnsByType<T>(bool ordered = false)
         {
             Type type = typeof(T);
-            return GetColumnsByType(type);
+            return ordered && TableInfo.FormatIsDragonEngine ? GetOrderedColumnsByType(type) : GetColumnsByType(type);
         }
 
 
@@ -466,13 +542,29 @@ namespace LibARMP
         /// </summary>
         /// <param name="type">The <see cref="Type"/> to look for.</param>
         /// <returns>A <see cref="string"/> list.</returns>
-        public List<string> GetColumnNamesByType (Type type)
+        public List<string> GetColumnNamesByType(Type type)
         {
             List<string> returnList = new List<string>();
             foreach (ArmpTableColumn column in Columns)
             {
-                if (column.Type.CSType == type)
-                    returnList.Add(column.Name);
+                if (column.Type.CSType == type) returnList.Add(column.Name);
+            }
+
+            return returnList;
+        }
+
+
+        /// <summary>
+        /// Gets an ordered list of column names matching the type.
+        /// </summary>
+        /// <param name="type">The <see cref="Type"/> to look for.</param>
+        /// <returns>A <see cref="string"/> list.</returns>
+        public List<string> GetOrderedColumnNamesByType (Type type)
+        {
+            List<string> returnList = new List<string>();
+            foreach (int i in OrderedColumnIDs)
+            {
+                if (Columns[i].Type.CSType == type) returnList.Add(Columns[i].Name);
             }
 
             return returnList;
@@ -484,10 +576,10 @@ namespace LibARMP
         /// </summary>
         /// <typeparam name="T">The <see cref="Type"/> to look for.</typeparam>
         /// <returns>A <see cref="string"/> list.</returns>
-        public List<string> GetColumnNamesByType<T>()
+        public List<string> GetColumnNamesByType<T>(bool ordered = false)
         {
             Type type = typeof(T);
-            return GetColumnNamesByType(type);
+            return ordered && TableInfo.FormatIsDragonEngine ? GetOrderedColumnNamesByType(type) : GetColumnNamesByType(type);
         }
 
 
@@ -509,14 +601,31 @@ namespace LibARMP
 
 
         /// <summary>
+        /// Gets an ordered list of column IDs matching the type.
+        /// </summary>
+        /// <param name="type">The <see cref="Type"/> to look for.</param>
+        /// <returns>A <see cref="uint"/> list.</returns>
+        public List<uint> GetOrderedColumnIDsByType(Type type)
+        {
+            List<uint> returnList = new List<uint>();
+            foreach (int i in OrderedColumnIDs)
+            {
+                if (Columns[i].Type.CSType == type) returnList.Add((uint)i);
+            }
+
+            return returnList;
+        }
+
+
+        /// <summary>
         /// Gets a list of column IDs matching the type.
         /// </summary>
         /// <typeparam name="T">The <see cref="Type"/> to look for.</typeparam>
         /// <returns>An <see cref="uint"/> list.</returns>
-        public List<uint> GetColumnIDsByType<T>()
+        public List<uint> GetColumnIDsByType<T>(bool ordered = false)
         {
             Type type = typeof(T);
-            return GetColumnIDsByType(type);
+            return ordered && TableInfo.FormatIsDragonEngine ? GetOrderedColumnIDsByType(type) : GetColumnIDsByType(type);
         }
 
 
@@ -545,7 +654,7 @@ namespace LibARMP
         /// <exception cref="ColumnNotFoundException">The table has no column with the specified ID.</exception>
         public int GetColumnIndex (uint id)
         {
-            if (!TableInfo.HasColumnIndices) throw new ColumnNoIndexException();
+            if (!TableInfo.HasOrderedColumns) throw new ColumnNoIndexException();
 
             try
             {
@@ -567,7 +676,7 @@ namespace LibARMP
         /// <exception cref="ColumnNotFoundException">The table has no column with the specified name.</exception>
         public int GetColumnIndex (string columnName)
         {
-            if (!TableInfo.HasColumnIndices) throw new ColumnNoIndexException();
+            if (!TableInfo.HasOrderedColumns) throw new ColumnNoIndexException();
 
             if (ColumnNameCache.ContainsKey(columnName))
             {
@@ -586,11 +695,12 @@ namespace LibARMP
         /// <exception cref="ColumnNotFoundException">The table has no column with the specified ID.</exception>
         public void SetColumnIndex (uint id, int newIndex)
         {
-            if (!TableInfo.HasColumnIndices) throw new ColumnNoIndexException();
+            if (!TableInfo.HasOrderedColumns) throw new ColumnNoIndexException();
 
             try
             {
                 Columns[(int)id].Index = newIndex;
+                // TODO: Adjust all other column indices affected by the change.
             }
             catch
             {
@@ -608,12 +718,13 @@ namespace LibARMP
         /// <exception cref="ColumnNotFoundException">The table has no column with the specified name.</exception>
         public void SetColumnIndex (string columnName, int newIndex)
         {
-            if (!TableInfo.HasColumnIndices) throw new ColumnNoIndexException();
+            if (!TableInfo.HasOrderedColumns) throw new ColumnNoIndexException();
 
             try
             {
                 int id = (int)GetColumnID(columnName);
                 Columns[id].Index = newIndex;
+                // TODO: Adjust all other column indices affected by the change.
             }
             catch
             {
@@ -627,15 +738,12 @@ namespace LibARMP
         /// </summary>
         /// <param name="id">The column ID.</param>
         /// <returns>A <see cref="Boolean"/>.</returns>
-        /// <exception cref="ColumnNoValidityException">The table has no column validity.</exception>
         /// <exception cref="ColumnNotFoundException">The table has no column with the specified ID.</exception>
         public bool IsColumnValid (uint id)
         {
-            if (!TableInfo.HasColumnValidity) throw new ColumnNoValidityException();
-
             try
             {
-                return (bool)Columns[(int)id].IsValid;
+                return Columns[(int)id].IsValid;
             }
             catch
             {
@@ -649,15 +757,12 @@ namespace LibARMP
         /// </summary>
         /// <param name="columnName">The column name.</param>
         /// <returns>A <see cref="Boolean"/>.</returns>
-        /// <exception cref="ColumnNoValidityException">The table has no column validity.</exception>
         /// <exception cref="ColumnNotFoundException">The table has no column with the specified name.</exception>
         public bool IsColumnValid (string columnName)
         {
-            if (!TableInfo.HasColumnValidity) throw new ColumnNoValidityException();
-
             try
             {
-                return (bool)ColumnNameCache[columnName].IsValid;
+                return ColumnNameCache[columnName].IsValid;
             }
             catch
             {
@@ -672,31 +777,29 @@ namespace LibARMP
         /// </summary>
         /// <param name="column">The <see cref="ArmpTableColumn"/>.</param>
         /// <param name="isValid">The new column validity.</param>
-        /// <exception cref="ColumnNoValidityException">The table has no column validity.</exception>
         public void SetColumnValidity (ArmpTableColumn column, bool isValid)
         {
-            if (TableInfo.HasColumnValidity)
+            if (isValid) //Set all values to default
             {
-                if (isValid) //Set all values to default
+                foreach(ArmpEntry entry in Entries)
                 {
-                    foreach(ArmpEntry entry in Entries)
-                    {
-                        entry.SetDefaultColumnContent(column.Name);
-                    }
-                    column.IsValid = true;
+                    entry.SetDefaultColumnContent(column.Name);
                 }
-                else //Remove all values
-                {
-                    foreach (ArmpEntry entry in Entries)
-                    {
-                        entry.RemoveColumnContent(column.Name);
-                    }
-                    column.IsValid = false;
-                }
+                column.IsValid = true;
+                if (TableInfo.HasMemberInfo && column.MemberInfo != null) StructurePacked = false;
             }
-            else
+            else //Remove all values
             {
-                throw new ColumnNoValidityException();
+                foreach (ArmpEntry entry in Entries)
+                {
+                    entry.RemoveColumnContent(column.Name);
+                }
+                if (TableInfo.HasMemberInfo && column.MemberInfo != null)
+                {
+                    column.MemberInfo.Position = -1;
+                    if (StructurePacked) StructurePacked = !column.IsValid;
+                }
+                column.IsValid = false;
             }
         }
 
@@ -733,11 +836,11 @@ namespace LibARMP
         /// <param name="columnName">The column name.</param>
         /// <returns>A <see cref="Boolean"/></returns>
         /// <exception cref="ColumnNotFoundException">The table has no column with the specified name.</exception>
-        public bool IsColumnSpecial (string columnName)
+        public bool IsColumnArray (string columnName)
         {
             if (ColumnNameCache.ContainsKey(columnName))
             {
-                return ColumnNameCache[columnName].IsSpecial;
+                return ColumnNameCache[columnName].Type.IsArray;
             }
             throw new ColumnNotFoundException(columnName);
         }
@@ -768,33 +871,22 @@ namespace LibARMP
             uint id = (uint)Columns.Count;
             ArmpType armpType = DataTypes.GetArmpTypeByCSType(columnType);
             ArmpTableColumn column = new ArmpTableColumn(id, columnName, armpType);
-            if (TableInfo.HasColumnIndices) column.Index = (int)id;
-            if (TableInfo.HasColumnValidity) column.IsValid = true;
-            column.IsNoData = false;
+            column.Index = (int)id;
+            if (TableInfo.FormatIsDragonEngine) OrderedColumnIDs.Add((int)id);
+            column.IsValid = true;
+            if (armpType.IsArray) column.Children = new List<ArmpTableColumn>();
 
-            if (TableInfo.FormatVersion == Version.DragonEngineV2)
+            if (TableInfo.HasMemberInfo)
             {
-                //If the type is special
-                if (DataTypes.SpecialTypes.Contains(armpType.CSType))
+                ArmpMemberInfo info = new ArmpMemberInfo()
                 {
-                    column.IsSpecial = true;
-                    column.SpecialSize = 0; //currently empty
-                    column.Children = new List<ArmpTableColumn>();
-                }
-
-                //Check if the name matches an existing special column and assign parent/child
-                //NOTE: unsure if allowing the creation of a column with child naming but no parent will cause problems down the line.
-                if (columnName.Contains("[") && columnName.Contains("]"))
-                {
-                    string baseName = columnName.Split('[')[0];
-                    if (ColumnNameCache.ContainsKey(baseName))
-                    {
-                        ArmpTableColumn parentColumn = ColumnNameCache[baseName];
-                        parentColumn.Children.Add(column);
-                        parentColumn.SpecialSize += 1;
-                        column.Parent = parentColumn;
-                    }
-                }
+                    Type = armpType,    // Fine for now but not strictly correct
+                    Position = -1,
+                };
+                StructureSpec.Add(info);
+                column.MemberInfo = info;
+                info.Column = column;
+                if (StructurePacked) StructurePacked = !column.IsValid;
             }
 
             Columns.Add(column);
@@ -824,22 +916,36 @@ namespace LibARMP
         /// <returns>A <see cref="Boolean"/> indicating if the operation completed successfully.</returns>
         public bool DeleteColumn (string columnName)
         {
-            //TODO: Deleting a column will break how the game reads subsequent columns. Indices may need to be updated. Make it an optional argument?
+            //TODO: Deleting a column will break how the game reads subsequent columns. Indices need to be updated. Make it an optional argument?
             if (ColumnNameCache.ContainsKey(columnName))
             {
                 ArmpTableColumn column = ColumnNameCache[columnName];
 
-                //Remove column from parent and children
+                // Replace column in parent array with null reference
                 if (column.Parent != null)
                 {
-                    column.Parent.Children.Remove(column);
-                    column.Parent.SpecialSize -= 1;
+                    int index = column.Parent.Children.IndexOf(column);
+                    column.Parent.Children[index] = null;
                     column.Parent = null;
                 }
 
+                // Remove column as parent from array elements
+                if (column.Children?.Count > 0)
+                {
                 foreach (ArmpTableColumn child in column.Children)
                 {
                     child.Parent = null;
+                }
+                    column.Children.Clear();
+                }
+
+                // Delete member info if it exists
+                if (TableInfo.HasMemberInfo)
+                {
+                    column.MemberInfo.Column = null;
+                    StructureSpec.Remove(column.MemberInfo);
+                    column.MemberInfo = null;
+                    if (StructurePacked) StructurePacked = !column.IsValid;
                 }
 
                 Columns.Remove(column);
@@ -901,11 +1007,10 @@ namespace LibARMP
         public ArmpEntry AddEntry (string name = "")
         {
             uint id = (uint)Entries.Count;
-            ArmpEntry entry = new ArmpEntry(this, id, name);
+            ArmpEntry entry = new ArmpEntry(this, id, name, id);
             entry.SetDefaultColumnContent();
-            if (TableInfo.HasEntryIndices)
-                entry.Index = (int)id;
             Entries.Add(entry);
+            if (TableInfo.FormatIsDragonEngine) OrderedEntryIDs.Add(id);
             return entry;
         }
 
@@ -918,9 +1023,10 @@ namespace LibARMP
         /// <exception cref="EntryInsertException">The specified ID is greater than the amount of entries in the table.</exception>
         public ArmpEntry InsertEntry (uint id, string name = "")
         {
+            // TODO: Entry order needs to be adjusted after insertion.
             if (id <= Entries.Count)
             {
-                ArmpEntry entry = new ArmpEntry(this, id, name);
+                ArmpEntry entry = new ArmpEntry(this, id, name, id);
                 entry.SetDefaultColumnContent();
                 Entries.Insert((int)id, entry);
 
@@ -947,6 +1053,7 @@ namespace LibARMP
         /// <exception cref="EntryNotFoundException">The table has no entry with the specified ID.</exception>
         public void DeleteEntry (uint id)
         {
+            // TODO: Entry order needs to be adjusted after deletion.
             if (id < Entries.Count)
             {
                 Entries.RemoveAt((int)id);
@@ -1048,25 +1155,63 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Calculates the distance between data for Storage Mode 1 columns.
+        /// Calculates the positions for members in the table's structure (Storage Mode 1).
         /// </summary>
         /// <remarks><para><b>DRAGON ENGINE V2 (STORAGE MODE 1) ONLY</b></para></remarks>
-        internal void UpdateColumnDistances()
+        internal void PackStructure()
         {
-            int distance = 0;
-
-            foreach (ArmpTableColumn column in Columns)
+            if (StructurePacked) return;
+            StructureWidth = 0;
+#if DEBUG
+Console.Writeline("Packing structure.");
+#endif
+            foreach (ArmpMemberInfo info in StructureSpec)
             {
-                if (column.Type.Size == 0)
+                if (!info.Column.IsValid)
                 {
-                    column.Distance = distance;
+                    info.Position = -1;
+                }
+
+                // As a stopgap measure for now, skip this member if it was already -1.
+                // There's no great way of catching this in automatic packing.
+                // The affected columns seem to often be named '*', but I'd prefer a better indicator than that.
+                else if (info.Position == -1)
+                {
                     continue;
                 }
 
-                int padding = distance % column.Type.Size;
-                column.Distance = distance + padding;
-                distance = column.Distance + column.Type.Size;
+                else if (info.Column.Parent == null)
+                {
+                    uint align = info.Type.Align == 0 ? info.Type.Size : info.Type.Align;
+                    uint width = info.Type.Size;
+                    if (info.Type.IsArray)
+                    {
+                        width *= info.ArraySize;
+                    }
+                    uint padding = align - StructureWidth % align;
+                    if (padding == align) padding = 0;
+                    info.Position = (int)(StructureWidth + padding);
+                    StructureWidth = (uint)info.Position + width;
+
+                    // If there are array elements, handle them here.
+                    if (info.Column.Children != null)
+                    {
+                        ArmpMemberInfo childInfo = null;
+                        for (int i = 0; i < info.Column.Children.Count; i++)
+                        {
+                            if (info.Column.Children[i] == null) continue;
+                            childInfo = info.Column.Children[i].MemberInfo;
+                            childInfo.Position = info.Position + info.Type.Size * i;
+                            childInfo.ArraySize = 0;
+                        }
+                    }
+                }
+#if DEBUG
+                Console.WriteLine($"0x{info.Position:X}:\t{info.Column.Name}");
+#endif
             }
+
+            StructurePacked = true;
         }
 
 
@@ -1082,8 +1227,14 @@ namespace LibARMP
                 foreach (ArmpEntry entry in Entries)
                 {
                     string str = entry.GetValueFromColumn<string>(column);
+                    if (str == string.Empty && TableInfo.DefaultColumnID > -1) continue;
                     if (!Text.Contains(str) && str != null) Text.Add(str);
                 }
+            }
+
+            if (TableInfo.FormatVersion == Version.DragonEngineV2 && TableInfo.DefaultColumnID > -1)
+            {
+                Text.Insert(TableInfo.DefaultColumnID, string.Empty); // Okay for now
             }
         }
 
@@ -1100,7 +1251,7 @@ namespace LibARMP
             //Storage mode needs to be the same for all tables inside
             foreach (ArmpTableColumn column in GetColumnsByType<ArmpTable>())
             {
-                if ((bool)column.IsValid)
+                if (column.IsValid)
                 {
                     foreach (ArmpEntry e in Entries)
                     {

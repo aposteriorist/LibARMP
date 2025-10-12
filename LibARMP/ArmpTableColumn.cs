@@ -12,8 +12,9 @@ namespace LibARMP
         /// <param name="id">The column ID.</param>
         internal ArmpTableColumn(uint id)
         {
-            this.ID = id;
-            Children = new List<ArmpTableColumn>();
+            ID = id;
+            ColumnMetadata = -1;
+            GameVarID = -1;
         }
 
         /// <summary>
@@ -24,8 +25,8 @@ namespace LibARMP
         /// <param name="type">The column type.</param>
         internal ArmpTableColumn(uint id, string name, ArmpType type) : this(id)
         {
-            this.Name = name;
-            this.Type = type;
+            Name = name;
+            Type = type;
         }
 
         /// <summary>
@@ -44,7 +45,13 @@ namespace LibARMP
         internal ArmpType Type { get; set; }
 
         /// <summary>
-        /// Gets or sets the column index.
+        /// Gets the member info, if applicable.
+        /// </summary>
+        /// <remarks>This reference is kept to avoid unnecessarily sorting the table's MemberInfo List.</remarks>
+        internal ArmpMemberInfo MemberInfo { get; set; }
+
+        /// <summary>
+        /// Gets or sets the column's display index, which may differ from its ID.
         /// </summary>
         /// <remarks><para>Can be null if unused.</para></remarks>
         public int Index { get; set; }
@@ -52,52 +59,31 @@ namespace LibARMP
         /// <summary>
         /// Gets or sets if the column is valid.
         /// </summary>
-        /// <remarks><para>Can be null if unused.</para></remarks>
-        public bool? IsValid { get; set; }
+        public bool IsValid { get; set; }
 
         /// <summary>
-        /// Gets or sets if the column contains no data despite being valid.
+        /// Gets or sets the column metadata.
         /// </summary>
-        internal bool IsNoData { get; set; }
+        /// <remarks><para><b>OLD ENGINE ONLY</b></para></remarks>
+        public int ColumnMetadata { get; set; }
 
         /// <summary>
-        /// Gets if the column is special.
+        /// Gets or sets the game_var ID.
         /// </summary>
-        public bool IsSpecial { get; internal set; }
-
-        /// <summary>
-        /// Amount of elements in the array if the column is special.
-        /// </summary>
-        // TODO: Remove this. Equivalent to Children.Count
-        internal int SpecialSize { get; set; }
-
-        /// <summary>
-        /// Distance between data if the table uses StorageMode 1.
-        /// </summary>
-        internal int Distance { get; set; }
-
-        /// <summary>
-        /// Gets or sets the unknown metadata.
-        /// </summary>
-        /// <remarks><para>TODO</para></remarks>
-        public int UnknownMetadata0x40 { get; set; }
-
-        /// <summary>
-        /// Gets or sets the unknown metadata.
-        /// </summary>
-        /// <remarks><para>TODO</para></remarks>
-        public int UnknownMetadata0x4C { get; set; }
+        /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
+        // (Meaning still unknown for version 1. May be maximum, default, or otherwise special column values.)
+        public int GameVarID { get; set; }
 
         /// <summary>
         /// Gets or sets the column's children.
         /// </summary>
-        /// <remarks><para>Only used if the column is special.</para><para><b>DRAGON ENGINE V2 ONLY</b></para></remarks>
+        /// <remarks><para>Only used if the column is of an array type.</para><para><b>DRAGON ENGINE V2 ONLY</b></para></remarks>
         internal List<ArmpTableColumn> Children { get; set; }
 
         /// <summary>
         /// Gets or sets the column's parent.
         /// </summary>
-        /// <remarks><para>Only used if the column is child of a special.</para><para><b>DRAGON ENGINE V2 ONLY</b></para></remarks>
+        /// <remarks><para>Only used if the column is child of an array-type column.</para><para><b>DRAGON ENGINE V2 ONLY</b></para></remarks>
         internal ArmpTableColumn Parent { get; set; }
 
 
@@ -121,10 +107,11 @@ namespace LibARMP
             ArmpTableColumn copy = new ArmpTableColumn(ID, Name, Type);
             copy.Index = Index;
             copy.IsValid = IsValid;
-            copy.IsNoData = IsNoData;
-            copy.IsSpecial = IsSpecial;
-            copy.UnknownMetadata0x40 = UnknownMetadata0x40;
-            copy.UnknownMetadata0x4C = UnknownMetadata0x4C;
+            copy.ColumnMetadata = ColumnMetadata;
+            copy.GameVarID = GameVarID;
+
+            if (Type.IsArray)
+                copy.Children = new List<ArmpTableColumn>(Children.Count);
 
             return copy;
         }
