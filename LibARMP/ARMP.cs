@@ -35,11 +35,6 @@ namespace LibARMP
         /// </summary>
         internal ArmpTable MainTable { get; set; }
 
-        /// <summary>
-        /// Original armp file for patching.
-        /// </summary>
-        internal MemoryStream File = new MemoryStream();
-
 
 
         /// <summary>

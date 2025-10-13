@@ -81,12 +81,6 @@ namespace LibARMP
         /// </summary>
         internal Dictionary<ArmpTableColumn, List<ArmpEntry>> CellsWithData { get; set; }
 
-        /// <summary>
-        /// PLACEHOLDER: Edited values for patcher.
-        /// </summary>
-        /// <remarks><para>[column : list of entry ids]</para></remarks>
-        internal Dictionary<string, List<uint>> EditedValues = new Dictionary<string, List<uint>>();
-
 
 
         /// <summary>
@@ -1105,16 +1099,6 @@ namespace LibARMP
                 {
                     ArmpEntry entry = GetEntry(id);
                     entry.SetValueFromColumn(columnName, value);
-
-                    //PLACEHOLDER PATCHER CODE
-                    if (column.Type.CSType != typeof(string))
-                    {
-                        if (!EditedValues.ContainsKey(column.Name))
-                        {
-                            EditedValues.Add(column.Name, new List<uint>());
-                        }
-                        EditedValues[column.Name].Add(id);
-                    }
                 }
                 else
                 {

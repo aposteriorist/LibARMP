@@ -73,7 +73,6 @@ namespace LibARMP.IO
                 armp.MainTable = ReadTable(reader, ptrMainTable, armp.FormatVersion, baseARMPMemoryAddress.ToInt64());
             }
 
-            stream.CopyTo(armp.File);
             reader.Dispose();
             return armp;
         }
@@ -809,7 +808,6 @@ namespace LibARMP.IO
 
                         foreach (ArmpEntry entry in table.Entries)
                         {
-                            entry.ColumnValueOffsets.Add(column.Name, (int)reader.BaseStream.Position);
                             ReadValue(reader, table, version, entry, column, column.Type, booleanColumnDataTemp);
                         }
 
@@ -831,7 +829,6 @@ namespace LibARMP.IO
                     {
                         if (!memberInfo.Column.IsValid || memberInfo.Type.IsArray || memberInfo.Position < 0) continue;
                         reader.BaseStream.Seek(ptrData + memberInfo.Position);
-                        entry.ColumnValueOffsets.Add(memberInfo.Column.Name, (int)reader.BaseStream.Position);
                         ReadValue(reader, table, version, entry, memberInfo.Column, memberInfo.Type);
                     }
 
