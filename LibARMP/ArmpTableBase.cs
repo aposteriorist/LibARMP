@@ -162,12 +162,39 @@ namespace LibARMP
                 {
                     copy.Entries.Add(entry.Copy(copy));
                 }
-
-                // Copy the entry order.
-                if (TableInfo.FormatIsDragonEngine) copy.OrderedEntryIDs = new List<uint>(OrderedEntryIDs);
             }
 
             return copy;
+        }
+
+
+        /// <summary>
+        /// Updates the table info based on the current state of the table.
+        /// </summary>
+        internal void UpdateTableInfo()
+        {
+            TableInfo.EntryCount = Entries.Count;
+            TableInfo.ColumnCount = Columns.Count;
+            }
+
+
+        }
+
+
+            TableInfo.HasMemberInfo = StructureSpec?.Count > 0;
+
+            if (TableInfo.UseStructure)
+            {
+                if (TableInfo.HasMemberInfo)
+                {
+                    PackStructure();
+                }
+                else
+                {
+                    // TO-DO: Emit a warning here.
+                    TableInfo.UseStructure = false;
+                }
+            }
         }
 
 
