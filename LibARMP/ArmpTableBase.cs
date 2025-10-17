@@ -1243,6 +1243,11 @@ namespace LibARMP
                 }
             }
 
+            TableInfo.TextCount = Text.Count;
+            TableInfo.HasText = TableInfo.TextCount > 0;
+
+            if (Text.Count == 0) return;
+
             if (TableInfo.FormatVersion == Version.DragonEngineV2 && TableInfo.DefaultColumnID > -1)
             {
                 Text.Insert(TableInfo.DefaultColumnID, string.Empty); // Okay for now

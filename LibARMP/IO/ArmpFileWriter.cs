@@ -542,7 +542,7 @@ namespace LibARMP.IO
 
             if (table.TableInfo.HasText)
             {
-                table.UpdateTextList();
+                table.UpdateTextList(); // Must be performed post-sort
 
                 ptr = Util.WriteText(writer, table.Text, false);
 
