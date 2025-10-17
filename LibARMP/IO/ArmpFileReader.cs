@@ -286,7 +286,7 @@ namespace LibARMP.IO
 
             ///// Entry Data /////
             InitializeEntries(table);
-            ReadColumnContents(reader, table.TableInfo.ptrColumnContentOffsetTable, table.TableInfo.StorageMode, version, table);
+            ReadColumnContents(reader, table.TableInfo.ptrColumnContentOffsetTable, table.TableInfo.UseStructure, version, table);
 
 
             ///// Entry Validity /////
@@ -637,7 +637,7 @@ namespace LibARMP.IO
 
 
                 //Set flags
-                armpTableInfo.StorageMode = (StorageMode)(tableFlags & (1 << 0));
+                armpTableInfo.UseStructure = (tableFlags & (1 << 0)) != 0;
                 armpTableInfo.UnknownFlag1 = (tableFlags & (1 << 1)) != 0;
                 armpTableInfo.UnknownFlag2 = (tableFlags & (1 << 2)) != 0;
                 armpTableInfo.UnknownFlag3 = (tableFlags & (1 << 3)) != 0;
@@ -668,7 +668,7 @@ namespace LibARMP.IO
                 Console.WriteLine("Pointer to Column Data Types: " + armpTableInfo.ptrColumnDataTypes);
                 Console.WriteLine("Pointer to Column Content Offset Table: " + armpTableInfo.ptrColumnContentOffsetTable);
                 Console.WriteLine("Table ID: " + armpTableInfo.TableID);
-                Console.WriteLine("Storage Mode: " + armpTableInfo.StorageMode);
+                Console.WriteLine("Storage Mode: " + armpTableInfo.UseStructure);
                 Console.WriteLine("Unknown Flag 1: " + armpTableInfo.UnknownFlag1);
                 Console.WriteLine("Unknown Flag 2: " + armpTableInfo.UnknownFlag2);
                 Console.WriteLine("Unknown Flag 3: " + armpTableInfo.UnknownFlag3);
@@ -772,11 +772,11 @@ namespace LibARMP.IO
         /// <param name="version">The format version.</param>
         /// <param name="table">The table where the data will be added to.</param>
         /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
-        private static void ReadColumnContents(BinaryReader reader, uint ptrOffsetTable, StorageMode storageMode, Version version, ArmpTableBase table)
+        private static void ReadColumnContents(BinaryReader reader, uint ptrOffsetTable, bool useStructure, Version version, ArmpTableBase table)
         {
             reader.BaseStream.Seek(ptrOffsetTable);
 
-            if (storageMode == StorageMode.Column)
+            if (!useStructure)
             {
                 foreach (ArmpTableColumn column in table.Columns)
                 {
@@ -818,7 +818,7 @@ namespace LibARMP.IO
             }
 
 
-            else if (storageMode == StorageMode.Structured)
+            else
             {
                 foreach (ArmpEntry entry in table.Entries)
                 {

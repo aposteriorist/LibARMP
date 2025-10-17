@@ -409,10 +409,8 @@ namespace LibARMP.IO
         /// <param name="table">The <see cref="ArmpTableBase"/> to write.</param>
         private static void WriteTable(BinaryWriter writer, ArmpTableBase table, Dictionary<ArmpTableBase, uint> tableValuePointers = null)
         {
-            if (table.TableInfo.FormatVersion == Version.DragonEngineV2 && table.TableInfo.StorageMode == StorageMode.Structured && table.TableInfo.HasMemberInfo)
-            {
-                table.PackStructure();
-            }
+            // Verify the current table info.
+            table.UpdateTableInfo();
 
             long baseOffset = writer.BaseStream.Position;
             int ptr = 0;
@@ -431,7 +429,16 @@ namespace LibARMP.IO
             ///// Table ID and Storage Mode /////
             writer.BaseStream.Seek(baseOffset + 0x20);
             writer.WriteInt24(table.TableInfo.TableID);
-            writer.Write((byte)table.TableInfo.StorageMode);
+            byte tableFlags = 0;
+            if (table.TableInfo.UseStructure) tableFlags |= 1;
+            if (table.TableInfo.UnknownFlag1) tableFlags |= 2;
+            if (table.TableInfo.UnknownFlag2) tableFlags |= 4;
+            if (table.TableInfo.UnknownFlag3) tableFlags |= 8;
+            if (table.TableInfo.UnknownFlag4) tableFlags |= 16;
+            if (table.TableInfo.DoNotUseRaw)  tableFlags |= 32;
+            if (table.TableInfo.MembersWellFormatted) tableFlags |= 64;
+            if (table.TableInfo.IsProcessedForMemory) tableFlags |= 128;
+            writer.Write(tableFlags);
             writer.BaseStream.PopPosition();
 
 
@@ -601,7 +608,7 @@ namespace LibARMP.IO
             ///// Column Contents /////
             #region ColumnContentsModeColumn
 
-            if (table.TableInfo.StorageMode == StorageMode.Column)
+            if (!table.TableInfo.UseStructure)
             {
                 List<int> columnValueOffsets = new List<int>();
                 foreach (ArmpTableColumn column in table.Columns)
@@ -775,7 +782,7 @@ namespace LibARMP.IO
 
             #region ColumnContentsModeStructured
 
-            else if (table.TableInfo.StorageMode == StorageMode.Structured)
+            else
             {
                 List<int> entryValueOffsets = new List<int>();
                 ArmpTableColumn column;

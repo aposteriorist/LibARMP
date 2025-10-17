@@ -17,7 +17,7 @@ namespace LibARMP
             DefaultEntryID = -1;
             DefaultColumnID = -1;
             TableID = 0;
-            StorageMode = 0;
+            UseStructure = false;
 
             //Pointers
             ptrEntryNamesOffsetTable = 0;
@@ -93,10 +93,10 @@ namespace LibARMP
         public Int32 TableID { get; internal set; }
 
         /// <summary>
-        /// Gets the storage mode.
+        /// When set, uses a structure specification to write data rather than writing by column.
         /// </summary>
         /// <remarks><para><b>DRAGON ENGINE V2 ONLY</b></para></remarks>
-        public StorageMode StorageMode { get; internal set; } //Flag 0
+        public bool UseStructure { get; internal set; } //Flag 0
 
         public bool UnknownFlag1 { get; internal set; } //Flag 1
         public bool UnknownFlag2 { get; internal set; } //Flag 2

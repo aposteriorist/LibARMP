@@ -1224,13 +1224,13 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Sets the <see cref="StorageMode"/> for this table and any tables contained within.
+        /// Sets whether a structure will be used for this table and any tables contained within.
         /// </summary>
-        /// <param name="storageMode">The <see cref="StorageMode"/> to set the table to.</param>
+        /// <param name="useStructure">Whether or not to use a structure for data storage.</param>
         /// <remarks><b>Only perform this operation on the armp's main table.</b></remarks>
-        public void SetStorageMode (StorageMode storageMode)
+        public void SetStorageMode (bool useStructure)
         {
-            TableInfo.StorageMode = storageMode;
+            TableInfo.UseStructure = useStructure;
 
             //Storage mode needs to be the same for all tables inside
             foreach (ArmpTableColumn column in GetColumnsByType<ArmpTable>())
@@ -1245,7 +1245,7 @@ namespace LibARMP
                         }
                         catch { continue; }
                         if (e.GetValueFromColumn<ArmpTable>(column) != null)
-                            e.GetValueFromColumn<ArmpTable>(column).TableInfo.StorageMode = storageMode;
+                            e.GetValueFromColumn<ArmpTable>(column).TableInfo.UseStructure = useStructure;
                     }
                 }
             }
