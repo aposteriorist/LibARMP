@@ -159,6 +159,14 @@ namespace LibARMP
         /// </summary>
         internal void UpdateTableInfo()
         {
+            // TO-DO: Complete this function.
+            // - Entry validity
+            // - Column validity
+            // - Entry names
+            // - Column names
+            // - Blank cell flags
+            // - Extra field info
+
             TableInfo.EntryCount = Entries.Count;
             TableInfo.ColumnCount = Columns.Count;
 
@@ -181,8 +189,17 @@ namespace LibARMP
                     TableInfo.HasOrderedColumns = true;
                     break;
                 }
-        }
+            }
 
+            TableInfo.HasGameVarColumns = false;
+            foreach (ArmpTableColumn column in Columns)
+            {
+                if (column.GameVarID > -1)
+                {
+                    TableInfo.HasGameVarColumns = true;
+                    break;
+                }
+            }
 
             TableInfo.HasMemberInfo = StructureSpec?.Count > 0;
 
