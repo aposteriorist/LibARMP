@@ -779,7 +779,7 @@ namespace LibARMP.IO
         /// </summary>
         /// <param name="reader">The <see cref="BinaryReader"/>.</param>
         /// <param name="ptrOffsetTable">The pointer to the offset table.</param>
-        /// <param name="storageMode">Storage mode used.</param>
+        /// <param name="useStructure">Storage mode used.</param>
         /// <param name="version">The format version.</param>
         /// <param name="table">The table where the data will be added to.</param>
         /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
