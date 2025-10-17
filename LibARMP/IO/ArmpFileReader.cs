@@ -810,7 +810,6 @@ namespace LibARMP.IO
 #if DEBUG
                         Console.WriteLine(column.Name + " ----> " + column.Type);
 #endif
-                        // Only StorageMode.Column
                         List<bool> booleanColumnDataTemp = new List<bool>();
                         if (column.Type.CSType == typeof(bool))
                         {
