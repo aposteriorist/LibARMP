@@ -22,9 +22,7 @@ namespace LibARMP.IO
         /// <param name="stream">The destination <see cref="Stream"/>.</param>
         private static void WriteARMP(ARMP armp, Stream stream)
         {
-            bool isOldEngine = false;
-            if (armp.FormatVersion == Version.OldEngine || armp.FormatVersion == Version.OldEngineIshin)
-                isOldEngine = true;
+            bool isOldEngine = armp.FormatVersion == Version.OldEngine || armp.FormatVersion == Version.OldEngineIshin;
 
             Encoding writerEncoding = Encoding.UTF8;
             if (isOldEngine)
