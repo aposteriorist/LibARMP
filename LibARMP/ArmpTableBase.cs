@@ -1,7 +1,6 @@
 ﻿using LibARMP.Exceptions;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace LibARMP
 {
@@ -40,16 +39,6 @@ namespace LibARMP
         /// Entry validity. 
         /// </summary>
         internal List<bool> EntryValidity { get; set; }
-
-        /// <summary>
-        /// Entry order.
-        /// </summary>
-        internal List<uint> OrderedEntryIDs { get; set; }
-
-        /// <summary>
-        /// Column order.
-        /// </summary>
-        internal List<int> OrderedColumnIDs { get; set; }
 
         /// <summary>
         /// List of columns.
@@ -150,9 +139,6 @@ namespace LibARMP
                 copy.StructurePacked = true;
             }
 
-            // Copy the column order.
-            if (TableInfo.FormatIsDragonEngine) copy.OrderedColumnIDs = new List<int>(OrderedColumnIDs);
-
             copiedColumns.Clear();
 
             // Copy entries if requested.
@@ -175,9 +161,26 @@ namespace LibARMP
         {
             TableInfo.EntryCount = Entries.Count;
             TableInfo.ColumnCount = Columns.Count;
+
+            TableInfo.HasOrderedEntries = false;
+            for (int i = 0; i < Entries.Count; i++)
+            {
+                if (Entries[i].ID != i)
+                {
+                    TableInfo.HasOrderedEntries = true;
+                    break;
+                }
             }
 
 
+            TableInfo.HasOrderedColumns = false;
+            for (int i = 0; i < Columns.Count; i++)
+            {
+                if (Columns[i].ID != i)
+                {
+                    TableInfo.HasOrderedColumns = true;
+                    break;
+                }
         }
 
 
@@ -529,32 +532,14 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Gets an ordered list of columns matching the type.
-        /// </summary>
-        /// <param name="type">The <see cref="Type"/> to look for.</param>
-        /// <returns>An <see cref="ArmpTableColumn"/> list.</returns>
-        public List<ArmpTableColumn> GetOrderedColumnsByType(Type type)
-        {
-            List<ArmpTableColumn> returnList = new List<ArmpTableColumn>();
-            foreach (int i in OrderedColumnIDs)
-            {
-                if (Columns[i].Type.CSType == type)
-                    returnList.Add(Columns[i]);
-            }
-
-            return returnList;
-        }
-
-
-        /// <summary>
         /// Gets a list of columns matching the type.
         /// </summary>
         /// <typeparam name="T">The <see cref="Type"/> to look for.</typeparam>
         /// <returns>An <see cref="ArmpTableColumn"/> list.</returns>
-        public List<ArmpTableColumn> GetColumnsByType<T>(bool ordered = false)
+        public List<ArmpTableColumn> GetColumnsByType<T>()
         {
             Type type = typeof(T);
-            return ordered && TableInfo.FormatIsDragonEngine ? GetOrderedColumnsByType(type) : GetColumnsByType(type);
+            return GetColumnsByType(type);
         }
 
 
@@ -576,31 +561,14 @@ namespace LibARMP
 
 
         /// <summary>
-        /// Gets an ordered list of column names matching the type.
-        /// </summary>
-        /// <param name="type">The <see cref="Type"/> to look for.</param>
-        /// <returns>A <see cref="string"/> list.</returns>
-        public List<string> GetOrderedColumnNamesByType (Type type)
-        {
-            List<string> returnList = new List<string>();
-            foreach (int i in OrderedColumnIDs)
-            {
-                if (Columns[i].Type.CSType == type) returnList.Add(Columns[i].Name);
-            }
-
-            return returnList;
-        }
-
-
-        /// <summary>
         /// Gets a list of column names matching the type.
         /// </summary>
         /// <typeparam name="T">The <see cref="Type"/> to look for.</typeparam>
         /// <returns>A <see cref="string"/> list.</returns>
-        public List<string> GetColumnNamesByType<T>(bool ordered = false)
+        public List<string> GetColumnNamesByType<T>()
         {
             Type type = typeof(T);
-            return ordered && TableInfo.FormatIsDragonEngine ? GetOrderedColumnNamesByType(type) : GetColumnNamesByType(type);
+            return GetColumnNamesByType(type);
         }
 
 
@@ -609,29 +577,12 @@ namespace LibARMP
         /// </summary>
         /// <param name="type">The <see cref="Type"/> to look for.</param>
         /// <returns>A <see cref="uint"/> list.</returns>
-        public List<uint> GetColumnIDsByType (Type type)
+        public List<int> GetColumnIDsByType (Type type)
         {
-            List<uint> returnList = new List<uint>();
+            List<int> returnList = new List<int>();
             foreach (ArmpTableColumn column in Columns)
             {
                 if (column.Type.CSType == type) returnList.Add(column.ID);
-            }
-
-            return returnList;
-        }
-
-
-        /// <summary>
-        /// Gets an ordered list of column IDs matching the type.
-        /// </summary>
-        /// <param name="type">The <see cref="Type"/> to look for.</param>
-        /// <returns>A <see cref="uint"/> list.</returns>
-        public List<uint> GetOrderedColumnIDsByType(Type type)
-        {
-            List<uint> returnList = new List<uint>();
-            foreach (int i in OrderedColumnIDs)
-            {
-                if (Columns[i].Type.CSType == type) returnList.Add((uint)i);
             }
 
             return returnList;
@@ -643,10 +594,10 @@ namespace LibARMP
         /// </summary>
         /// <typeparam name="T">The <see cref="Type"/> to look for.</typeparam>
         /// <returns>An <see cref="uint"/> list.</returns>
-        public List<uint> GetColumnIDsByType<T>(bool ordered = false)
+        public List<int> GetColumnIDsByType<T>()
         {
             Type type = typeof(T);
-            return ordered && TableInfo.FormatIsDragonEngine ? GetOrderedColumnIDsByType(type) : GetColumnIDsByType(type);
+            return GetColumnIDsByType(type);
         }
 
 
@@ -656,7 +607,7 @@ namespace LibARMP
         /// <param name="columnName">The column name.</param>
         /// <returns>The column ID.</returns>
         /// <exception cref="ColumnNotFoundException">The table has no column with the specified name.</exception>
-        public uint GetColumnID (string columnName)
+        public int GetColumnID (string columnName)
         {
             if (ColumnNameCache.ContainsKey(columnName))
             {
@@ -673,17 +624,15 @@ namespace LibARMP
         /// <returns>The column index.</returns>
         /// <exception cref="ColumnNoIndexException">The table has no column indices.</exception>
         /// <exception cref="ColumnNotFoundException">The table has no column with the specified ID.</exception>
-        public int GetColumnIndex (uint id)
+        public int GetColumnIndex (int id)
         {
-            if (!TableInfo.HasOrderedColumns) throw new ColumnNoIndexException();
-
             try
             {
-                return Columns[(int)id].Index;
+                return TableInfo.HasOrderedColumns ? Columns.IndexOf(Columns.Find(x => x.ID == id)) : id;
             }
             catch
             {
-                throw new ColumnNotFoundException(id);
+                throw new ColumnNotFoundException((uint)id);
             }
         }
 
@@ -697,11 +646,9 @@ namespace LibARMP
         /// <exception cref="ColumnNotFoundException">The table has no column with the specified name.</exception>
         public int GetColumnIndex (string columnName)
         {
-            if (!TableInfo.HasOrderedColumns) throw new ColumnNoIndexException();
-
             if (ColumnNameCache.ContainsKey(columnName))
             {
-                return ColumnNameCache[columnName].Index;
+                return TableInfo.HasOrderedColumns ? Columns.IndexOf(ColumnNameCache[columnName]) : ColumnNameCache[columnName].ID;
             }
             throw new ColumnNotFoundException(columnName);
         }
@@ -716,12 +663,9 @@ namespace LibARMP
         /// <exception cref="ColumnNotFoundException">The table has no column with the specified ID.</exception>
         public void SetColumnIndex (uint id, int newIndex)
         {
-            if (!TableInfo.HasOrderedColumns) throw new ColumnNoIndexException();
-
             try
             {
-                Columns[(int)id].Index = newIndex;
-                // TODO: Adjust all other column indices affected by the change.
+                // TO-DO
             }
             catch
             {
@@ -739,13 +683,9 @@ namespace LibARMP
         /// <exception cref="ColumnNotFoundException">The table has no column with the specified name.</exception>
         public void SetColumnIndex (string columnName, int newIndex)
         {
-            if (!TableInfo.HasOrderedColumns) throw new ColumnNoIndexException();
-
             try
             {
-                int id = (int)GetColumnID(columnName);
-                Columns[id].Index = newIndex;
-                // TODO: Adjust all other column indices affected by the change.
+                // TO-DO
             }
             catch
             {
@@ -757,18 +697,37 @@ namespace LibARMP
         /// <summary>
         /// Gets a boolean indicating if the column is valid.
         /// </summary>
-        /// <param name="id">The column ID.</param>
+        /// <param name="index">The column index.</param>
         /// <returns>A <see cref="Boolean"/>.</returns>
         /// <exception cref="ColumnNotFoundException">The table has no column with the specified ID.</exception>
-        public bool IsColumnValid (uint id)
+        public bool IsColumnIndexValid (int index)
         {
             try
             {
-                return Columns[(int)id].IsValid;
+                return Columns[index].IsValid;
             }
             catch
             {
-                throw new ColumnNotFoundException(id);
+                throw new ColumnNotFoundException((uint)index);
+            }
+        }
+
+
+        /// <summary>
+        /// Gets a boolean indicating if the column is valid.
+        /// </summary>
+        /// <param name="id">The column ID.</param>
+        /// <returns>A <see cref="Boolean"/>.</returns>
+        /// <exception cref="ColumnNotFoundException">The table has no column with the specified ID.</exception>
+        public bool IsColumnIDValid(int id)
+        {
+            try
+            {
+                return TableInfo.HasOrderedColumns ? Columns.Find(x => x.ID == id).IsValid : Columns[id].IsValid;
+            }
+            catch
+            {
+                throw new ColumnNotFoundException((uint)id);
             }
         }
 
@@ -889,11 +848,9 @@ namespace LibARMP
         /// <exception cref="TypeNotSupportedException">The provided C# type is not supported by the armp format.</exception>
         public ArmpTableColumn AddColumn (string columnName, Type columnType)
         {
-            uint id = (uint)Columns.Count;
+            int id = Columns.Count;
             ArmpType armpType = DataTypes.GetArmpTypeByCSType(columnType);
             ArmpTableColumn column = new ArmpTableColumn(id, columnName, armpType);
-            column.Index = (int)id;
-            if (TableInfo.FormatIsDragonEngine) OrderedColumnIDs.Add((int)id);
             column.IsValid = true;
             if (armpType.IsArray) column.Children = new List<ArmpTableColumn>();
 
@@ -1027,11 +984,10 @@ namespace LibARMP
         /// <param name="name">The new entry name.</param>
         public ArmpEntry AddEntry (string name = "")
         {
-            uint id = (uint)Entries.Count;
-            ArmpEntry entry = new ArmpEntry(this, id, name, id);
+            int id = Entries.Count;
+            ArmpEntry entry = new ArmpEntry(this, id, name);
             entry.SetDefaultColumnContent();
             Entries.Add(entry);
-            if (TableInfo.FormatIsDragonEngine) OrderedEntryIDs.Add(id);
             return entry;
         }
 
@@ -1042,18 +998,17 @@ namespace LibARMP
         /// <param name="id">The new entry ID.</param>
         /// <param name="name">The new entry name.</param>
         /// <exception cref="EntryInsertException">The specified ID is greater than the amount of entries in the table.</exception>
-        public ArmpEntry InsertEntry (uint id, string name = "")
+        public ArmpEntry InsertEntry (int id, string name = "")
         {
-            // TODO: Entry order needs to be adjusted after insertion.
             if (id <= Entries.Count)
             {
-                ArmpEntry entry = new ArmpEntry(this, id, name, id);
+                ArmpEntry entry = new ArmpEntry(this, id, name);
                 entry.SetDefaultColumnContent();
-                Entries.Insert((int)id, entry);
+                Entries.Insert(id, entry);
 
                 if (Entries.Count > id)
                 {
-                    foreach (ArmpEntry e in Entries.GetRange((int)id + 1, Entries.Count - (int)id - 1))
+                    foreach (ArmpEntry e in Entries.GetRange(id + 1, Entries.Count - id - 1))
                     {
                         e.ID++;
                     }
@@ -1062,7 +1017,7 @@ namespace LibARMP
             }
             else
             {
-                throw new EntryInsertException((int)id);
+                throw new EntryInsertException(id);
             }
         }
 
@@ -1072,20 +1027,20 @@ namespace LibARMP
         /// </summary>
         /// <param name="id">The ID of the entry to delete.</param>
         /// <exception cref="EntryNotFoundException">The table has no entry with the specified ID.</exception>
-        public void DeleteEntry (uint id)
+        public void DeleteEntry (int id)
         {
             // TODO: Entry order needs to be adjusted after deletion.
             if (id < Entries.Count)
             {
-                Entries.RemoveAt((int)id);
-                foreach (ArmpEntry entry in Entries.GetRange((int)id, Entries.Count - (int)id))
+                Entries.RemoveAt(id);
+                foreach (ArmpEntry entry in Entries.GetRange(id, Entries.Count - id))
                 {
                     entry.ID--;
                 }
             }
             else
             {
-                throw new EntryNotFoundException(id);
+                throw new EntryNotFoundException((uint)id);
             }
         }
 

@@ -16,9 +16,6 @@ namespace LibARMP
             Data = new Dictionary<string, object>();
             ParentTable = parentTable;
 
-            if (!ParentTable.TableInfo.HasOrderedEntries)
-                Index = ID;
-
             IsValid = true;
 
             if (ParentTable.TableInfo.HasExtraFieldInfo && ParentTable.TableInfo.FormatVersion == Version.DragonEngineV1)
@@ -32,11 +29,10 @@ namespace LibARMP
         /// <param name="id">The entry ID.</param>
         /// <param name="name">The entry name.</param>
         /// <param name="index">The entry index.</param>
-        internal ArmpEntry(ArmpTableBase parentTable, uint id, string name, uint index) : this(parentTable)
+        internal ArmpEntry(ArmpTableBase parentTable, int id, string name) : this(parentTable)
         {
             ID = id;
             Name = name;
-            Index = index;
         }
 
 
@@ -44,7 +40,7 @@ namespace LibARMP
         /// <summary>
         /// Gets the entry ID.
         /// </summary>
-        public uint ID { get; internal set; }
+        public int ID { get; internal set; }
 
         /// <summary>
         /// Gets or sets the entry name.
@@ -56,12 +52,6 @@ namespace LibARMP
         /// </summary>
         /// <remarks><para>column name : value</para></remarks>
         internal IDictionary<string, object> Data { get; set; }
-
-        /// <summary>
-        /// Gets or sets the entry's display index, which may differ from its ID.
-        /// </summary>
-        /// <remarks><para>DRAGON ENGINE ONLY</para></remarks>
-        public uint Index { get; set; }
 
         /// <summary>
         /// Gets or sets if the entry is valid.
@@ -88,7 +78,7 @@ namespace LibARMP
         /// <returns>A copy of this <see cref="ArmpEntry"/>.</returns>
         public ArmpEntry Copy (ArmpTableBase parentTable)
         {
-            ArmpEntry copy = new ArmpEntry(parentTable, ID, Name, Index);
+            ArmpEntry copy = new ArmpEntry(parentTable, ID, Name);
             copy.IsValid = IsValid;
             copy.Flags = Flags;
             copy.Data = new Dictionary<string, object>(Data);

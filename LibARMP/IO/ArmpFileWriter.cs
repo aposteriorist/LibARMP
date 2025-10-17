@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace LibARMP.IO
@@ -352,20 +353,14 @@ namespace LibARMP.IO
         /// <returns>The pointer to the table.</returns>
         private static uint WriteTableRecursive(BinaryWriter writer, ArmpTableBase table)
         {
-            List<string> tableColumns = table.GetColumnNamesByType<ArmpTable>(ordered: true);
+            List<string> tableColumns = table.GetColumnNamesByType<ArmpTable>();
             Dictionary<ArmpTableBase, uint> tablePointers = new Dictionary<ArmpTableBase, uint>();
 
             if (tableColumns.Count > 0)
             {
-                ArmpEntry entry;
                 IReadOnlyList<ArmpEntry> entries = table.GetAllEntries();
-                for (int i = 0; i < entries.Count; i++)
+                foreach (ArmpEntry entry in entries)
                 {
-                    if (!table.TableInfo.HasOrderedEntries)
-                        entry = entries[i];
-                    else
-                        entry = entries[(int)table.OrderedEntryIDs[i]];
-
                     foreach (string column in tableColumns)
                     {
                         try
@@ -412,6 +407,15 @@ namespace LibARMP.IO
             // Verify the current table info.
             table.UpdateTableInfo();
 
+
+            // If the entries or columns are ordered differently than ID order, sort them by ID now.
+            List<int> entryOrder = table.Entries.Select(x => x.ID).ToList();
+            List<int> columnOrder = table.Columns.Select(x => x.ID).ToList();
+
+            if (table.TableInfo.HasOrderedEntries) table.Entries.Sort((x, y) => x.ID.CompareTo(y.ID));
+            if (table.TableInfo.HasOrderedColumns) table.Columns.Sort((x, y) => x.ID.CompareTo(y.ID));
+
+
             long baseOffset = writer.BaseStream.Position;
             int ptr = 0;
             bool allTrue, allFalse;
@@ -422,8 +426,8 @@ namespace LibARMP.IO
 
             ///// Entry/Column Count /////
             writer.BaseStream.PushToPosition(baseOffset);
-            writer.Write(table.Entries.Count);
-            writer.Write(table.Columns.Count);
+            writer.Write(table.TableInfo.EntryCount);
+            writer.Write(table.TableInfo.ColumnCount);
 
 
             ///// Table ID and Storage Mode /////
@@ -965,7 +969,7 @@ namespace LibARMP.IO
                 writer.WritePadding(0, paddingWidth);
                 ptr = (int)writer.BaseStream.Position;
 
-                foreach (uint ID in table.OrderedEntryIDs)
+                foreach (int ID in entryOrder)
                 {
                     writer.Write(ID);
                 }
@@ -984,7 +988,7 @@ namespace LibARMP.IO
                 writer.WritePadding(0, paddingWidth);
                 ptr = (int)writer.BaseStream.Position;
 
-                foreach (uint ID in table.OrderedColumnIDs)
+                foreach (int ID in columnOrder)
                 {
                     writer.Write(ID);
                 }
@@ -1088,6 +1092,18 @@ namespace LibARMP.IO
                 writer.WriteAtPosition(ptr, baseOffset + 0x4C);
             }
             #endregion
+
+            // Sort back to the orders for entries and columns if need be.
+            // NOTE: Is it faster to actually sort, or to select?
+            if (table.TableInfo.HasOrderedEntries)
+            {
+                table.Entries = entryOrder.Select(x => table.Entries[x]).ToList();
+            }
+
+            if (table.TableInfo.HasOrderedColumns)
+            {
+                table.Columns = columnOrder.Select(x => table.Columns[x]).ToList();
+            }
         }
 
 

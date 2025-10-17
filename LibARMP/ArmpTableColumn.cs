@@ -10,7 +10,7 @@ namespace LibARMP
         /// Initializes a new instance of the <see cref="ArmpTableColumn"/> class.
         /// </summary>
         /// <param name="id">The column ID.</param>
-        internal ArmpTableColumn(uint id)
+        internal ArmpTableColumn(int id)
         {
             ID = id;
             ColumnMetadata = -1;
@@ -23,7 +23,7 @@ namespace LibARMP
         /// <param name="id">The column ID.</param>
         /// <param name="name">The column name.</param>
         /// <param name="type">The column type.</param>
-        internal ArmpTableColumn(uint id, string name, ArmpType type) : this(id)
+        internal ArmpTableColumn(int id, string name, ArmpType type) : this(id)
         {
             Name = name;
             Type = type;
@@ -32,7 +32,7 @@ namespace LibARMP
         /// <summary>
         /// Gets the column ID.
         /// </summary>
-        public uint ID { get; internal set; }
+        public int ID { get; internal set; }
 
         /// <summary>
         /// Gets the column name.
@@ -49,12 +49,6 @@ namespace LibARMP
         /// </summary>
         /// <remarks>This reference is kept to avoid unnecessarily sorting the table's MemberInfo List.</remarks>
         internal ArmpMemberInfo MemberInfo { get; set; }
-
-        /// <summary>
-        /// Gets or sets the column's display index, which may differ from its ID.
-        /// </summary>
-        /// <remarks><para>Can be null if unused.</para></remarks>
-        public int Index { get; set; }
 
         /// <summary>
         /// Gets or sets if the column is valid.
@@ -105,7 +99,6 @@ namespace LibARMP
         public ArmpTableColumn Copy()
         {
             ArmpTableColumn copy = new ArmpTableColumn(ID, Name, Type);
-            copy.Index = Index;
             copy.IsValid = IsValid;
             copy.ColumnMetadata = ColumnMetadata;
             copy.GameVarID = GameVarID;

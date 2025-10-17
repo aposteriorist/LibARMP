@@ -3,6 +3,7 @@ using System;
 using System.Text;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace LibARMP.IO
 {
@@ -197,15 +198,16 @@ namespace LibARMP.IO
             ///// Column Order /////
             #region ColumnOrder
 
+            List<int> columnOrder = null;
             if (table.TableInfo.HasOrderedColumns)
             {
-                table.OrderedColumnIDs = Util.IterateArray<int>(reader, table.TableInfo.ptrColumnOrder, table.TableInfo.ColumnCount, false);
+                columnOrder = Util.IterateArray<int>(reader, table.TableInfo.ptrColumnOrder, table.TableInfo.ColumnCount, false);
             }
             else
             {
-                table.OrderedColumnIDs = new List<int>(table.TableInfo.ColumnCount);
+                columnOrder = new List<int>(table.TableInfo.ColumnCount);
                 for (int i = 0; i < table.TableInfo.ColumnCount; i++)
-                    table.OrderedColumnIDs.Add(i);
+                    columnOrder.Add(i);
             }
             #endregion
 
@@ -220,7 +222,7 @@ namespace LibARMP.IO
 
             for (int c = 0; c < table.TableInfo.ColumnCount; c++)
             {
-                ArmpTableColumn column = new ArmpTableColumn((uint)c, columnNames[c], columnDataTypes[c]);
+                ArmpTableColumn column = new ArmpTableColumn(c, columnNames[c], columnDataTypes[c]);
 
                 if (table.TableInfo.HasMemberInfo)
                 {
@@ -237,7 +239,6 @@ namespace LibARMP.IO
                 }
 
                 column.IsValid = columnValidity[c];
-                column.Index = table.TableInfo.HasOrderedColumns ? table.OrderedColumnIDs.IndexOf(c) : c;
                 if (table.TableInfo.HasGameVarColumns) column.GameVarID = gameVarColumnIDs[c];
 
                 table.Columns.Add(column);
@@ -271,15 +272,16 @@ namespace LibARMP.IO
             ///// Entry Order /////
             #region EntryOrder
 
+            List<int> entryOrder = null;
             if (table.TableInfo.HasOrderedEntries)
             {
-                table.OrderedEntryIDs = Util.IterateArray<uint>(reader, table.TableInfo.ptrEntryOrder, table.TableInfo.EntryCount, false);
+                entryOrder = Util.IterateArray<int>(reader, table.TableInfo.ptrEntryOrder, table.TableInfo.EntryCount, false);
             }
             else
             {
-                table.OrderedEntryIDs = new List<uint>(table.TableInfo.EntryCount);
-                for (uint i = 0; i < table.TableInfo.EntryCount; i++)
-                    table.OrderedEntryIDs.Add(i);
+                entryOrder = new List<int>(table.TableInfo.EntryCount);
+                for (int i = 0; i < table.TableInfo.EntryCount; i++)
+                    entryOrder.Add(i);
             }
             #endregion
 
@@ -387,6 +389,18 @@ namespace LibARMP.IO
                 }
             }
 
+            // Sort by the orders for entries and columns.
+            // NOTE: Is it faster to actually sort, or to select?
+            if (table.TableInfo.HasOrderedEntries)
+            {
+                table.Entries = entryOrder.Select(x => table.Entries[x]).ToList();
+            }
+
+            if (table.TableInfo.HasOrderedColumns)
+            {
+                table.Columns = columnOrder.Select(x => table.Columns[x]).ToList();
+            }
+
             table.RefreshColumnNameCache();
             return table;
         }
@@ -461,10 +475,10 @@ namespace LibARMP.IO
             ///// Create Columns /////
             #region CreateColumns
 
-            for (uint c = 0; c < table.TableInfo.ColumnCount; c++)
+            for (int c = 0; c < table.TableInfo.ColumnCount; c++)
             {
-                ArmpTableColumn column = new ArmpTableColumn(c, columnNames[(int)c], columnDataTypes[(int)c]);
-                if (table.TableInfo.HasColumnMetadata) column.ColumnMetadata = columnMetadata[(int)c];
+                ArmpTableColumn column = new ArmpTableColumn(c, columnNames[c], columnDataTypes[c]);
+                if (table.TableInfo.HasColumnMetadata) column.ColumnMetadata = columnMetadata[c];
 
                 table.Columns.Add(column);
             }
@@ -749,12 +763,9 @@ namespace LibARMP.IO
         private static void InitializeEntries(ArmpTableBase table)
         {
             ArmpEntry entry;
-            for (uint i = 0; i < table.TableInfo.EntryCount; i++)
+            for (int i = 0; i < table.TableInfo.EntryCount; i++)
             {
-                if (!table.TableInfo.HasOrderedEntries)
-                    entry = new ArmpEntry(table, i, table.EntryNames[(int)i], i);
-                else
-                    entry = new ArmpEntry(table, i, table.EntryNames[(int)i], (uint)table.OrderedEntryIDs.IndexOf(i));
+                entry = new ArmpEntry(table, i, table.EntryNames[i]);
 
                 entry.ParentTable = table;
                 table.Entries.Add(entry);
