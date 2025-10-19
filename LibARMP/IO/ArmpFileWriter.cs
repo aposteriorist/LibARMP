@@ -431,7 +431,16 @@ namespace LibARMP.IO
             if (table.TableInfo.FormatVersion == Version.DragonEngineV2)
             {
                 writer.WriteInt24(table.TableInfo.TableID);
-                writer.Write((byte)table.TableInfo.StorageMode);
+                byte tableFlags = 0;
+                if (table.TableInfo.StorageMode == StorageMode.Structured) tableFlags |= 1;
+                if (table.TableInfo.UnknownFlag1) tableFlags |= 2;
+                if (table.TableInfo.UnknownFlag2) tableFlags |= 4;
+                if (table.TableInfo.UnknownFlag3) tableFlags |= 8;
+                if (table.TableInfo.UnknownFlag4) tableFlags |= 16;
+                if (table.TableInfo.DoNotUseRaw) tableFlags |= 32;
+                if (table.TableInfo.MembersWellFormatted) tableFlags |= 64;
+                if (table.TableInfo.IsProcessedForMemory) tableFlags |= 128;
+                writer.Write(tableFlags);
             }
             else
             {
