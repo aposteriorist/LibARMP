@@ -126,8 +126,7 @@ namespace LibARMP.IO
         {
             ArmpTableBase table = new ArmpTableBase();
             reader.BaseStream.Seek(ptrTable);
-            table.TableInfo = GetARMPTableInfo(reader, false);
-            table.TableInfo.FormatVersion = version;
+            table.TableInfo = GetARMPTableInfo(reader, version);
             table.TableInfo.BaseARMPMemoryAddress = baseARMPMemoryAddress;
 
 
@@ -212,10 +211,14 @@ namespace LibARMP.IO
             #endregion
 
 
-            ///// Column Metadata /////
+            ///// game_var Column IDs /////
             List<int> gameVarColumnIDs = null;
             if (table.TableInfo.HasGameVarColumns) gameVarColumnIDs = Util.IterateArray<int>(reader, table.TableInfo.ptrGameVarColumnIDs, table.TableInfo.ColumnCount, false);
 
+
+            ///// Column Metadata (v1) /////
+            List<int> columnMetadata = null;
+            if (table.TableInfo.HasColumnMetadata) columnMetadata = Util.IterateArray<int>(reader, table.TableInfo.ptrColumnMetadata, table.TableInfo.ColumnCount, false);
 
             ///// Create Columns /////
             #region CreateColumns
@@ -240,6 +243,7 @@ namespace LibARMP.IO
 
                 column.IsValid = columnValidity[c];
                 if (table.TableInfo.HasGameVarColumns) column.GameVarID = gameVarColumnIDs[c];
+                if (table.TableInfo.HasColumnMetadata) column.ColumnMetadata = columnMetadata[c];
 
                 table.Columns.Add(column);
             }
@@ -434,8 +438,7 @@ namespace LibARMP.IO
         {
             ArmpTableBase table = new ArmpTableBase();
 
-            table.TableInfo = GetARMPTableInfo(reader, true);
-            table.TableInfo.FormatVersion = version;
+            table.TableInfo = GetARMPTableInfo(reader, version);
 
 
             ///// Column Names /////
@@ -571,28 +574,24 @@ namespace LibARMP.IO
         /// <param name="reader">The <see cref="BinaryReader"/>.</param>
         /// <param name="IsOldEngine">If the format version is from Old Engine.</param>
         /// <returns>An <see cref="ArmpTableInfo"/> object.</returns>
-        private static ArmpTableInfo GetARMPTableInfo(BinaryReader reader, bool IsOldEngine)
+        private static ArmpTableInfo GetARMPTableInfo(BinaryReader reader, Version version)
         {
             ArmpTableInfo armpTableInfo = new ArmpTableInfo();
+            armpTableInfo.FormatVersion = version;
 
             // Old Engine
-            if (IsOldEngine)
+            if (version == Version.OldEngine || version == Version.OldEngineIshin)
             {
                 armpTableInfo.EntryCount = reader.ReadInt32(true);
-                // Ishin check
-                uint check = reader.ReadUInt32(true);
-                if (check > 0)
-                {
-                    armpTableInfo.FormatVersion = Version.OldEngineIshin;
-                    armpTableInfo.ptrEntryValidity = check;
-                }
-                else
-                {
-                    armpTableInfo.FormatVersion = Version.OldEngine;
-                }
+
+                if (version == Version.OldEngineIshin) armpTableInfo.ptrEntryValidity = reader.ReadUInt32(true);
+                else reader.ReadBytes(0x4);
+
                 armpTableInfo.ptrEntryNamesOffsetTable = reader.ReadUInt32(true);
+
                 if (armpTableInfo.FormatVersion == Version.OldEngine) armpTableInfo.ptrEntryValidity = reader.ReadUInt32(true);
                 else reader.ReadBytes(0x4);
+
                 armpTableInfo.ColumnCount = reader.ReadInt32(true);
                 armpTableInfo.ptrColumnNamesOffsetTable = reader.ReadUInt32(true);
                 armpTableInfo.ptrColumnDataTypes = reader.ReadUInt32(true);
@@ -635,8 +634,27 @@ namespace LibARMP.IO
                 armpTableInfo.ptrEntryValidity = reader.ReadUInt32();
                 armpTableInfo.ptrColumnDataTypes = reader.ReadUInt32();
                 armpTableInfo.ptrColumnContentOffsetTable = reader.ReadUInt32();
-                armpTableInfo.TableID = reader.ReadInt24();
-                byte tableFlags = reader.ReadByte();
+
+                if (version == Version.DragonEngineV2)
+                {
+                    armpTableInfo.TableID = reader.ReadInt24();
+                    byte tableFlags = reader.ReadByte();
+
+                    //Set flags
+                    armpTableInfo.UseStructure = (tableFlags & (1 << 0)) != 0;
+                    armpTableInfo.UnknownFlag1 = (tableFlags & (1 << 1)) != 0;
+                    armpTableInfo.UnknownFlag2 = (tableFlags & (1 << 2)) != 0;
+                    armpTableInfo.UnknownFlag3 = (tableFlags & (1 << 3)) != 0;
+                    armpTableInfo.UnknownFlag4 = (tableFlags & (1 << 4)) != 0;
+                    armpTableInfo.DoNotUseRaw  = (tableFlags & (1 << 5)) != 0;
+                    armpTableInfo.MembersWellFormatted = (tableFlags & (1 << 6)) != 0;
+                    armpTableInfo.IsProcessedForMemory = (tableFlags & (1 << 7)) != 0;
+                }
+                else
+                {
+                    armpTableInfo.ptrColumnMetadata = reader.ReadUInt32();
+                }
+
                 armpTableInfo.ptrTextOffsetTable = reader.ReadUInt32();
                 armpTableInfo.ptrColumnNamesOffsetTable = reader.ReadUInt32();
                 armpTableInfo.DefaultColumnID = reader.ReadInt32();
@@ -649,20 +667,7 @@ namespace LibARMP.IO
                 armpTableInfo.ptrMemberInfo = reader.ReadUInt32();
                 armpTableInfo.ptrExtraFieldInfo = reader.ReadUInt32();
 
-
-                //Set flags
-                if (armpTableInfo.FormatVersion == Version.DragonEngineV2)
-                {
-                    armpTableInfo.UseStructure = (tableFlags & (1 << 0)) != 0;
-                    armpTableInfo.UnknownFlag1 = (tableFlags & (1 << 1)) != 0;
-                    armpTableInfo.UnknownFlag2 = (tableFlags & (1 << 2)) != 0;
-                    armpTableInfo.UnknownFlag3 = (tableFlags & (1 << 3)) != 0;
-                    armpTableInfo.UnknownFlag4 = (tableFlags & (1 << 4)) != 0;
-                    armpTableInfo.DoNotUseRaw = (tableFlags & (1 << 5)) != 0;
-                    armpTableInfo.MembersWellFormatted = (tableFlags & (1 << 6)) != 0;
-                    armpTableInfo.IsProcessedForMemory = (tableFlags & (1 << 7)) != 0;
-                }
-
+                if (armpTableInfo.ptrColumnMetadata > 0 && armpTableInfo.ptrColumnMetadata < 0xFFFFFFFF) armpTableInfo.HasColumnMetadata = true;
                 if (armpTableInfo.TextCount > 0) armpTableInfo.HasText = true;
                 if (armpTableInfo.ptrIndexerTable > 0 && armpTableInfo.ptrIndexerTable < 0xFFFFFFFF) armpTableInfo.HasIndexerTable = true;
                 if (armpTableInfo.ptrEntryNamesOffsetTable > 0 && armpTableInfo.ptrEntryNamesOffsetTable < 0xFFFFFFFF) armpTableInfo.HasEntryNames = true;

@@ -430,17 +430,24 @@ namespace LibARMP.IO
 
             ///// Table ID and Storage Mode /////
             writer.BaseStream.Seek(baseOffset + 0x20);
-            writer.WriteInt24(table.TableInfo.TableID);
-            byte tableFlags = 0;
-            if (table.TableInfo.UseStructure) tableFlags |= 1;
-            if (table.TableInfo.UnknownFlag1) tableFlags |= 2;
-            if (table.TableInfo.UnknownFlag2) tableFlags |= 4;
-            if (table.TableInfo.UnknownFlag3) tableFlags |= 8;
-            if (table.TableInfo.UnknownFlag4) tableFlags |= 16;
-            if (table.TableInfo.DoNotUseRaw)  tableFlags |= 32;
-            if (table.TableInfo.MembersWellFormatted) tableFlags |= 64;
-            if (table.TableInfo.IsProcessedForMemory) tableFlags |= 128;
-            writer.Write(tableFlags);
+            if (table.TableInfo.FormatVersion == Version.DragonEngineV2)
+            {
+                writer.WriteInt24(table.TableInfo.TableID);
+                byte tableFlags = 0;
+                if (table.TableInfo.UseStructure) tableFlags |= 1;
+                if (table.TableInfo.UnknownFlag1) tableFlags |= 2;
+                if (table.TableInfo.UnknownFlag2) tableFlags |= 4;
+                if (table.TableInfo.UnknownFlag3) tableFlags |= 8;
+                if (table.TableInfo.UnknownFlag4) tableFlags |= 16;
+                if (table.TableInfo.DoNotUseRaw) tableFlags |= 32;
+                if (table.TableInfo.MembersWellFormatted) tableFlags |= 64;
+                if (table.TableInfo.IsProcessedForMemory) tableFlags |= 128;
+                writer.Write(tableFlags);
+            }
+            else
+            {
+                writer.Write(0u);
+            }
             writer.BaseStream.PopPosition();
 
 
@@ -606,6 +613,21 @@ namespace LibARMP.IO
             }
             #endregion
 
+
+            ///// Column Metadata (v1) /////
+            #region ColumnMetadata
+
+            if (table.TableInfo.FormatVersion == Version.DragonEngineV1 && table.TableInfo.HasColumnMetadata)
+            {
+                ptr = (int)writer.BaseStream.Position;
+                foreach (ArmpTableColumn column in table.Columns)
+                {
+                    writer.Write(column.ColumnMetadata);
+                }
+                // Update the main table pointer at 0x20
+                writer.WriteAtPosition(ptr, baseOffset + 0x20);
+            }
+            #endregion
 
             ///// Column Contents /////
             #region ColumnContentsModeColumn

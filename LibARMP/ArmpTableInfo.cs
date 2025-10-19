@@ -16,7 +16,7 @@ namespace LibARMP
             TextCount = 0;
             DefaultEntryID = -1;
             DefaultColumnID = -1;
-            TableID = 0;
+            TableID = -1;
             UseStructure = false;
 
             //Pointers
@@ -89,7 +89,7 @@ namespace LibARMP
         /// <summary>
         /// Gets the table ID (Int24).
         /// </summary>
-        /// <remarks><para><b>DRAGON ENGINE ONLY</b></para></remarks>
+        /// <remarks><para><b>DRAGON ENGINE V2 ONLY</b></para></remarks>
         public Int32 TableID { get; internal set; }
 
         /// <summary>
