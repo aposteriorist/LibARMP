@@ -595,7 +595,7 @@ namespace LibARMP.IO
 
 
             ///// Member Types (V1) /////
-            #region MemberTypes(v1)
+            #region MemberTypes(V1)
 
             if (table.TableInfo.FormatVersion == Version.DragonEngineV1 && table.TableInfo.HasMemberInfo)
             {
@@ -614,8 +614,8 @@ namespace LibARMP.IO
             #endregion
 
 
-            ///// Column Metadata (v1) /////
-            #region ColumnMetadata
+            ///// Column Metadata (V1) /////
+            #region ColumnMetadata(V1)
 
             if (table.TableInfo.FormatVersion == Version.DragonEngineV1 && table.TableInfo.HasColumnMetadata)
             {
@@ -1039,8 +1039,8 @@ namespace LibARMP.IO
             if (table.TableInfo.FormatVersion == Version.DragonEngineV2) writer.WritePadding(0, 0x10);
 
 
-            ///// Entry Info Flags (v1 only) /////
-            #region EntryInfoFlags(v1)
+            ///// Entry Info Flags (V1) /////
+            #region EntryInfoFlags(V1)
 
             if (table.TableInfo.HasExtraFieldInfo && table.TableInfo.FormatVersion == Version.DragonEngineV1)
             {
@@ -1063,7 +1063,7 @@ namespace LibARMP.IO
 
 
             ///// Member Specification (V2) /////
-            #region MemberInfo
+            #region MemberInfo(V2)
 
             if (table.TableInfo.FormatVersion == Version.DragonEngineV2 && table.TableInfo.HasMemberInfo)
             {
@@ -1077,7 +1077,7 @@ namespace LibARMP.IO
 
 
             ///// Array Specifications (V2) /////
-            #region ArrayInfo
+            #region ArrayInfo(V2)
 
             if (table.TableInfo.FormatVersion == Version.DragonEngineV2 && table.TableInfo.HasExtraFieldInfo)
             {

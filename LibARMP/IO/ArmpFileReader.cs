@@ -216,7 +216,7 @@ namespace LibARMP.IO
             if (table.TableInfo.HasGameVarColumns) gameVarColumnIDs = Util.IterateArray<int>(reader, table.TableInfo.ptrGameVarColumnIDs, table.TableInfo.ColumnCount, false);
 
 
-            ///// Column Metadata (v1) /////
+            ///// Column Metadata (V1) /////
             List<int> columnMetadata = null;
             if (table.TableInfo.HasColumnMetadata) columnMetadata = Util.IterateArray<int>(reader, table.TableInfo.ptrColumnMetadata, table.TableInfo.ColumnCount, false);
 
