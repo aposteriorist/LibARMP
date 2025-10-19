@@ -651,14 +651,17 @@ namespace LibARMP.IO
 
 
                 //Set flags
-                armpTableInfo.UseStructure = (tableFlags & (1 << 0)) != 0;
-                armpTableInfo.UnknownFlag1 = (tableFlags & (1 << 1)) != 0;
-                armpTableInfo.UnknownFlag2 = (tableFlags & (1 << 2)) != 0;
-                armpTableInfo.UnknownFlag3 = (tableFlags & (1 << 3)) != 0;
-                armpTableInfo.UnknownFlag4 = (tableFlags & (1 << 4)) != 0;
-                armpTableInfo.DoNotUseRaw = (tableFlags & (1 << 5)) != 0;
-                armpTableInfo.MembersWellFormatted = (tableFlags & (1 << 6)) != 0;
-                armpTableInfo.IsProcessedForMemory = (tableFlags & (1 << 7)) != 0;
+                if (armpTableInfo.FormatVersion == Version.DragonEngineV2)
+                {
+                    armpTableInfo.UseStructure = (tableFlags & (1 << 0)) != 0;
+                    armpTableInfo.UnknownFlag1 = (tableFlags & (1 << 1)) != 0;
+                    armpTableInfo.UnknownFlag2 = (tableFlags & (1 << 2)) != 0;
+                    armpTableInfo.UnknownFlag3 = (tableFlags & (1 << 3)) != 0;
+                    armpTableInfo.UnknownFlag4 = (tableFlags & (1 << 4)) != 0;
+                    armpTableInfo.DoNotUseRaw = (tableFlags & (1 << 5)) != 0;
+                    armpTableInfo.MembersWellFormatted = (tableFlags & (1 << 6)) != 0;
+                    armpTableInfo.IsProcessedForMemory = (tableFlags & (1 << 7)) != 0;
+                }
 
                 if (armpTableInfo.TextCount > 0) armpTableInfo.HasText = true;
                 if (armpTableInfo.ptrIndexerTable > 0 && armpTableInfo.ptrIndexerTable < 0xFFFFFFFF) armpTableInfo.HasIndexerTable = true;
