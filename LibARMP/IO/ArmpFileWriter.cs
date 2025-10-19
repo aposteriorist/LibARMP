@@ -428,8 +428,15 @@ namespace LibARMP.IO
 
             ///// Table ID and Storage Mode /////
             writer.BaseStream.Seek(baseOffset + 0x20);
-            writer.WriteInt24(table.TableInfo.TableID);
-            writer.Write((byte)table.TableInfo.StorageMode);
+            if (table.TableInfo.FormatVersion == Version.DragonEngineV2)
+            {
+                writer.WriteInt24(table.TableInfo.TableID);
+                writer.Write((byte)table.TableInfo.StorageMode);
+            }
+            else
+            {
+                writer.Write(0u);
+            }
             writer.BaseStream.PopPosition();
 
 
@@ -592,6 +599,22 @@ namespace LibARMP.IO
                 // Update the main table pointer at 0x48
                 writer.WriteAtPosition(ptr, baseOffset + 0x48);
                 writer.WritePadding(0, 4); // True for most files
+            }
+            #endregion
+
+
+            ///// Column Metadata /////
+            #region ColumnMetadata
+
+            if (table.TableInfo.FormatVersion == Version.DragonEngineV1 && table.TableInfo.HasColumnMetadata)
+            {
+                ptr = (int)writer.BaseStream.Position;
+                foreach (ArmpTableColumn column in table.Columns)
+                {
+                    writer.Write(column.ColumnMetadata);
+                }
+                // Update the main table pointer at 0x20
+                writer.WriteAtPosition(ptr, baseOffset + 0x20);
             }
             #endregion
 
