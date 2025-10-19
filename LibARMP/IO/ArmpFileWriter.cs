@@ -1062,7 +1062,7 @@ namespace LibARMP.IO
 
 
             ///// Member Specification (V2) /////
-            #region MemberInfoV2
+            #region MemberInfo(V2)
 
             if (table.TableInfo.FormatVersion == Version.DragonEngineV2 && table.TableInfo.HasMemberInfo)
             {
@@ -1076,7 +1076,7 @@ namespace LibARMP.IO
 
 
             ///// Array Specifications (V2) /////
-            #region ArrayInfoV2
+            #region ArrayInfo(V2)
 
             if (table.TableInfo.FormatVersion == Version.DragonEngineV2 && table.TableInfo.HasExtraFieldInfo)
             {
